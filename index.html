@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>POLE · DNA Polymerase ε Catalytic Subunit · 3D Structural Viewer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600&family=JetBrains+Mono:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div id="loading">
+  <div class="helix"></div>
+  <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+  <div class="text" id="loading-text">Initializing renderer&hellip;</div>
+</div>
+
+<div id="app">
+  <header>
+    <div class="brand">
+      <div class="glyph">POL<em>E</em></div>
+      <div class="sub">DNA Polymerase <b>&epsilon;</b> · Catalytic Subunit · <b>p261</b></div>
+    </div>
+    <div class="header-meta">
+      <div class="pill">CHR <b>12q24.33</b></div>
+      <div class="pill"><b>2,286</b> AA</div>
+      <div class="pill"><b>~261</b> kDa</div>
+      <div class="pill">UniProt <b>Q07864</b></div>
+    </div>
+    <button class="sidebar-toggle" id="sidebar-toggle" aria-label="Toggle sidebars">&#9776;</button>
+  </header>
+
+  <aside class="left" id="sidebar-left">
+    <div class="panel">
+      <h3>Functional domains <span class="num">N &rarr; C</span></h3>
+
+      <div class="domain" data-domain="ntd">
+        <div class="swatch" style="background:var(--c-ntd)"></div>
+        <div>
+          <div class="name">N-terminal domain</div>
+          <div class="range">res. 1&ndash;280</div>
+          <div class="desc">Structural scaffolding region preceding the catalytic core. Contains residues affected by the ultra-rare c.138del germline truncation.</div>
+        </div>
+        <span class="range">NTD</span>
+      </div>
+
+      <div class="domain" data-domain="exo">
+        <div class="swatch" style="background:var(--c-exo)"></div>
+        <div>
+          <div class="name">3&prime;&rarr;5&prime; Exonuclease</div>
+          <div class="range">res. 268&ndash;471</div>
+          <div class="desc">Proofreading domain that excises misincorporated nucleotides. Contains catalytic residues D275, E277, D368, D370 (ExoI/II/III motifs) coordinating two divalent metal ions. Primary site of cancer-driving POLE mutations.</div>
+        </div>
+        <span class="range">EXO</span>
+      </div>
+
+      <div class="domain" data-domain="palm">
+        <div class="swatch" style="background:var(--c-palm)"></div>
+        <div>
+          <div class="name">Palm subdomain</div>
+          <div class="range">res. 600&ndash;870</div>
+          <div class="desc">Houses the polymerase active site. Conserved aspartate carboxylates (D640, D642 motif A; D860 motif C) coordinate two Mg²⁺ ions for phosphodiester bond formation via the two-metal-ion catalytic mechanism.</div>
+        </div>
+        <span class="range">PALM</span>
+      </div>
+
+      <div class="domain" data-domain="fingers">
+        <div class="swatch" style="background:var(--c-fingers)"></div>
+        <div>
+          <div class="name">Fingers subdomain</div>
+          <div class="range">res. 870&ndash;1020</div>
+          <div class="desc">Predominantly &alpha;-helical region. The O-helix undergoes conformational closure upon dNTP binding, ensuring Watson&ndash;Crick base-pair geometry and templated fidelity. Rate-limiting step for nucleotide incorporation.</div>
+        </div>
+        <span class="range">FNG</span>
+      </div>
+
+      <div class="domain" data-domain="thumb">
+        <div class="swatch" style="background:var(--c-thumb)"></div>
+        <div>
+          <div class="name">Thumb subdomain</div>
+          <div class="range">res. 1020&ndash;1190</div>
+          <div class="desc">Helical bundle that grips the minor groove of the nascent duplex DNA product, providing processivity along the leading strand. Contacts extend ~8 bp into the product duplex.</div>
+        </div>
+        <span class="range">THM</span>
+      </div>
+
+      <div class="domain" data-domain="ctd">
+        <div class="swatch" style="background:var(--c-ctd)"></div>
+        <div>
+          <div class="name">C-terminal domain</div>
+          <div class="range">res. 1900&ndash;2286</div>
+          <div class="desc">Contains CysA and CysB zinc-finger motifs that serve as the structural platform for binding accessory subunits POLE2, POLE3, and POLE4, completing the heterotetrameric holoenzyme.</div>
+        </div>
+        <span class="range">CTD</span>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h3>Display controls</h3>
+      <div class="toggle on" data-toggle="dna"><span class="label">Template / nascent DNA</span><div class="switch"></div></div>
+      <div class="toggle on" data-toggle="metals"><span class="label">Catalytic Mg²⁺ ions</span><div class="switch"></div></div>
+      <div class="toggle on" data-toggle="dntp"><span class="label">Incoming dNTP</span><div class="switch"></div></div>
+      <div class="toggle on" data-toggle="labels"><span class="label">Domain labels</span><div class="switch"></div></div>
+      <div class="toggle on" data-toggle="mutations"><span class="label">Mutation hotspots</span><div class="switch"></div></div>
+      <div class="toggle on" data-toggle="rotate"><span class="label">Auto-rotate</span><div class="switch"></div></div>
+      <div class="toggle" data-toggle="surface"><span class="label">Molecular envelope</span><div class="switch"></div></div>
+      <div class="toggle" data-toggle="hbonds"><span class="label">H-bonds (i&rarr;i+4)</span><div class="switch"></div></div>
+      <div class="toggle" data-toggle="sheetHbonds"><span class="label">&beta;-sheet H-bonds</span><div class="switch"></div></div>
+      <div class="toggle on" data-toggle="zincMotifs"><span class="label">Zn-finger motifs</span><div class="switch"></div></div>
+      <div class="toggle on" data-toggle="exoSite"><span class="label">Exonuclease active site</span><div class="switch"></div></div>
+      <div class="toggle" data-toggle="accessory"><span class="label">Accessory subunits</span><div class="switch"></div></div>
+      <div class="toggle" data-toggle="pcna"><span class="label">PCNA sliding clamp</span><div class="switch"></div></div>
+      <div class="toggle" data-toggle="exoPolPath"><span class="label">Exo&harr;Pol shuttling</span><div class="switch"></div></div>
+    </div>
+
+    <div class="panel">
+      <h3>Color mode</h3>
+      <div class="color-mode-selector" id="color-mode">
+        <button class="active" data-mode="default">Domain</button>
+        <button data-mode="bfactor">B-factor</button>
+        <button data-mode="conservation">Conservation</button>
+        <button data-mode="heatmap">Variant</button>
+        <button data-mode="electrostatic">Charge</button>
+        <button data-mode="pathogenicity">Pathogenicity</button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h3>Color scheme</h3>
+      <div class="color-mode-selector" id="color-scheme">
+        <button class="active" data-scheme="default">Default</button>
+        <button data-scheme="pymol">PyMOL</button>
+        <button data-scheme="colorblind">Accessible</button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h3>Tools</h3>
+      <div class="tool-buttons">
+        <button class="tool-btn" id="btn-screenshot" title="Export PNG (S)">Screenshot</button>
+        <button class="tool-btn" id="btn-measure" title="Measure distance (M)">Measure</button>
+        <button class="tool-btn" id="btn-reset" title="Reset view (Esc)">Reset view</button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h3>Navigation</h3>
+      <a href="mutation.html" style="display:block;padding:9px 10px;background:rgba(196,92,92,0.08);border:1px solid rgba(196,92,92,0.2);border-left:2px solid var(--warn);border-radius:2px;text-decoration:none;color:var(--ink);font-size:11px;transition:background .2s">
+        <div style="font-family:'Fraunces',serif;font-size:13px;color:var(--warn);font-weight:500;margin-bottom:3px">c.138del Mutation Viewer</div>
+        <div style="font-size:10px;color:var(--ink-dim)">p.Leu46Phefs*8 &middot; germline frameshift</div>
+      </a>
+    </div>
+  </aside>
+
+  <main>
+    <div id="canvas-container"></div>
+
+    <div class="overlay corner-tl">
+      <div class="live">structure · live</div>
+      <div style="margin-top:5px;color:var(--ink-faint)">human · holoenzyme model</div>
+    </div>
+    <div class="overlay corner-tr">
+      <div>orbit · drag</div>
+      <div style="margin-top:3px">pan · shift+drag</div>
+      <div style="margin-top:3px">zoom · scroll</div>
+      <div style="margin-top:3px">inspect · hover</div>
+      <div style="margin-top:3px">shortcuts · <b>?</b></div>
+    </div>
+    <div class="overlay corner-bl">
+      <span class="scale"></span>
+      <span>~50 &Aring;</span>
+    </div>
+    <div class="overlay corner-br">
+      <span>ribbon · cartoon</span>
+      <span>CPK · active site</span>
+      <span id="fps-counter" class="fps-counter" style="display:none"></span>
+    </div>
+
+    <div id="tooltip">
+      <div class="t-name"></div>
+      <div class="t-detail"></div>
+    </div>
+  </main>
+
+  <aside class="right" id="sidebar-right">
+    <div class="panel">
+      <h3>Locus &amp; identity</h3>
+      <div class="info-card">
+        <div class="k">Gene</div>
+        <div class="v mono">POLE (ENSG00000177084)</div>
+      </div>
+      <div class="info-card">
+        <div class="k">Cytogenetic location</div>
+        <div class="v mono">12q24.33</div>
+      </div>
+      <div class="info-card">
+        <div class="k">Genomic span</div>
+        <div class="v mono">~64 kb · 50 exons</div>
+      </div>
+      <div class="info-card">
+        <div class="k">Polymerase family</div>
+        <div class="v">B-family · Pol &epsilon;</div>
+      </div>
+      <div class="info-card">
+        <div class="k">Holoenzyme partners</div>
+        <div class="v mono">POLE2 · POLE3 · POLE4</div>
+      </div>
+      <div class="info-card">
+        <div class="k">PDB references</div>
+        <div class="v mono" style="font-size:10.5px">4M8O · 6WJV · 8D32</div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h3>Function · in vivo</h3>
+      <p style="font-family:'Fraunces',serif;font-size:12.5px;line-height:1.55;color:var(--ink);font-weight:300">
+        Pol &epsilon; performs <em style="color:var(--accent)">leading-strand synthesis</em> at the eukaryotic replisome, copying the template 3&prime;&rarr;5&prime; while extending the nascent strand 5&prime;&rarr;3&prime; at &gt;50 nt/s. Base-substitution error rate approaches <span style="font-family:'JetBrains Mono',monospace;font-size:10.5px">10&minus;7</span> per nucleotide incorporated.
+      </p>
+      <p style="font-family:'Fraunces',serif;font-size:12px;line-height:1.55;color:var(--ink-dim);margin-top:8px;font-weight:300">
+        The intrinsic 3&prime;&rarr;5&prime; exonuclease excises misincorporated nucleotides via an intramolecular shuttling mechanism, switching the primer terminus between the polymerase and exonuclease active sites separated by ~30&ndash;40 &Aring;.
+      </p>
+    </div>
+
+    <div class="panel">
+      <h3>Pathogenic hotspots</h3>
+
+      <div class="mutation" data-mut="P286R">
+        <div class="head">
+          <div class="name">P286R</div>
+          <div class="loc">EXO · ultra-mutator</div>
+        </div>
+        <div class="text">Most frequent cancer-associated POLE mutation. Pro&rarr;Arg substitution in ExoII motif disrupts the proofreading active site, causing an ultra-mutation phenotype (TMB &gt;100 mut/Mb) in colorectal &amp; endometrial carcinoma.</div>
+      </div>
+
+      <div class="mutation" data-mut="V411L">
+        <div class="head">
+          <div class="name">V411L</div>
+          <div class="loc">EXO · proofreading-deficient</div>
+        </div>
+        <div class="text">Recurrent exonuclease-domain mutation that abolishes editing capacity. Associated with microsatellite-stable tumours with very high mutational burden, often exceeding 100 mut/Mb.</div>
+      </div>
+
+      <div class="mutation" data-mut="S297F">
+        <div class="head">
+          <div class="name">S297F</div>
+          <div class="loc">EXO · germline / Lynch-like</div>
+        </div>
+        <div class="text">Germline variant in the ExoI motif; predisposes to polymerase-proofreading-associated polyposis (PPAP). Autosomal dominant with variable penetrance for colorectal adenomas.</div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h3>Catalytic mechanism</h3>
+      <p style="font-family:'Fraunces',serif;font-size:12px;line-height:1.6;color:var(--ink-dim);font-weight:300">
+        <b style="color:var(--ink);font-weight:500">Two-metal-ion catalysis:</b> Metal A (Mg²⁺) lowers the p<em>K</em>a of the primer 3&prime;-OH, generating the nucleophile. Metal B (Mg²⁺) coordinates the &beta;,&gamma;-phosphates of the incoming dNTP and stabilizes the pentacoordinate transition state. Both metals are chelated by conserved aspartate carboxylates (D640, D642, D860).
+      </p>
+    </div>
+  </aside>
+
+  <footer>
+    <div class="left">
+      <span class="ax">model · <b>cartoon ribbon + CPK</b></span>
+      <span class="ax">render · <b>WebGL</b></span>
+      <span class="ax">basis · <b>B-family pol architecture</b></span>
+    </div>
+    <div>POLE · 3D STRUCTURAL VIEWER</div>
+  </footer>
+</div>
+
+<!-- Keyboard help overlay -->
+<div id="keyboard-help" class="keyboard-overlay" style="display:none">
+  <div class="keyboard-overlay-inner">
+    <h3>Keyboard shortcuts</h3>
+    <div class="shortcut-grid">
+      <div class="shortcut"><kbd>R</kbd><span>Toggle auto-rotate</span></div>
+      <div class="shortcut"><kbd>1</kbd>&ndash;<kbd>6</kbd><span>Focus domain (NTD&hellip;CTD)</span></div>
+      <div class="shortcut"><kbd>S</kbd><span>Export screenshot (PNG)</span></div>
+      <div class="shortcut"><kbd>M</kbd><span>Toggle distance measure</span></div>
+      <div class="shortcut"><kbd>H</kbd><span>Toggle H-bonds</span></div>
+      <div class="shortcut"><kbd>B</kbd><span>Toggle &beta;-sheet H-bonds</span></div>
+      <div class="shortcut"><kbd>Z</kbd><span>Toggle Zn-finger motifs</span></div>
+      <div class="shortcut"><kbd>P</kbd><span>Toggle PCNA clamp</span></div>
+      <div class="shortcut"><kbd>E</kbd><span>Toggle Exo&harr;Pol path</span></div>
+      <div class="shortcut"><kbd>L</kbd><span>Toggle labels</span></div>
+      <div class="shortcut"><kbd>D</kbd><span>Toggle DNA</span></div>
+      <div class="shortcut"><kbd>F</kbd><span>Toggle FPS counter</span></div>
+      <div class="shortcut"><kbd>Esc</kbd><span>Reset view / close overlay</span></div>
+      <div class="shortcut"><kbd>?</kbd><span>Show this help</span></div>
+    </div>
+    <button class="tool-btn" id="close-help" style="margin-top:16px">Close</button>
+  </div>
+</div>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+
+<script type="module">
+import { POLEViewer } from './js/pole-viewer.js';
+
+// Loading progress
+const progressFill = document.getElementById('progress-fill');
+const loadingText = document.getElementById('loading-text');
+function setProgress(pct, text) {
+  progressFill.style.width = pct + '%';
+  if (text) loadingText.textContent = text;
+}
+
+setProgress(10, 'Initializing WebGL renderer\u2026');
+
+// Initialize viewer
+const container = document.getElementById('canvas-container');
+const tooltip = document.getElementById('tooltip');
+
+setProgress(30, 'Building protein backbone\u2026');
+const viewer = new POLEViewer(container, tooltip);
+
+setProgress(70, 'Computing ribbon geometry\u2026');
+
+// FPS counter
+const fpsEl = document.getElementById('fps-counter');
+viewer.setFPSCallback(fps => { fpsEl.textContent = fps + ' FPS'; });
+
+// ---- UI Wiring ----
+
+// Domain legend → highlight + focus on click
+const domainKeys = ['ntd','exo','palm','fingers','thumb','ctd'];
+document.querySelectorAll('.domain').forEach(el => {
+  el.addEventListener('click', () => {
+    const wasActive = el.classList.contains('active');
+    document.querySelectorAll('.domain').forEach(d => {
+      d.classList.remove('active');
+      viewer.highlightDomain(d.dataset.domain, false);
+    });
+    if (!wasActive) {
+      el.classList.add('active');
+      viewer.highlightDomain(el.dataset.domain, true);
+      viewer.focusDomain(el.dataset.domain);
+    }
+  });
+});
+
+// Toggle switches
+document.querySelectorAll('.toggle').forEach(t => {
+  t.addEventListener('click', () => {
+    const on = !t.classList.contains('on');
+    t.classList.toggle('on', on);
+    viewer.setToggle(t.dataset.toggle, on);
+  });
+});
+
+// Color mode selector
+document.querySelectorAll('#color-mode button').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('#color-mode button').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    viewer.setColorMode(btn.dataset.mode);
+  });
+});
+
+// Color scheme selector
+document.querySelectorAll('#color-scheme button').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('#color-scheme button').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    viewer.setColorScheme(btn.dataset.scheme);
+  });
+});
+
+// Tool buttons
+document.getElementById('btn-screenshot').addEventListener('click', () => viewer.takeScreenshot());
+document.getElementById('btn-reset').addEventListener('click', () => {
+  viewer.resetView();
+  viewer.clearMeasurements();
+});
+
+const measureBtn = document.getElementById('btn-measure');
+measureBtn.addEventListener('click', () => {
+  const on = viewer.toggleMeasure();
+  measureBtn.classList.toggle('active', on);
+});
+
+// Mutation cards → focus camera
+document.querySelectorAll('.mutation').forEach(el => {
+  el.addEventListener('click', () => {
+    viewer.focusMutation(el.dataset.mut);
+  });
+});
+
+// Sidebar toggle (mobile)
+const sidebarToggle = document.getElementById('sidebar-toggle');
+sidebarToggle.addEventListener('click', () => {
+  document.getElementById('sidebar-left').classList.toggle('open');
+  document.getElementById('sidebar-right').classList.toggle('open');
+});
+
+// Keyboard help
+const helpOverlay = document.getElementById('keyboard-help');
+document.getElementById('close-help').addEventListener('click', () => {
+  helpOverlay.style.display = 'none';
+});
+
+// Keyboard shortcuts
+document.addEventListener('keydown', e => {
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+  switch (e.key.toLowerCase()) {
+    case 'r': {
+      const rotToggle = document.querySelector('[data-toggle="rotate"]');
+      rotToggle.click();
+      break;
+    }
+    case '1': case '2': case '3': case '4': case '5': case '6': {
+      const idx = parseInt(e.key) - 1;
+      if (idx < domainKeys.length) {
+        viewer.focusDomain(domainKeys[idx]);
+        viewer.highlightDomain(domainKeys[idx], true);
+        document.querySelectorAll('.domain').forEach((d, i) => {
+          d.classList.toggle('active', i === idx);
+          viewer.highlightDomain(d.dataset.domain, i === idx);
+        });
+      }
+      break;
+    }
+    case 's':
+      if (!e.ctrlKey && !e.metaKey) viewer.takeScreenshot();
+      break;
+    case 'm':
+      measureBtn.click();
+      break;
+    case 'h': {
+      const hbToggle = document.querySelector('[data-toggle="hbonds"]');
+      hbToggle.click();
+      break;
+    }
+    case 'b': {
+      const shToggle = document.querySelector('[data-toggle="sheetHbonds"]');
+      shToggle.click();
+      break;
+    }
+    case 'z': {
+      const znToggle = document.querySelector('[data-toggle="zincMotifs"]');
+      znToggle.click();
+      break;
+    }
+    case 'p': {
+      const pcnaToggle = document.querySelector('[data-toggle="pcna"]');
+      pcnaToggle.click();
+      break;
+    }
+    case 'e': {
+      const epToggle = document.querySelector('[data-toggle="exoPolPath"]');
+      epToggle.click();
+      break;
+    }
+    case 'l': {
+      const lblToggle = document.querySelector('[data-toggle="labels"]');
+      lblToggle.click();
+      break;
+    }
+    case 'd': {
+      const dnaToggle = document.querySelector('[data-toggle="dna"]');
+      dnaToggle.click();
+      break;
+    }
+    case 'f':
+      fpsEl.style.display = fpsEl.style.display === 'none' ? 'inline' : 'none';
+      break;
+    case 'escape':
+      if (helpOverlay.style.display !== 'none') {
+        helpOverlay.style.display = 'none';
+      } else {
+        viewer.resetView();
+        viewer.clearMeasurements();
+        if (viewer.measureMode) measureBtn.click();
+        document.querySelectorAll('.domain').forEach(d => {
+          d.classList.remove('active');
+          viewer.highlightDomain(d.dataset.domain, false);
+        });
+      }
+      break;
+    case '?':
+      helpOverlay.style.display = helpOverlay.style.display === 'none' ? 'flex' : 'none';
+      break;
+  }
+});
+
+// Hide loading screen
+setProgress(100, 'Ready');
+setTimeout(() => {
+  document.getElementById('loading').classList.add('hide');
+}, 500);
+</script>
+</body>
+</html>

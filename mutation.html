@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>POLE c.138del · p.Leu46Phefs*8 · Mutation Structural Analysis</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600&family=JetBrains+Mono:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div id="loading">
+  <div class="helix"></div>
+  <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+  <div class="text" id="loading-text">Loading mutation analysis&hellip;</div>
+</div>
+
+<div id="app">
+  <header>
+    <div class="brand">
+      <a href="index.html" class="glyph" style="text-decoration:none;color:inherit">POL<em>E</em></a>
+      <div class="sub">c.138del · <b style="color:var(--warn)">p.Leu46Phefs*8</b> · Germline Frameshift</div>
+    </div>
+    <div class="header-meta">
+      <div class="pill"><b style="color:var(--warn)">TRUNCATING</b></div>
+      <div class="pill">Stop @ <b>res 54</b></div>
+      <div class="pill"><b>2.4%</b> translated</div>
+      <div class="pill"><b>LOF</b> predicted</div>
+    </div>
+    <button class="sidebar-toggle" id="sidebar-toggle" aria-label="Toggle sidebars">&#9776;</button>
+  </header>
+
+  <aside class="left" id="sidebar-left">
+    <div class="panel">
+      <h3>Variant details</h3>
+      <div class="info-card">
+        <div class="k">HGVS coding</div>
+        <div class="v mono">c.138del</div>
+      </div>
+      <div class="info-card">
+        <div class="k">HGVS protein</div>
+        <div class="v mono">p.Leu46Phefs*8</div>
+      </div>
+      <div class="info-card">
+        <div class="k">Variant type</div>
+        <div class="v">Frameshift deletion (1 nt)</div>
+      </div>
+      <div class="info-card">
+        <div class="k">Consequence</div>
+        <div class="v">Premature termination codon at position 54</div>
+      </div>
+      <div class="info-card">
+        <div class="k">Truncation</div>
+        <div class="v mono">54 / 2,286 residues (2.4%)</div>
+      </div>
+      <div class="info-card">
+        <div class="k">Predicted effect</div>
+        <div class="v">Complete loss of function &middot; likely NMD substrate</div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h3>View mode</h3>
+      <div class="view-switcher" id="view-switcher">
+        <button class="active" data-mode="comparison">3D Comparison</button>
+        <button data-mode="domainLoss">Domain Loss</button>
+        <button data-mode="sequence">Sequence</button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h3>Display controls</h3>
+      <div class="toggle on" data-toggle="rotate"><span class="label">Auto-rotate</span><div class="switch"></div></div>
+    </div>
+
+    <div class="panel">
+      <h3>Tools</h3>
+      <div class="tool-buttons">
+        <button class="tool-btn" id="btn-screenshot" title="Export PNG (S)">Screenshot</button>
+        <button class="tool-btn" id="btn-reset" title="Reset view (Esc)">Reset view</button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h3>Domain loss summary</h3>
+      <div id="domain-loss-list"></div>
+    </div>
+
+    <div class="panel">
+      <h3>Navigation</h3>
+      <a href="index.html" style="display:block;padding:9px 10px;background:var(--bg-2);border:1px solid var(--line);border-left:2px solid var(--accent);border-radius:2px;text-decoration:none;color:var(--ink);font-size:11px;transition:background .2s">
+        <div style="font-family:'Fraunces',serif;font-size:13px;color:var(--accent);font-weight:500;margin-bottom:3px">&larr; Wild-type Viewer</div>
+        <div style="font-size:10px;color:var(--ink-dim)">Full p261 structural model</div>
+      </a>
+    </div>
+  </aside>
+
+  <main>
+    <div id="canvas-container"></div>
+
+    <!-- Sequence view overlay -->
+    <div id="sequence-panel" style="display:none;position:absolute;inset:20px;background:rgba(8,11,17,0.95);border:1px solid var(--line);border-radius:3px;padding:24px;overflow-y:auto;z-index:5;pointer-events:auto">
+      <h3 style="font-family:'JetBrains Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:.22em;color:var(--ink-dim);margin-bottom:16px;font-weight:500">
+        Frameshift reading frame analysis · c.138del
+      </h3>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px">
+        <div>
+          <div style="font-size:9px;text-transform:uppercase;letter-spacing:.2em;color:var(--ink-faint);margin-bottom:8px">Wild-type reading frame</div>
+          <div id="wt-sequence" class="sequence-display"></div>
+        </div>
+        <div>
+          <div style="font-size:9px;text-transform:uppercase;letter-spacing:.2em;color:var(--ink-faint);margin-bottom:8px">Mutant reading frame (c.138del)</div>
+          <div id="mut-sequence" class="sequence-display"></div>
+        </div>
+      </div>
+
+      <div style="margin-top:16px">
+        <div style="font-size:9px;text-transform:uppercase;letter-spacing:.2em;color:var(--ink-faint);margin-bottom:8px">Interpretation</div>
+        <p style="font-family:'Fraunces',serif;font-size:12.5px;line-height:1.6;color:var(--ink);font-weight:300">
+          Deletion of a single nucleotide at c.138 (within codon 46, CTG&rarr;Leu) shifts the reading frame. The new frame encodes 8 aberrant amino acids (Phe-Gly-Val-Glu-Gly-Ser-Phe-Thr) before encountering a premature termination codon (TAG) at what would be residue position 54.
+        </p>
+        <p style="font-family:'Fraunces',serif;font-size:12px;line-height:1.6;color:var(--ink-dim);margin-top:10px;font-weight:300">
+          The resulting 53-residue peptide lacks all functional domains: no exonuclease activity, no polymerase activity, no C-terminal zinc-finger platform for holoenzyme assembly. The transcript is predicted to be degraded by <em style="color:var(--accent)">nonsense-mediated mRNA decay</em> (NMD), as the PTC is &gt;50 nt upstream of the final exon&ndash;exon junction.
+        </p>
+        <p style="font-family:'Fraunces',serif;font-size:12px;line-height:1.6;color:var(--ink-dim);margin-top:10px;font-weight:300">
+          In the heterozygous state, the remaining wild-type allele must support all leading-strand synthesis. Complete loss of both alleles would be lethal given Pol &epsilon;&rsquo;s essential role in S-phase DNA replication.
+        </p>
+      </div>
+    </div>
+
+    <div class="overlay corner-tl">
+      <div class="live" style="color:var(--warn)">mutation · analysis</div>
+      <div style="margin-top:5px;color:var(--ink-faint)">c.138del · p.Leu46Phefs*8</div>
+    </div>
+    <div class="overlay corner-tr">
+      <div>orbit · drag</div>
+      <div style="margin-top:3px">pan · shift+drag</div>
+      <div style="margin-top:3px">zoom · scroll</div>
+      <div style="margin-top:3px">shortcuts · <b>?</b></div>
+    </div>
+    <div class="overlay corner-bl">
+      <span class="scale"></span>
+      <span>~50 &Aring;</span>
+    </div>
+    <div class="overlay corner-br">
+      <span>WT (ghost) vs mutant</span>
+      <span id="fps-counter" class="fps-counter" style="display:none"></span>
+    </div>
+
+    <div id="tooltip">
+      <div class="t-name"></div>
+      <div class="t-detail"></div>
+    </div>
+  </main>
+
+  <aside class="right" id="sidebar-right">
+    <div class="panel">
+      <h3>Molecular consequence</h3>
+      <p style="font-family:'Fraunces',serif;font-size:12.5px;line-height:1.6;color:var(--ink);font-weight:300">
+        This <em style="color:var(--warn)">ultra-rare germline frameshift</em> truncates the POLE catalytic subunit at residue 54 of 2,286 — within the N-terminal domain, long before any catalytic residues are encoded.
+      </p>
+      <p style="font-family:'Fraunces',serif;font-size:12px;line-height:1.6;color:var(--ink-dim);margin-top:10px;font-weight:300">
+        The 3D comparison (left: ghost wild-type, right: translated fragment) illustrates the catastrophic structural loss. The small peptide retains none of the protein&rsquo;s enzymatic or structural capabilities.
+      </p>
+    </div>
+
+    <div class="panel">
+      <h3>Lost functional capacity</h3>
+      <div class="info-card">
+        <div class="k">Polymerase activity</div>
+        <div class="v" style="color:var(--warn)">Completely absent</div>
+      </div>
+      <div class="info-card">
+        <div class="k">Exonuclease proofreading</div>
+        <div class="v" style="color:var(--warn)">Completely absent</div>
+      </div>
+      <div class="info-card">
+        <div class="k">DNA binding</div>
+        <div class="v" style="color:var(--warn)">Completely absent</div>
+      </div>
+      <div class="info-card">
+        <div class="k">Holoenzyme assembly (CTD)</div>
+        <div class="v" style="color:var(--warn)">Completely absent</div>
+      </div>
+      <div class="info-card">
+        <div class="k">NMD prediction</div>
+        <div class="v" style="color:var(--accent)">Likely degraded (PTC in exon 3)</div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h3>NMD pathway</h3>
+      <div class="nmd-diagram">
+        <div class="nmd-step">
+          <div class="nmd-icon">mRNA</div>
+          <div class="nmd-desc">c.138del transcript with PTC at codon 54</div>
+        </div>
+        <div class="nmd-arrow">&darr;</div>
+        <div class="nmd-step">
+          <div class="nmd-icon">EJC</div>
+          <div class="nmd-desc">Exon junction complex &gt;50 nt downstream of PTC</div>
+        </div>
+        <div class="nmd-arrow">&darr;</div>
+        <div class="nmd-step">
+          <div class="nmd-icon">UPF1</div>
+          <div class="nmd-desc">Pioneer round detects PTC-EJC configuration</div>
+        </div>
+        <div class="nmd-arrow">&darr;</div>
+        <div class="nmd-step nmd-degraded">
+          <div class="nmd-icon">NMD</div>
+          <div class="nmd-desc">Transcript targeted for decay &rarr; no protein</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h3>Clinical context</h3>
+      <p style="font-family:'Fraunces',serif;font-size:12px;line-height:1.6;color:var(--ink-dim);font-weight:300">
+        Unlike exonuclease-domain missense mutations (P286R, V411L) that produce a <em>hypermutator phenotype</em> through loss of proofreading with retained polymerase activity, this truncating variant ablates the entire protein.
+      </p>
+      <p style="font-family:'Fraunces',serif;font-size:12px;line-height:1.6;color:var(--ink-dim);margin-top:10px;font-weight:300">
+        Heterozygous carriers retain one functional allele. The phenotypic consequence may depend on haploinsufficiency of Pol &epsilon; at the replication fork, potentially reducing replicative fidelity or processivity under replication stress.
+      </p>
+    </div>
+
+    <div class="panel">
+      <h3>Comparison with known variants</h3>
+      <div class="mutation" style="cursor:default">
+        <div class="head">
+          <div class="name">c.138del</div>
+          <div class="loc">NTD · truncating</div>
+        </div>
+        <div class="text">Frameshift &rarr; stop at res 54. Complete LOF. No catalytic domains translated. Distinct mechanism from EXO-domain ultra-mutators.</div>
+      </div>
+      <div style="font-size:10px;color:var(--ink-faint);padding:6px 0;border-bottom:1px dashed var(--line);margin-bottom:6px">vs. characterized driver mutations &darr;</div>
+      <div style="font-size:10.5px;color:var(--ink-dim);line-height:1.5;padding:4px 0">
+        <b style="color:var(--ink)">P286R / V411L:</b> Missense in EXO domain &rarr; <em>gain</em> of ultra-mutator phenotype (retained pol activity + lost proofreading)<br><br>
+        <b style="color:var(--ink)">c.138del:</b> Truncating &rarr; <em>loss</em> of all activity (no protein produced due to NMD)
+      </div>
+    </div>
+  </aside>
+
+  <footer>
+    <div class="left">
+      <span class="ax">variant · <b>c.138del (p.Leu46Phefs*8)</b></span>
+      <span class="ax">class · <b>germline frameshift</b></span>
+      <span class="ax">effect · <b>truncating LOF</b></span>
+    </div>
+    <div>POLE · MUTATION STRUCTURAL ANALYSIS</div>
+  </footer>
+</div>
+
+<!-- Keyboard help overlay -->
+<div id="keyboard-help" class="keyboard-overlay" style="display:none">
+  <div class="keyboard-overlay-inner">
+    <h3>Keyboard shortcuts</h3>
+    <div class="shortcut-grid">
+      <div class="shortcut"><kbd>R</kbd><span>Toggle auto-rotate</span></div>
+      <div class="shortcut"><kbd>S</kbd><span>Export screenshot (PNG)</span></div>
+      <div class="shortcut"><kbd>F</kbd><span>Toggle FPS counter</span></div>
+      <div class="shortcut"><kbd>Esc</kbd><span>Reset view</span></div>
+      <div class="shortcut"><kbd>?</kbd><span>Show this help</span></div>
+    </div>
+    <button class="tool-btn" id="close-help" style="margin-top:16px">Close</button>
+  </div>
+</div>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+
+<script type="module">
+import { MutationViewer } from './js/mutation-viewer.js';
+
+// Loading progress
+const progressFill = document.getElementById('progress-fill');
+const loadingText = document.getElementById('loading-text');
+function setProgress(pct, text) {
+  progressFill.style.width = pct + '%';
+  if (text) loadingText.textContent = text;
+}
+
+setProgress(20, 'Building molecular models\u2026');
+
+const container = document.getElementById('canvas-container');
+const tooltip = document.getElementById('tooltip');
+const viewer = new MutationViewer(container, tooltip);
+
+setProgress(80, 'Finalizing comparison view\u2026');
+
+// FPS counter
+const fpsEl = document.getElementById('fps-counter');
+viewer.setFPSCallback(fps => { fpsEl.textContent = fps + ' FPS'; });
+
+// ---- View mode switching ----
+const sequencePanel = document.getElementById('sequence-panel');
+
+document.querySelectorAll('#view-switcher button').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('#view-switcher button').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const mode = btn.dataset.mode;
+    viewer.setMode(mode);
+    sequencePanel.style.display = mode === 'sequence' ? 'block' : 'none';
+  });
+});
+
+// ---- Toggle wiring ----
+document.querySelectorAll('.toggle').forEach(t => {
+  t.addEventListener('click', () => {
+    const on = !t.classList.contains('on');
+    t.classList.toggle('on', on);
+    if (t.dataset.toggle === 'rotate') viewer.setAutoRotate(on);
+  });
+});
+
+// ---- Tool buttons ----
+document.getElementById('btn-screenshot').addEventListener('click', () => viewer.takeScreenshot());
+document.getElementById('btn-reset').addEventListener('click', () => viewer.resetView());
+
+// ---- Sidebar toggle (mobile) ----
+document.getElementById('sidebar-toggle').addEventListener('click', () => {
+  document.getElementById('sidebar-left').classList.toggle('open');
+  document.getElementById('sidebar-right').classList.toggle('open');
+});
+
+// ---- Keyboard help ----
+const helpOverlay = document.getElementById('keyboard-help');
+document.getElementById('close-help').addEventListener('click', () => {
+  helpOverlay.style.display = 'none';
+});
+
+// ---- Keyboard shortcuts ----
+document.addEventListener('keydown', e => {
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+  switch (e.key.toLowerCase()) {
+    case 'r': {
+      const rotToggle = document.querySelector('[data-toggle="rotate"]');
+      rotToggle.click();
+      break;
+    }
+    case 's':
+      if (!e.ctrlKey && !e.metaKey) viewer.takeScreenshot();
+      break;
+    case 'f':
+      fpsEl.style.display = fpsEl.style.display === 'none' ? 'inline' : 'none';
+      break;
+    case 'escape':
+      if (helpOverlay.style.display !== 'none') {
+        helpOverlay.style.display = 'none';
+      } else {
+        viewer.resetView();
+      }
+      break;
+    case '?':
+      helpOverlay.style.display = helpOverlay.style.display === 'none' ? 'flex' : 'none';
+      break;
+  }
+});
+
+// ---- Populate sequence panel ----
+const seqData = MutationViewer.getSequenceData();
+
+const wtEl = document.getElementById('wt-sequence');
+const mutEl = document.getElementById('mut-sequence');
+
+for (const c of seqData.wildtype) {
+  const span = document.createElement('span');
+  span.className = 'normal';
+  span.textContent = `${c.pos} ${c.aa} (${c.codon})  `;
+  wtEl.appendChild(span);
+}
+
+for (const c of seqData.mutant) {
+  const span = document.createElement('span');
+  span.className = c.status || 'normal';
+  span.textContent = `${c.pos} ${c.aa} (${c.codon})  `;
+  mutEl.appendChild(span);
+}
+
+// ---- Populate domain loss list ----
+const stats = MutationViewer.getDomainLossStats();
+const listEl = document.getElementById('domain-loss-list');
+
+for (const d of stats) {
+  const div = document.createElement('div');
+  div.style.cssText = `
+    display:flex;justify-content:space-between;align-items:center;
+    padding:6px 0;border-bottom:1px dashed var(--line);
+    font-size:11px;
+  `;
+  const nameSpan = document.createElement('span');
+  nameSpan.style.color = d.lost ? 'var(--warn)' : 'var(--ink)';
+  nameSpan.textContent = d.label;
+
+  const pctSpan = document.createElement('span');
+  pctSpan.style.cssText = `font-size:10px;color:${d.lost ? 'var(--warn)' : 'var(--accent)'};font-weight:500`;
+  pctSpan.textContent = d.lost ? 'LOST' : `${d.pct}% retained`;
+
+  div.appendChild(nameSpan);
+  div.appendChild(pctSpan);
+  listEl.appendChild(div);
+}
+
+// ---- Hide loading ----
+setProgress(100, 'Ready');
+setTimeout(() => {
+  document.getElementById('loading').classList.add('hide');
+}, 500);
+</script>
+</body>
+</html>
