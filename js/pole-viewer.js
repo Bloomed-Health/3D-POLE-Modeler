@@ -402,7 +402,7 @@ export class POLEViewer {
       const mesh = new THREE.Mesh(
         new THREE.IcosahedronGeometry(6,3),
         new THREE.MeshPhysicalMaterial({
-          color:col, transparent:true, opacity:0.035, roughness:0.9,
+          color:col, transparent:true, opacity:0.09, roughness:0.9,
           side:THREE.DoubleSide, depthWrite:false })
       );
       mesh.position.set(c[0],c[1],c[2]);
@@ -535,11 +535,13 @@ export class POLEViewer {
     // Mg–Mg distance label
     const mgMgMid = mgApos.clone().add(mgBpos).multiplyScalar(0.5);
     const mgMgDist = mgApos.distanceTo(mgBpos) / SCALE;
-    const mgMgLabel = this._spriteLabel(`Mg\u2013Mg: ${mgMgDist.toFixed(1)} \u00c5`, '#60a830', '#60a830', 200);
-    mgMgLabel.scale.set(6, 1.5, 1);
-    mgMgLabel.position.copy(mgMgMid.clone().add(new THREE.Vector3(0, -1.2, 0)));
+    const mgMgLabelPos = mgMgMid.clone().add(new THREE.Vector3(6, -8, 6));
+    const mgMgLabel = this._spriteLabel(`Mg\u2013Mg: ${mgMgDist.toFixed(1)} \u00c5`, '#60a830', '#60a830', 220);
+    mgMgLabel.scale.set(7, 2, 1);
+    mgMgLabel.position.copy(mgMgLabelPos);
     mgMgLabel.userData.labelPriority = 1;
     this.groups.metals.add(mgMgLabel);
+    this.groups.metals.add(this._leaderLine(mgMgLabelPos, mgMgMid, PAL.magnesium));
 
     const catRes = [
       { l:'D640', pos:asp.clone().add(new THREE.Vector3(-1.2,0.8,-0.5)), mg:mgApos },
@@ -558,14 +560,17 @@ export class POLEViewer {
         this.groups.metals.add(this._stick(end,o,0xc03030,0.03));
         this.groups.metals.add(this._dash(o,res.mg,0x888888));
       }
-      // Asp–Mg distance label
+      // Asp–Mg distance label — pushed away from center
       const distVal = res.pos.distanceTo(res.mg) / SCALE;
       const distMid = res.pos.clone().add(res.mg).multiplyScalar(0.5);
-      const dLabel = this._spriteLabel(`${res.l}: ${distVal.toFixed(1)} \u00c5`, '#888888', '#888888', 180);
-      dLabel.scale.set(5, 1.3, 1);
-      dLabel.position.copy(distMid.clone().add(new THREE.Vector3(0, 0.8, 0)));
+      const outDir = res.pos.clone().sub(asp).normalize();
+      const dLabelPos = distMid.clone().add(outDir.multiplyScalar(6)).add(new THREE.Vector3(0, 4, 0));
+      const dLabel = this._spriteLabel(`${res.l}: ${distVal.toFixed(1)} \u00c5`, '#aaaaaa', '#888888', 200);
+      dLabel.scale.set(6, 1.8, 1);
+      dLabel.position.copy(dLabelPos);
       dLabel.userData.labelPriority = 0;
       this.groups.metals.add(dLabel);
+      this.groups.metals.add(this._leaderLine(dLabelPos, distMid, new THREE.Color(0x888888)));
     }
 
     const dBase = asp.clone().add(new THREE.Vector3(1.8,0.8,-0.6));
@@ -623,12 +628,15 @@ export class POLEViewer {
       this.groups.dntp.add(line);
     }
 
-    // W-C base pair label
-    const wcLabel = this._spriteLabel('W\u2013C base pair', '#88aacc', '#88aacc', 200);
-    wcLabel.scale.set(6, 1.5, 1);
-    wcLabel.position.copy(baseC.clone().add(new THREE.Vector3(1.5, 0.7, 0)));
+    // W-C base pair label — pushed out from model center
+    const wcAnchor = baseC.clone().add(new THREE.Vector3(0, 0.7, 0));
+    const wcLabelPos = wcAnchor.clone().add(new THREE.Vector3(8, 6, -6));
+    const wcLabel = this._spriteLabel('W\u2013C base pair', '#88aacc', '#88aacc', 220);
+    wcLabel.scale.set(7, 2, 1);
+    wcLabel.position.copy(wcLabelPos);
     wcLabel.userData.labelPriority = 1;
     this.groups.dntp.add(wcLabel);
+    this.groups.dntp.add(this._leaderLine(wcLabelPos, wcAnchor, new THREE.Color(0x88aacc)));
 
     this.groups.dntp.userData = { name:'Incoming dNTP',
       detail:'Templated nucleotide \u00b7 \u03b2,\u03b3-phosphates \u2192 Metal B' };
@@ -708,12 +716,15 @@ export class POLEViewer {
         this.groups.zincMotifs.add(this._stick(sPos, caPos, 0x707070, 0.025));
       }
 
-      // Label
-      const label = this._spriteLabel(site.name, '#d0d8e0', '#7799aa', 240);
-      label.scale.set(8, 2, 1);
-      label.position.copy(znPos.clone().add(new THREE.Vector3(0, 2.5, 0)));
+      // Label — pushed away from model
+      const labelPos = znPos.clone().add(new THREE.Vector3(
+        site.offset[0] > 0 ? 4 : -4, 6, site.offset[2] > 0 ? 3 : -3));
+      const label = this._spriteLabel(site.name, '#d0d8e0', '#7799aa', 260);
+      label.scale.set(9, 2.5, 1);
+      label.position.copy(labelPos);
       label.userData.labelPriority = 2;
       this.groups.zincMotifs.add(label);
+      this.groups.zincMotifs.add(this._leaderLine(labelPos, znPos, new THREE.Color(0x7799aa)));
     }
 
     // Bridging dash between the two Zn sites
@@ -796,12 +807,14 @@ export class POLEViewer {
       }
     }
 
-    // Label
-    const label = this._spriteLabel('EXO SITE \u00b7 2\u00d7 Mg\u00b2\u207a', '#d0d8e0', '#b85c5c', 280);
-    label.scale.set(10, 2.5, 1);
-    label.position.copy(exoCenter.clone().add(new THREE.Vector3(0, 4, 1)));
+    // Label — pushed away from model
+    const exoLabelPos = exoCenter.clone().add(new THREE.Vector3(-8, 16, 8));
+    const label = this._spriteLabel('EXO SITE \u00b7 2\u00d7 Mg\u00b2\u207a', '#d0d8e0', '#b85c5c', 300);
+    label.scale.set(11, 3, 1);
+    label.position.copy(exoLabelPos);
     label.userData.labelPriority = 2;
     this.groups.exoSite.add(label);
+    this.groups.exoSite.add(this._leaderLine(exoLabelPos, exoCenter, PAL.exo));
   }
 
   // ==================== ACCESSORY SUBUNITS ====================
@@ -843,12 +856,15 @@ export class POLEViewer {
       wire.position.copy(pos);
       this.groups.accessory.add(wire);
 
-      // Label
-      const label = this._spriteLabel(sub.name, '#d0d8e0', '#' + new THREE.Color(sub.color).getHexString(), 220);
-      label.scale.set(8, 2, 1);
-      label.position.copy(pos.clone().add(new THREE.Vector3(0, sub.radius + 1.5, 0)));
+      // Label — pushed away from model
+      const subLabelPos = pos.clone().add(new THREE.Vector3(
+        sub.offset[0] > 9 ? 4 : -3, sub.radius + 5, sub.offset[2] > 0 ? 3 : -3));
+      const label = this._spriteLabel(sub.name, '#d0d8e0', '#' + new THREE.Color(sub.color).getHexString(), 240);
+      label.scale.set(9, 2.5, 1);
+      label.position.copy(subLabelPos);
       label.userData.labelPriority = 2;
       this.groups.accessory.add(label);
+      this.groups.accessory.add(this._leaderLine(subLabelPos, pos, new THREE.Color(sub.color)));
 
       // Dashed line from CTD center to subunit
       this.groups.accessory.add(this._dash(ctdCenter, pos, sub.color));
@@ -911,18 +927,22 @@ export class POLEViewer {
     }
 
     // PIP-box interface label
-    const pipLabel = this._spriteLabel('PIP-box interface', '#7abba8', '#7abba8', 220);
-    pipLabel.scale.set(7, 1.8, 1);
-    pipLabel.position.copy(pcnaPos.clone().add(new THREE.Vector3(-4, -2, 0)));
+    const pipLabelPos = pcnaPos.clone().add(new THREE.Vector3(-7, -5, 3));
+    const pipLabel = this._spriteLabel('PIP-box interface', '#7abba8', '#7abba8', 240);
+    pipLabel.scale.set(9, 2.5, 1);
+    pipLabel.position.copy(pipLabelPos);
     pipLabel.userData.labelPriority = 1;
     this.groups.pcna.add(pipLabel);
+    this.groups.pcna.add(this._leaderLine(pipLabelPos, pcnaPos, new THREE.Color(0x7abba8)));
 
     // Main label
-    const mainLabel = this._spriteLabel('PCNA sliding clamp', '#d0d8e0', '#7abba8', 260);
-    mainLabel.scale.set(9, 2.2, 1);
-    mainLabel.position.copy(pcnaPos.clone().add(new THREE.Vector3(0, 6, 0)));
+    const mainLabelPos = pcnaPos.clone().add(new THREE.Vector3(0, 10, 0));
+    const mainLabel = this._spriteLabel('PCNA sliding clamp', '#d0d8e0', '#7abba8', 280);
+    mainLabel.scale.set(11, 3, 1);
+    mainLabel.position.copy(mainLabelPos);
     mainLabel.userData.labelPriority = 2;
     this.groups.pcna.add(mainLabel);
+    this.groups.pcna.add(this._leaderLine(mainLabelPos, pcnaPos, new THREE.Color(0x7abba8)));
 
     // Dashed line from thumb center to PCNA
     this.groups.pcna.add(this._dash(thumbCenter, pcnaPos, 0x7abba8));
@@ -962,53 +982,89 @@ export class POLEViewer {
     this.groups.labels = new THREE.Group();
     this.scene.add(this.groups.labels);
 
+    // Stagger labels radially outward and high above the model
+    const labelOffsets = {
+      ntd:     { dx: -8, dy: 16, dz: -6 },
+      exo:     { dx: -8, dy: 16, dz:  8 },
+      palm:    { dx:-12, dy: 22, dz:-10 },
+      fingers: { dx: 10, dy: 20, dz:  8 },
+      thumb:   { dx:-10, dy:-16, dz: 14 },
+      ctd:     { dx:  8, dy: 16, dz: -6 },
+    };
+
     for (const key of DOMAIN_ORDER) {
       const dom = DOMAINS[key];
       const col = PAL[dom.color];
       const hex = '#'+col.getHexString();
+      const off = labelOffsets[key];
+      const anchor = new THREE.Vector3(...dom.center);
+      const labelPos = anchor.clone().add(new THREE.Vector3(off.dx, off.dy, off.dz));
 
       // Domain abbreviated label — high priority
       const label = this._spriteLabel(dom.abbrev, '#d0d8e0', hex);
-      label.position.set(dom.center[0], dom.center[1]+5.5, dom.center[2]);
+      label.position.copy(labelPos);
       label.userData.labelPriority = 3;
       this.groups.labels.add(label);
 
-      // Domain header comment — low priority (hidden when overlapping)
+      // Leader line from label down to domain center
+      this.groups.labels.add(this._leaderLine(labelPos, anchor, col));
+
+      // Domain header comment — positioned above the abbreviation
       const header = this._spriteLabel(
         `// ${dom.abbrev} (${dom.range[0]}-${dom.range[1]})`,
-        hex, hex, 280
+        hex, hex, 320
       );
-      header.scale.set(9, 2, 1);
-      header.position.set(dom.center[0], dom.center[1]+7.5, dom.center[2]);
+      header.scale.set(10, 2.5, 1);
+      header.position.copy(labelPos.clone().add(new THREE.Vector3(0, 3.2, 0)));
       header.userData.labelPriority = 1;
       this.groups.labels.add(header);
     }
 
+    const asAnchor = this.activeSitePos.clone();
+    const asPos = asAnchor.clone().add(new THREE.Vector3(-10, 20, -10));
     const asLabel = this._spriteLabel('ACTIVE SITE \u00b7 2\u00d7 Mg\u00b2\u207a', '#d0d8e0',
       '#'+PAL.magnesium.getHexString());
-    asLabel.scale.set(10,2.5,1);
-    asLabel.position.copy(this.activeSitePos.clone().add(new THREE.Vector3(0,3.5,0)));
+    asLabel.scale.set(12,3,1);
+    asLabel.position.copy(asPos);
     asLabel.userData.labelPriority = 3;
     this.groups.labels.add(asLabel);
+    this.groups.labels.add(this._leaderLine(asPos, asAnchor, PAL.magnesium));
 
+    const proofAnchor = new THREE.Vector3(-10, 2, 7);
+    const proofPos = proofAnchor.clone().add(new THREE.Vector3(-8, 18, 8));
     const proofLabel = this._spriteLabel('PROOFREADING \u00b7 ExoI/II/III', '#d0d8e0', '#b85c5c');
-    proofLabel.scale.set(10,2.5,1);
-    proofLabel.position.set(-10,-5,7);
+    proofLabel.scale.set(12,3,1);
+    proofLabel.position.copy(proofPos);
     proofLabel.userData.labelPriority = 2;
     this.groups.labels.add(proofLabel);
+    this.groups.labels.add(this._leaderLine(proofPos, proofAnchor, PAL.exo));
 
     const annotations = [
-      { text:'D640xD642 (Motif A)', pos:[0,-1,0], offset:[0,-5,4], color:'#6b8e6b' },
-      { text:'D860 (Motif C)', pos:[0,-1,0], offset:[4,3,0], color:'#6b8e6b' },
-      { text:'O-helix', pos:[7,5,4], offset:[0,7,0], color:'#5b7f99' },
+      { text:'D640xD642 (Motif A)', pos:[0,-1,0], offset:[-12,-14,10], color:'#6b8e6b' },
+      { text:'D860 (Motif C)', pos:[0,-1,0], offset:[12,-14,-8], color:'#6b8e6b' },
+      { text:'O-helix', pos:[7,5,4], offset:[8,16,6], color:'#5b7f99' },
     ];
     for (const a of annotations) {
-      const lbl = this._spriteLabel(a.text, a.color, a.color, 260);
-      lbl.scale.set(8,2,1);
-      lbl.position.set(a.pos[0]+a.offset[0], a.pos[1]+a.offset[1], a.pos[2]+a.offset[2]);
+      const anchor = new THREE.Vector3(...a.pos);
+      const lPos = anchor.clone().add(new THREE.Vector3(...a.offset));
+      const lbl = this._spriteLabel(a.text, a.color, a.color, 280);
+      lbl.scale.set(9,2.5,1);
+      lbl.position.copy(lPos);
       lbl.userData.labelPriority = 1;
       this.groups.labels.add(lbl);
+      this.groups.labels.add(this._leaderLine(lPos, anchor, new THREE.Color(a.color)));
     }
+  }
+
+  _leaderLine(from, to, color) {
+    const geo = new THREE.BufferGeometry().setFromPoints([from, to]);
+    const mat = new THREE.LineDashedMaterial({
+      color, dashSize: 0.3, gapSize: 0.2,
+      transparent: true, opacity: 0.25
+    });
+    const line = new THREE.Line(geo, mat);
+    line.computeLineDistances();
+    return line;
   }
 
   _spriteLabel(text, textColor, accentColor, width) {
@@ -1084,8 +1140,8 @@ export class POLEViewer {
 
     // Check overlap — each label occupies a screen-space rect
     const placed = [];
-    const LABEL_W = 90; // approximate half-width in pixels
-    const LABEL_H = 20; // approximate half-height in pixels
+    const LABEL_W = 130; // approximate half-width in pixels
+    const LABEL_H = 35; // approximate half-height in pixels
 
     for (const p of projected) {
       // Behind camera — hide
@@ -1265,13 +1321,23 @@ export class POLEViewer {
   _setupControls() {
     const el = this.renderer.domElement;
     this._shiftDown = false;
+    this._pointerDownPos = { x: 0, y: 0 };
     el.addEventListener('pointerdown', e => {
       if (this.measureMode) { this._handleMeasureClick(e); return; }
       this.isDragging=true;
       this._shiftDown = e.shiftKey || e.button === 1;
       this.prevMouse={x:e.clientX,y:e.clientY};
+      this._pointerDownPos = { x: e.clientX, y: e.clientY };
     });
     window.addEventListener('pointerup', () => { this.isDragging=false; this._shiftDown=false; });
+    el.addEventListener('click', e => {
+      if (this.measureMode) return;
+      // Only treat as click if pointer didn't move (not a drag)
+      const dx = e.clientX - this._pointerDownPos.x;
+      const dy = e.clientY - this._pointerDownPos.y;
+      if (dx * dx + dy * dy > 25) return;
+      this._handleDomainClick(e);
+    });
     window.addEventListener('pointermove', e => {
       if (!this.isDragging) return;
       const dx = e.clientX-this.prevMouse.x;
@@ -1413,6 +1479,52 @@ export class POLEViewer {
     this.renderer.domElement.style.cursor = this.measureMode ? 'crosshair' : (this.isDragging?'grabbing':'grab');
   }
 
+  // ==================== CLICK-TO-SELECT DOMAIN ====================
+
+  _handleDomainClick(e) {
+    const rect = this.renderer.domElement.getBoundingClientRect();
+    const ndc = new THREE.Vector2(
+      ((e.clientX - rect.left) / rect.width) * 2 - 1,
+      -((e.clientY - rect.top) / rect.height) * 2 + 1);
+    this.raycaster.setFromCamera(ndc, this.camera);
+
+    // Raycast against all ribbon meshes (they have domainKey in userData)
+    const targets = [];
+    this.groups.protein.traverse(o => {
+      if (o.isMesh && (o.userData.domain || o.userData.domainKey)) targets.push(o);
+    });
+    const hits = this.raycaster.intersectObjects(targets);
+
+    if (hits.length) {
+      let obj = hits[0].object;
+      const domainKey = obj.userData.domainKey || obj.userData.domain;
+      if (domainKey) {
+        const alreadySelected = (this._highlightedDomain === domainKey);
+        if (alreadySelected) {
+          // Deselect and zoom back out
+          this.highlightDomain(domainKey, false);
+          this.resetView();
+        } else {
+          // Select this domain and zoom in
+          this.highlightDomain(domainKey, true);
+          this.focusDomain(domainKey);
+        }
+        // Notify external listener (sidebar sync)
+        if (this.onDomainSelect) {
+          this.onDomainSelect(alreadySelected ? null : domainKey);
+        }
+        return;
+      }
+    }
+
+    // Clicked empty space — deselect and zoom back out
+    if (this._highlightedDomain) {
+      this.highlightDomain(this._highlightedDomain, false);
+      this.resetView();
+      if (this.onDomainSelect) this.onDomainSelect(null);
+    }
+  }
+
   // ==================== DISTANCE MEASUREMENT ====================
 
   _handleMeasureClick(e) {
@@ -1543,15 +1655,36 @@ export class POLEViewer {
     const g = this.groups[map[name]]; if (g) g.visible=on;
   }
 
-  highlightDomain(key,active) {
-    const d = this.domainMeshes[key]; if (!d) return;
-    if (d.ribbons) {
+  highlightDomain(key, active) {
+    this._highlightedDomain = active ? key : null;
+
+    for (const dk of DOMAIN_ORDER) {
+      const d = this.domainMeshes[dk];
+      if (!d?.ribbons) continue;
+
+      const isSelected = (dk === key && active);
+      const hasSelection = active; // some domain is selected
+
       for (const mesh of d.ribbons) {
-        if (active) {
-          mesh.material.emissiveIntensity = 0.4;
+        if (isSelected) {
+          // Highlighted domain: bright glow
+          mesh.material.emissiveIntensity = 0.55;
+          mesh.material.opacity = 1.0;
+          mesh.material.transparent = false;
+        } else if (hasSelection) {
+          // Other domains: dim and transparent
+          mesh.material.emissiveIntensity = 0.02;
+          mesh.material.opacity = 0.15;
+          mesh.material.transparent = true;
+          mesh.material.depthWrite = false;
         } else {
+          // No selection: restore defaults
           mesh.material.emissiveIntensity = this.colorMode === 'default' ? 0.10 : 0.12;
+          mesh.material.opacity = 1.0;
+          mesh.material.transparent = false;
+          mesh.material.depthWrite = true;
         }
+        mesh.material.needsUpdate = true;
       }
     }
   }
@@ -1700,7 +1833,7 @@ export class POLEViewer {
           mesh.material.opacity = 0.08;
         } else {
           mesh.material.color.copy(PAL[DOMAINS[dk].color]);
-          mesh.material.opacity = 0.035;
+          mesh.material.opacity = 0.09;
         }
       });
     }

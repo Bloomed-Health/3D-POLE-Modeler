@@ -167,6 +167,34 @@ header {
   line-height: 1;
 }
 
+/* Sidebar close button (hidden on desktop, visible on mobile) */
+.sidebar-close {
+  display: none;
+  position: sticky;
+  top: 0;
+  z-index: 60;
+  width: 100%;
+  background: rgba(8, 11, 17, 0.95);
+  border: none;
+  border-bottom: 1px solid var(--line-2);
+  color: var(--ink);
+  font-size: 28px;
+  padding: 10px 16px;
+  cursor: pointer;
+  text-align: right;
+  line-height: 1;
+}
+.sidebar-close:active { color: var(--accent); }
+
+/* Backdrop overlay behind open sidebars (mobile) */
+.sidebar-backdrop {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  z-index: 40;
+}
+
 /* ---- Side panels ---- */
 
 aside {
@@ -867,6 +895,8 @@ footer .ax b { color: var(--ink); font-weight: 500; }
   #app { grid-template-columns: 1fr; }
 
   .sidebar-toggle { display: block; }
+  .sidebar-close { display: block; }
+  .sidebar-backdrop.open { display: block; }
 
   .header-meta { display: none; }
 
