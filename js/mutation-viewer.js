@@ -1,5 +1,5 @@
 // ==========================================================================
-// POLE c.138del (p.Leu46Phefs*8) — Mutation-Specific 3D Visualization
+// POLE c.138del (p.Leu46Phefs*8) -Mutation-Specific 3D Visualization
 // Cartoon Ribbon Representation
 //
 // Biological context:
@@ -38,9 +38,9 @@ const PAL = {
   bg:       0x080b11,
 };
 
-// ==================== SEQUENCE DATA ====================
+// ==================== SEQUENCE DATA (defaults, overridden by pipeline JSON) ====================
 
-const WT_CODONS = [
+let WT_CODONS = [
   { codon: 'GAG', aa: 'Glu', pos: 43 }, { codon: 'AGC', aa: 'Ser', pos: 44 },
   { codon: 'TCC', aa: 'Ser', pos: 45 }, { codon: 'CTG', aa: 'Leu', pos: 46 },
   { codon: 'GAG', aa: 'Glu', pos: 47 }, { codon: 'TTG', aa: 'Leu', pos: 48 },
@@ -49,7 +49,7 @@ const WT_CODONS = [
   { codon: 'CCT', aa: 'Pro', pos: 53 }, { codon: 'TAG', aa: '*',   pos: 54 },
 ];
 
-const MUT_CODONS = [
+let MUT_CODONS = [
   { codon: 'GAG', aa: 'Glu', pos: 43, status: 'normal' },
   { codon: 'AGC', aa: 'Ser', pos: 44, status: 'normal' },
   { codon: 'TCC', aa: 'Ser', pos: 45, status: 'normal' },
@@ -64,7 +64,7 @@ const MUT_CODONS = [
   { codon: 'TAG', aa: '*',   pos: 54, status: 'stop' },
 ];
 
-const DOMAINS = [
+let DOMAINS = [
   { key: 'ntd',     label: 'NTD',                         start: 1,    end: 280,  color: PAL.ntd },
   { key: 'exo',     label: "3\u2032\u21925\u2032 Exonuclease", start: 268,  end: 471,  color: PAL.exo },
   { key: 'palm',    label: 'Palm',                         start: 600,  end: 870,  color: PAL.palm },
@@ -73,8 +73,36 @@ const DOMAINS = [
   { key: 'ctd',     label: 'CTD',                          start: 1900, end: 2286, color: PAL.ctd },
 ];
 
-const TOTAL_RESIDUES = 2286;
-const TRUNCATION_SITE = 54;
+let TOTAL_RESIDUES = 2286;
+let TRUNCATION_SITE = 54;
+
+// ==================== PIPELINE DATA LOADER ====================
+
+/**
+ * Load frameshift mutation data from pipeline JSON.
+ * Falls back to hardcoded defaults on failure.
+ */
+export async function loadMutationPipelineData(basePath = './data') {
+  try {
+    const resp = await fetch(`${basePath}/pole_mutations.json`);
+    if (!resp.ok) throw new Error(resp.status);
+    const data = await resp.json();
+
+    if (data?.frameshift) {
+      const fs = data.frameshift;
+      if (fs.wt_codons) WT_CODONS = fs.wt_codons;
+      if (fs.mut_codons) MUT_CODONS = fs.mut_codons;
+      if (fs.truncation_site) TRUNCATION_SITE = fs.truncation_site;
+      if (fs.total_residues) TOTAL_RESIDUES = fs.total_residues;
+    }
+
+    console.info('[POLEPipeline] Mutation viewer data loaded');
+    return data;
+  } catch (e) {
+    console.warn('[POLEPipeline] Mutation data not available, using defaults:', e.message);
+    return null;
+  }
+}
 
 // ==================== UTILITIES ====================
 
@@ -260,7 +288,7 @@ export class MutationViewer {
     this.prevMouse = { x: 0, y: 0 };
     this.cameraTheta = -0.4;
     this.cameraPhi = 0.2;
-    this.cameraRadius = 60;
+    this.cameraRadius = 95;
     this.mode = 'comparison';
     this.cameraTarget = new THREE.Vector3(0, 0, 0);
     this.groups = {};
@@ -651,7 +679,7 @@ export class MutationViewer {
     });
     el.addEventListener('wheel', (e) => {
       e.preventDefault();
-      this.cameraRadius = Math.max(20, Math.min(120, this.cameraRadius + e.deltaY * 0.04));
+      this.cameraRadius = Math.max(20, Math.min(200, this.cameraRadius + e.deltaY * 0.04));
       this._updateCamera();
     }, { passive: false });
     el.style.cursor = 'grab';
@@ -689,7 +717,7 @@ export class MutationViewer {
           e.touches[0].clientX - e.touches[1].clientX,
           e.touches[0].clientY - e.touches[1].clientY);
         const delta = lastPinchDist - dist;
-        this.cameraRadius = Math.max(20, Math.min(120, this.cameraRadius + delta * 0.1));
+        this.cameraRadius = Math.max(20, Math.min(200, this.cameraRadius + delta * 0.1));
         lastPinchDist = dist;
 
         // Two-finger pan

@@ -69,6 +69,16 @@
         <span class="range">PALM</span>
       </div>
 
+      <div class="domain" data-domain="pdomain">
+        <div class="swatch" style="background:var(--c-pdomain)"></div>
+        <div>
+          <div class="name">Processivity (P) domain</div>
+          <div class="range">res. 700&ndash;760</div>
+          <div class="desc">Houses the [4Fe-4S] iron-sulfur cluster (CysX motif) essential for polymerase activity. Provides one of three contact surfaces with the PCNA sliding clamp.</div>
+        </div>
+        <span class="range">P-DOM</span>
+      </div>
+
       <div class="domain" data-domain="fingers">
         <div class="swatch" style="background:var(--c-fingers)"></div>
         <div>
@@ -87,6 +97,16 @@
           <div class="desc">Helical bundle that grips the minor groove of the nascent duplex DNA product, providing processivity along the leading strand. Contacts extend ~8 bp into the product duplex.</div>
         </div>
         <span class="range">THM</span>
+      </div>
+
+      <div class="domain" data-domain="inactpol">
+        <div class="swatch" style="background:var(--c-inactpol)"></div>
+        <div>
+          <div class="name">Inactive Pol module</div>
+          <div class="range">res. 1198&ndash;1900</div>
+          <div class="desc">Non-catalytic polymerase fold that has lost enzymatic activity but serves as the structural scaffold bridging the catalytic NTD to the CTD. Provides the platform for accessory subunit assembly.</div>
+        </div>
+        <span class="range">INACT</span>
       </div>
 
       <div class="domain" data-domain="ctd">
@@ -108,14 +128,15 @@
       <div class="toggle on" data-toggle="labels"><span class="label">Domain labels</span><div class="switch"></div></div>
       <div class="toggle on" data-toggle="mutations"><span class="label">Mutation hotspots</span><div class="switch"></div></div>
       <div class="toggle on" data-toggle="rotate"><span class="label">Auto-rotate</span><div class="switch"></div></div>
-      <div class="toggle" data-toggle="surface"><span class="label">Molecular envelope</span><div class="switch"></div></div>
-      <div class="toggle" data-toggle="hbonds"><span class="label">H-bonds (i&rarr;i+4)</span><div class="switch"></div></div>
-      <div class="toggle" data-toggle="sheetHbonds"><span class="label">&beta;-sheet H-bonds</span><div class="switch"></div></div>
+      <div class="toggle on" data-toggle="surface"><span class="label">Molecular envelope</span><div class="switch"></div></div>
+      <div class="toggle on" data-toggle="hbonds"><span class="label">H-bonds (i&rarr;i+4)</span><div class="switch"></div></div>
+      <div class="toggle on" data-toggle="sheetHbonds"><span class="label">&beta;-sheet H-bonds</span><div class="switch"></div></div>
       <div class="toggle on" data-toggle="zincMotifs"><span class="label">Zn-finger motifs</span><div class="switch"></div></div>
+      <div class="toggle on" data-toggle="fesCluster"><span class="label">[4Fe-4S] cluster</span><div class="switch"></div></div>
       <div class="toggle on" data-toggle="exoSite"><span class="label">Exonuclease active site</span><div class="switch"></div></div>
-      <div class="toggle" data-toggle="accessory"><span class="label">Accessory subunits</span><div class="switch"></div></div>
-      <div class="toggle" data-toggle="pcna"><span class="label">PCNA sliding clamp</span><div class="switch"></div></div>
-      <div class="toggle" data-toggle="exoPolPath"><span class="label">Exo&harr;Pol shuttling</span><div class="switch"></div></div>
+      <div class="toggle on" data-toggle="accessory"><span class="label">Accessory subunits</span><div class="switch"></div></div>
+      <div class="toggle on" data-toggle="pcna"><span class="label">PCNA sliding clamp</span><div class="switch"></div></div>
+      <div class="toggle on" data-toggle="exoPolPath"><span class="label">Exo&harr;Pol shuttling</span><div class="switch"></div></div>
     </div>
 
     <div class="panel">
@@ -287,7 +308,7 @@
     <h3>Keyboard shortcuts</h3>
     <div class="shortcut-grid">
       <div class="shortcut"><kbd>R</kbd><span>Toggle auto-rotate</span></div>
-      <div class="shortcut"><kbd>1</kbd>&ndash;<kbd>6</kbd><span>Focus domain (NTD&hellip;CTD)</span></div>
+      <div class="shortcut"><kbd>1</kbd>&ndash;<kbd>8</kbd><span>Focus domain (NTD&hellip;CTD)</span></div>
       <div class="shortcut"><kbd>S</kbd><span>Export screenshot (PNG)</span></div>
       <div class="shortcut"><kbd>M</kbd><span>Toggle distance measure</span></div>
       <div class="shortcut"><kbd>H</kbd><span>Toggle H-bonds</span></div>
@@ -315,7 +336,7 @@
 </script>
 
 <script type="module">
-import { POLEViewer } from './js/pole-viewer.js';
+import { POLEViewer, loadPipelineData } from './js/pole-viewer.js';
 
 // Loading progress
 const progressFill = document.getElementById('progress-fill');
@@ -325,7 +346,12 @@ function setProgress(pct, text) {
   if (text) loadingText.textContent = text;
 }
 
-setProgress(10, 'Initializing WebGL renderer\u2026');
+setProgress(10, 'Loading pipeline data\u2026');
+
+// Load pipeline JSON data (non-blocking; falls back to hardcoded defaults)
+await loadPipelineData('./data').catch(() => null);
+
+setProgress(20, 'Initializing WebGL renderer\u2026');
 
 // Initialize viewer
 const container = document.getElementById('canvas-container');
@@ -343,7 +369,7 @@ viewer.setFPSCallback(fps => { fpsEl.textContent = fps + ' FPS'; });
 // ---- UI Wiring ----
 
 // Domain legend → highlight + focus on click
-const domainKeys = ['ntd','exo','palm','fingers','thumb','ctd'];
+const domainKeys = ['ntd','exo','palm','pdomain','fingers','thumb','inactpol','ctd'];
 const domainEls = document.querySelectorAll('.domain');
 
 function syncDomainUI(selectedKey) {
@@ -473,7 +499,7 @@ document.addEventListener('keydown', e => {
       rotateBtn.style.borderColor = isOn ? 'var(--accent)' : 'var(--line-2)';
       break;
     }
-    case '1': case '2': case '3': case '4': case '5': case '6': {
+    case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': {
       const idx = parseInt(e.key) - 1;
       if (idx < domainKeys.length) {
         viewer.highlightDomain(domainKeys[idx], true);

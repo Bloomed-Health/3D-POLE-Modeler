@@ -1,0 +1,36 @@
+name = "POLEPipeline"
+uuid = "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+authors = ["Charlie C"]
+version = "0.1.0"
+
+[deps]
+BioStructures = "de9282ab-8554-53be-b2d6-f6c222edabfc"
+BioSequences = "7e6ae17a-c86d-528c-b3b9-7f778a29fe59"
+FASTX = "c2308a5c-f048-11e8-3e8a-31650f418d12"
+JSON3 = "0f8b85d8-7281-11e9-16c2-39a750bddbf1"
+NMF = "75838964-e09f-11e8-23e5-e526dd1556d8"
+NonNegLeastSquares = "b8a86587-4115-5ab1-83bc-aa920d37bbce"
+Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
+LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
+SHA = "ea8e919c-243c-51af-8825-aaa63cd721ce"
+Downloads = "f43a241f-c20a-4ad4-852c-f6b1247861c6"
+OrderedCollections = "bac558e1-5e72-5ebc-8fee-abe8a469f55d"
+Dates = "ade2ca70-3891-5945-98fb-dc099432e06a"
+Printf = "de0858da-6303-5e67-8744-51eddeeeb8d7"
+
+[compat]
+julia = "1.10"
+BioStructures = "4"
+BioSequences = "3"
+FASTX = "2"
+JSON3 = "1"
+NMF = "1"
+NonNegLeastSquares = "0.4"
+SHA = "0.7"
+Downloads = "1"
+
+[extras]
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[targets]
+test = ["Test"]

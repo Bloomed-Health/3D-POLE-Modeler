@@ -1,8 +1,8 @@
 // ==========================================================================
-// POLE p261 — 3D Structural Viewer
+// POLE p261 -3D Structural Viewer
 // Cartoon Ribbon Representation
 //
-// The protein fold is rendered as cartoon ribbons — helices as wide flat
+// The protein fold is rendered as cartoon ribbons -helices as wide flat
 // spirals, strands as flat arrows with arrowheads, loops as thin tubes.
 // DNA template/primer rendered as backbone tubes with base-pair rungs.
 //
@@ -22,8 +22,10 @@ const PAL = {
   ntd:      new THREE.Color(0xc4a47a),
   exo:      new THREE.Color(0xb85c5c),
   palm:     new THREE.Color(0x6b8e6b),
+  pdomain:  new THREE.Color(0x4a8a7a),
   fingers:  new THREE.Color(0x5b7f99),
   thumb:    new THREE.Color(0x8b7ba8),
+  inactpol: new THREE.Color(0x7a6a8a),
   ctd:      new THREE.Color(0xb8a04a),
   linker:   new THREE.Color(0x464040),
 
@@ -46,22 +48,30 @@ const PAL = {
 // ==================== COLOR SCHEMES ====================
 
 const COLOR_SCHEMES = {
-  default:    { ntd:0xc4a47a, exo:0xb85c5c, palm:0x6b8e6b, fingers:0x5b7f99, thumb:0x8b7ba8, ctd:0xb8a04a },
-  pymol:      { ntd:0x33cc33, exo:0xff4444, palm:0x3366ff, fingers:0xff66cc, thumb:0x00cccc, ctd:0xffcc00 },
-  colorblind: { ntd:0xe69f00, exo:0x0072b2, palm:0x009e73, fingers:0xcc79a7, thumb:0x56b4e9, ctd:0xf0e442 },
+  default:    { ntd:0xc4a47a, exo:0xb85c5c, palm:0x6b8e6b, pdomain:0x4a8a7a, fingers:0x5b7f99, thumb:0x8b7ba8, inactpol:0x7a6a8a, ctd:0xb8a04a },
+  pymol:      { ntd:0x33cc33, exo:0xff4444, palm:0x3366ff, pdomain:0x00aa88, fingers:0xff66cc, thumb:0x00cccc, inactpol:0xaa66ff, ctd:0xffcc00 },
+  colorblind: { ntd:0xe69f00, exo:0x0072b2, palm:0x009e73, pdomain:0x44aa99, fingers:0xcc79a7, thumb:0x56b4e9, inactpol:0xaa4499, ctd:0xf0e442 },
 };
 
+// ==================== PIPELINE DATA (defaults, overridden by JSON) ====================
+
 // B-factor pseudo-values by SS type (0=rigid, 1=flexible)
-const BFACTOR_MAP = { H: 0.2, E: 0.5, L: 0.9 };
+let BFACTOR_MAP = { H: 0.2, E: 0.5, L: 0.9 };
 
 // Conservation pseudo-scores by domain (0=variable, 1=conserved)
-const CONSERVATION = { ntd:0.3, exo:0.85, palm:0.95, fingers:0.7, thumb:0.6, ctd:0.4 };
+let CONSERVATION = { ntd:0.3, exo:0.85, palm:0.95, pdomain:0.8, fingers:0.7, thumb:0.6, inactpol:0.35, ctd:0.4 };
 
 // Variant density pseudo-scores by domain (COSMIC/ClinVar)
-const VARIANT_DENSITY = { ntd:0.1, exo:0.95, palm:0.3, fingers:0.15, thumb:0.1, ctd:0.05 };
+let VARIANT_DENSITY = { ntd:0.1, exo:0.95, palm:0.3, pdomain:0.15, fingers:0.15, thumb:0.1, inactpol:0.05, ctd:0.05 };
+
+// Per-residue scoring arrays (populated from pipeline JSON when available)
+let PER_RESIDUE_SCORES = null;  // { bfactor:[], conservation:[], variant_density:[], pathogenicity:[], electrostatic_charge:[] }
+
+// Mutation data with pipeline annotations (populated from JSON when available)
+let PIPELINE_MUTATIONS = null;  // Full mutation data with signatures, classification, DDG
 
 // Pathogenicity spectrum per-domain: residue-range → score (0=benign, 1=pathogenic)
-const PATHOGENICITY = {
+let PATHOGENICITY = {
   ntd: [ { start:1, end:280, score:0.15 } ],
   exo: [
     { start:268, end:280, score:0.3 },
@@ -82,8 +92,10 @@ const PATHOGENICITY = {
     { start:860, end:860, score:0.8 },   // catalytic D860
     { start:861, end:870, score:0.2 },
   ],
+  pdomain: [ { start:700, end:760, score:0.2 } ],
   fingers: [ { start:870, end:1020, score:0.15 } ],
   thumb:   [ { start:1020, end:1190, score:0.1 } ],
+  inactpol:[ { start:1198, end:1900, score:0.05 } ],
   ctd:     [ { start:1900, end:2286, score:0.05 } ],
 };
 
@@ -112,35 +124,119 @@ const SCALE = 0.5;
 
 const DOMAINS = {
   ntd: { center:[-18,8,-5], range:[1,280], name:'N-terminal domain', abbrev:'NTD', color:'ntd',
-    header:'// ─── NTD (1-280) ──────────────────\n// Structural scaffold',
+    header:'// NTD (1-280) // Structural scaffold',
     ss:[ {t:'H',n:14},{t:'L',n:6},{t:'E',n:7},{t:'L',n:4},{t:'E',n:6},{t:'L',n:5},{t:'H',n:18},{t:'L',n:5},{t:'E',n:8},{t:'L',n:4},{t:'E',n:7},{t:'L',n:6},{t:'H',n:12},{t:'L',n:8},{t:'H',n:10},{t:'L',n:5},{t:'E',n:6},{t:'L',n:4},{t:'H',n:16},{t:'L',n:7},{t:'H',n:10},{t:'L',n:8},{t:'E',n:5},{t:'L',n:6},{t:'H',n:8},{t:'L',n:9} ] },
   exo: { center:[-10,2,7], range:[268,471], name:"3\u2032\u21925\u2032 Exonuclease", abbrev:'EXO', color:'exo',
-    header:"// ─── EXO (268-471) ─────────────────\n// 3'→5' proofreading · D275/E277/D368/D370",
+    header:"// EXO (268-471) // 3'\u21925' proofreading / D275/E277/D368/D370",
     ss:[ {t:'E',n:6},{t:'L',n:4},{t:'H',n:14},{t:'L',n:5},{t:'E',n:7},{t:'L',n:3},{t:'E',n:6},{t:'H',n:12},{t:'L',n:6},{t:'H',n:16},{t:'L',n:4},{t:'E',n:8},{t:'L',n:5},{t:'H',n:10},{t:'L',n:6},{t:'E',n:7},{t:'L',n:3},{t:'H',n:14},{t:'L',n:5},{t:'H',n:8},{t:'L',n:6},{t:'E',n:6},{t:'L',n:4},{t:'H',n:10},{t:'L',n:4} ] },
   palm: { center:[0,-1,0], range:[600,870], name:'Palm subdomain', abbrev:'PALM', color:'palm',
-    header:'// ─── PALM (600-870) ─────────────────\n// Catalytic core · motifs A(D640xD642) C(D860)',
+    header:'// PALM (600-870) // Catalytic core / motifs A(D640xD642) C(D860)',
     ss:[ {t:'E',n:8},{t:'L',n:3},{t:'E',n:7},{t:'L',n:5},{t:'H',n:12},{t:'L',n:4},{t:'E',n:9},{t:'L',n:3},{t:'E',n:7},{t:'L',n:6},{t:'H',n:10},{t:'L',n:4},{t:'E',n:8},{t:'L',n:5},{t:'E',n:6},{t:'L',n:3},{t:'H',n:14},{t:'L',n:5},{t:'E',n:7},{t:'L',n:4},{t:'H',n:8},{t:'L',n:6},{t:'E',n:9},{t:'L',n:3},{t:'E',n:7},{t:'L',n:5},{t:'H',n:12},{t:'L',n:4} ] },
+  pdomain: { center:[4,1,-3], range:[700,760], name:'Processivity (P) domain', abbrev:'P-DOM', color:'pdomain',
+    header:'// P-DOM (700-760) // [4Fe-4S] cluster / PCNA contact',
+    ss:[ {t:'H',n:12},{t:'L',n:4},{t:'H',n:10},{t:'L',n:5},{t:'E',n:6},{t:'L',n:3},{t:'H',n:8},{t:'L',n:4} ] },
   fingers: { center:[7,5,4], range:[870,1020], name:'Fingers subdomain', abbrev:'FNG', color:'fingers',
-    header:'// ─── FINGERS (870-1020) ──────────────\n// O-helix · Watson–Crick fidelity gate',
+    header:'// FNG (870-1020) // O-helix / Watson-Crick fidelity gate',
     ss:[ {t:'H',n:20},{t:'L',n:4},{t:'H',n:16},{t:'L',n:6},{t:'H',n:22},{t:'L',n:5},{t:'H',n:14},{t:'L',n:4},{t:'H',n:12},{t:'L',n:5},{t:'H',n:10},{t:'L',n:6},{t:'H',n:8},{t:'L',n:4} ] },
   thumb: { center:[3,-9,7], range:[1020,1190], name:'Thumb subdomain', abbrev:'THM', color:'thumb',
-    header:'// ─── THUMB (1020-1190) ───────────────\n// Helical bundle · grips duplex DNA',
+    header:'// THM (1020-1190) // Helical bundle / grips duplex DNA',
     ss:[ {t:'H',n:18},{t:'L',n:4},{t:'H',n:22},{t:'L',n:5},{t:'H',n:16},{t:'L',n:6},{t:'H',n:20},{t:'L',n:4},{t:'H',n:14},{t:'L',n:5},{t:'H',n:12},{t:'L',n:6},{t:'H',n:10},{t:'L',n:4} ] },
+  inactpol: { center:[10,-4,1], range:[1198,1900], name:'Inactive Pol module', abbrev:'INACT', color:'inactpol',
+    header:'// INACT (1198-1900) // Non-catalytic Pol fold / subunit scaffold',
+    ss:[ {t:'H',n:14},{t:'L',n:6},{t:'E',n:7},{t:'L',n:4},{t:'H',n:10},{t:'L',n:5},{t:'E',n:6},{t:'L',n:4},{t:'H',n:12},{t:'L',n:6},{t:'E',n:8},{t:'L',n:3},{t:'H',n:8},{t:'L',n:5},{t:'E',n:7},{t:'L',n:4},{t:'H',n:10},{t:'L',n:6},{t:'E',n:6},{t:'L',n:4},{t:'H',n:14},{t:'L',n:5},{t:'E',n:5},{t:'L',n:4},{t:'H',n:8},{t:'L',n:6} ] },
   ctd: { center:[16,1,-5], range:[1900,2286], name:'C-terminal domain', abbrev:'CTD', color:'ctd',
-    header:'// ─── CTD (1900-2286) ────────────────\n// CysA/CysB Zn-finger · POLE2/3/4 anchor',
+    header:'// CTD (1900-2286) // CysA/CysB Zn-finger / POLE2/3/4 anchor',
     ss:[ {t:'H',n:10},{t:'L',n:6},{t:'E',n:5},{t:'L',n:4},{t:'E',n:6},{t:'L',n:3},{t:'H',n:14},{t:'L',n:5},{t:'E',n:7},{t:'L',n:4},{t:'E',n:5},{t:'L',n:6},{t:'H',n:12},{t:'L',n:4},{t:'E',n:6},{t:'L',n:5},{t:'H',n:10},{t:'L',n:8},{t:'E',n:5},{t:'L',n:4},{t:'H',n:8},{t:'L',n:6},{t:'E',n:7},{t:'L',n:3},{t:'H',n:12},{t:'L',n:5},{t:'E',n:6},{t:'L',n:4},{t:'H',n:10},{t:'L',n:7},{t:'E',n:5},{t:'L',n:5},{t:'H',n:14},{t:'L',n:6} ] },
 };
 
-const DOMAIN_ORDER = ['ntd','exo','palm','fingers','thumb','ctd'];
+const DOMAIN_ORDER = ['ntd','exo','palm','pdomain','fingers','thumb','inactpol','ctd'];
 
-const MUTATIONS = [
+let MUTATIONS = [
   { id:'P286R', residue:286, domain:'exo', offset:[2.5,1.2,2.0],
-    label:'Pro286\u2192Arg', detail:'Ultra-mutator \u00b7 ExoII motif \u00b7 CRC & endometrial' },
+    label:'Pro286\u2192Arg', detail:'Somatic ultra-mutator / ExoII motif / CRC & endometrial / SBS10a/b' },
   { id:'V411L', residue:411, domain:'exo', offset:[-2.8,-0.5,1.8],
-    label:'Val411\u2192Leu', detail:'Proofreading-deficient \u00b7 TMB >100 mut/Mb' },
+    label:'Val411\u2192Leu', detail:'Somatic proofreading-deficient / TMB >100 mut/Mb / SBS10a' },
   { id:'S297F', residue:297, domain:'exo', offset:[0.5,2.8,-1.2],
-    label:'Ser297\u2192Phe', detail:'Germline ExoI \u00b7 PPAP predisposition' },
+    label:'Ser297\u2192Phe', detail:'Germline ExoI / PPAP predisposition / SBS28' },
+  { id:'L424V', residue:424, domain:'exo', offset:[-1.5,2.0,2.5],
+    label:'Leu424\u2192Val', detail:'Germline ExoIII / PPAP-associated / Mur 2023' },
+  { id:'D287E', residue:287, domain:'exo', offset:[3.0,-1.0,1.0],
+    label:'Asp287\u2192Glu', detail:'Somatic ExoII adjacent / CRC / SBS10b' },
+  { id:'P436R', residue:436, domain:'exo', offset:[-2.0,1.5,-1.5],
+    label:'Pro436\u2192Arg', detail:'Somatic ExoIII / endometrial / SBS10a' },
+  { id:'M444K', residue:444, domain:'exo', offset:[1.0,-2.0,2.5],
+    label:'Met444\u2192Lys', detail:'Somatic / ExoIII motif / CRC / SBS10b' },
+  { id:'S459F', residue:459, domain:'exo', offset:[-3.0,0.5,-0.5],
+    label:'Ser459\u2192Phe', detail:'Germline / PPAP-associated / Valle 2023' },
 ];
+
+// ==================== PIPELINE DATA LOADER ====================
+
+/**
+ * Load pipeline-generated JSON data. Falls back to hardcoded defaults on failure.
+ * Call before instantiating POLEViewer for pipeline-enhanced data.
+ */
+export async function loadPipelineData(basePath = './data') {
+  try {
+    const [structure, scores, mutations] = await Promise.all([
+      fetch(`${basePath}/pole_structure.json`).then(r => { if (!r.ok) throw new Error(r.status); return r.json(); }),
+      fetch(`${basePath}/pole_scores.json`).then(r => { if (!r.ok) throw new Error(r.status); return r.json(); }),
+      fetch(`${basePath}/pole_mutations.json`).then(r => { if (!r.ok) throw new Error(r.status); return r.json(); }),
+    ]);
+
+    // Apply structure data
+    if (structure?.domains) {
+      for (const [key, data] of Object.entries(structure.domains)) {
+        if (DOMAINS[key]) {
+          if (data.center) DOMAINS[key].center = data.center;
+          if (data.range) DOMAINS[key].range = data.range;
+          if (data.ss && data.ss.length > 0) DOMAINS[key].ss = data.ss;
+        }
+      }
+    }
+    if (structure?.bfactor_map) {
+      BFACTOR_MAP = { ...BFACTOR_MAP, ...structure.bfactor_map };
+    }
+
+    // Apply per-residue scores
+    if (scores?.per_residue) {
+      PER_RESIDUE_SCORES = scores.per_residue;
+    }
+    if (scores?.per_domain) {
+      if (scores.per_domain.conservation) {
+        CONSERVATION = { ...CONSERVATION, ...scores.per_domain.conservation };
+      }
+      if (scores.per_domain.variant_density) {
+        VARIANT_DENSITY = { ...VARIANT_DENSITY, ...scores.per_domain.variant_density };
+      }
+      if (scores.per_domain.electrostatic_charge) {
+        // Store for electrostatic mode
+        CONSERVATION._charge = scores.per_domain.electrostatic_charge;
+      }
+    }
+
+    // Apply mutation data
+    if (mutations?.mutations) {
+      PIPELINE_MUTATIONS = mutations.mutations;
+      // Enrich existing MUTATIONS array with pipeline data
+      for (const pm of mutations.mutations) {
+        const existing = MUTATIONS.find(m => m.id === pm.id);
+        if (existing) {
+          existing.pathogenicity_score = pm.pathogenicity_score;
+          existing.ddg = pm.ddg_kcal_mol;
+          existing.signature = pm.signature_attribution;
+          existing.classification = pm.classification;
+        }
+      }
+    }
+
+    console.info('[POLEPipeline] Loaded pipeline data successfully');
+    return { structure, scores, mutations };
+  } catch (e) {
+    console.warn('[POLEPipeline] Pipeline data not available, using defaults:', e.message);
+    return null;
+  }
+}
 
 
 // ==================== BACKBONE GENERATION ====================
@@ -244,7 +340,7 @@ export class POLEViewer {
     this.prevMouse = { x:0, y:0 };
     this.cameraTheta = -0.3;
     this.cameraPhi = 0.15;
-    this.cameraRadius = 55;
+    this.cameraRadius = 95;
     this.hoverTarget = null;
     this.groups = {};
     this.domainMeshes = {};
@@ -276,6 +372,7 @@ export class POLEViewer {
     this._buildDNA();
     this._buildActiveSite();
     this._buildZincMotifs();
+    this._buildFeSCluster();
     this._buildExoSite();
     this._buildAccessorySubunits();
     this._buildPCNA();
@@ -331,7 +428,7 @@ export class POLEViewer {
   _buildProtein() {
     this.groups.protein = new THREE.Group();
     this.groups.surface = new THREE.Group();
-    this.groups.surface.visible = false;
+    this.groups.surface.visible = true;
     this.scene.add(this.groups.protein);
     this.groups.protein.add(this.groups.surface);
 
@@ -532,7 +629,7 @@ export class POLEViewer {
     }
     this.groups.metals.add(this._dash(mgApos,mgBpos,0x60a830));
 
-    // Mg–Mg distance label
+    // Mg-Mg distance label
     const mgMgMid = mgApos.clone().add(mgBpos).multiplyScalar(0.5);
     const mgMgDist = mgApos.distanceTo(mgBpos) / SCALE;
     const mgMgLabelPos = mgMgMid.clone().add(new THREE.Vector3(6, -8, 6));
@@ -560,7 +657,7 @@ export class POLEViewer {
         this.groups.metals.add(this._stick(end,o,0xc03030,0.03));
         this.groups.metals.add(this._dash(o,res.mg,0x888888));
       }
-      // Asp–Mg distance label — pushed away from center
+      // Asp-Mg distance label -pushed away from center
       const distVal = res.pos.distanceTo(res.mg) / SCALE;
       const distMid = res.pos.clone().add(res.mg).multiplyScalar(0.5);
       const outDir = res.pos.clone().sub(asp).normalize();
@@ -628,7 +725,7 @@ export class POLEViewer {
       this.groups.dntp.add(line);
     }
 
-    // W-C base pair label — pushed out from model center
+    // W-C base pair label -pushed out from model center
     const wcAnchor = baseC.clone().add(new THREE.Vector3(0, 0.7, 0));
     const wcLabelPos = wcAnchor.clone().add(new THREE.Vector3(8, 6, -6));
     const wcLabel = this._spriteLabel('W\u2013C base pair', '#88aacc', '#88aacc', 220);
@@ -716,7 +813,7 @@ export class POLEViewer {
         this.groups.zincMotifs.add(this._stick(sPos, caPos, 0x707070, 0.025));
       }
 
-      // Label — pushed away from model
+      // Label -pushed away from model
       const labelPos = znPos.clone().add(new THREE.Vector3(
         site.offset[0] > 0 ? 4 : -4, 6, site.offset[2] > 0 ? 3 : -3));
       const label = this._spriteLabel(site.name, '#d0d8e0', '#7799aa', 260);
@@ -731,6 +828,88 @@ export class POLEViewer {
     if (znPositions.length === 2) {
       this.groups.zincMotifs.add(this._dash(znPositions[0], znPositions[1], 0x7799aa));
     }
+  }
+
+  // ==================== [4Fe-4S] CLUSTER (P DOMAIN) ====================
+
+  _buildFeSCluster() {
+    this.groups.fesCluster = new THREE.Group();
+    this.scene.add(this.groups.fesCluster);
+
+    const pCenter = new THREE.Vector3(...DOMAINS.pdomain.center);
+    const clusterPos = pCenter.clone().add(new THREE.Vector3(0.5, 0.8, -0.5));
+
+    // Cubane [4Fe-4S] core: alternating Fe and S at cube vertices
+    const cubeR = 0.55 * SCALE;
+    const fePositions = [
+      clusterPos.clone().add(new THREE.Vector3( cubeR,  cubeR,  cubeR)),
+      clusterPos.clone().add(new THREE.Vector3(-cubeR, -cubeR,  cubeR)),
+      clusterPos.clone().add(new THREE.Vector3(-cubeR,  cubeR, -cubeR)),
+      clusterPos.clone().add(new THREE.Vector3( cubeR, -cubeR, -cubeR)),
+    ];
+    const sPositions = [
+      clusterPos.clone().add(new THREE.Vector3(-cubeR,  cubeR,  cubeR)),
+      clusterPos.clone().add(new THREE.Vector3( cubeR, -cubeR,  cubeR)),
+      clusterPos.clone().add(new THREE.Vector3( cubeR,  cubeR, -cubeR)),
+      clusterPos.clone().add(new THREE.Vector3(-cubeR, -cubeR, -cubeR)),
+    ];
+
+    // Fe atoms (rust-orange)
+    for (let i = 0; i < 4; i++) {
+      const fe = new THREE.Mesh(
+        new THREE.SphereGeometry(0.2, 12, 12),
+        new THREE.MeshPhysicalMaterial({
+          color: 0xcc6633, roughness: 0.3, metalness: 0.8,
+          emissive: 0xcc6633, emissiveIntensity: 0.4
+        })
+      );
+      fe.position.copy(fePositions[i]);
+      fe.userData = { name: `Fe${i+1} ([4Fe-4S])`, detail: 'Iron-sulfur cluster / CysX motif' };
+      this.groups.fesCluster.add(fe);
+    }
+
+    // Inorganic S atoms (yellow)
+    for (let i = 0; i < 4; i++) {
+      const s = new THREE.Mesh(
+        new THREE.SphereGeometry(0.18, 12, 12),
+        new THREE.MeshPhysicalMaterial({
+          color: 0xcccc33, roughness: 0.4, metalness: 0.5,
+          emissive: 0xcccc33, emissiveIntensity: 0.3
+        })
+      );
+      s.position.copy(sPositions[i]);
+      this.groups.fesCluster.add(s);
+    }
+
+    // Fe-S bonds within cubane
+    for (const feP of fePositions) {
+      for (const sP of sPositions) {
+        if (feP.distanceTo(sP) < cubeR * 2.2) {
+          this.groups.fesCluster.add(this._stick(feP, sP, 0x888866, 0.03));
+        }
+      }
+    }
+
+    // 4 coordinating cysteine sulfurs (CysX motif)
+    const cysDirs = [[1.2,0.5,0],[-0.3,1.2,0.8],[0.5,-0.3,1.2],[-1.0,-0.8,-0.3]];
+    for (let i = 0; i < 4; i++) {
+      const cysS = fePositions[i].clone().add(
+        new THREE.Vector3(cysDirs[i][0], cysDirs[i][1], cysDirs[i][2]).normalize().multiplyScalar(1.2 * SCALE)
+      );
+      const atom = this._atom(0xcccc33, 0.12);
+      atom.position.copy(cysS);
+      this.groups.fesCluster.add(atom);
+      this.groups.fesCluster.add(this._stick(fePositions[i], cysS, 0xcccc33, 0.025));
+    }
+
+    // Label
+    const labelPos = clusterPos.clone().add(new THREE.Vector3(6, 14, -6));
+    const label = this._spriteLabel('[4Fe-4S] cluster', '#d0d8e0', '#cc6633', 240);
+    label.scale.set(10, 2.8, 1);
+    label.position.copy(labelPos);
+    label.userData.labelPriority = 2;
+    this.groups.fesCluster.add(label);
+    this.groups.fesCluster.add(this._leaderLine(labelPos, clusterPos, new THREE.Color(0xcc6633)));
   }
 
   // ==================== EXONUCLEASE ACTIVE SITE ====================
@@ -807,7 +986,7 @@ export class POLEViewer {
       }
     }
 
-    // Label — pushed away from model
+    // Label -pushed away from model
     const exoLabelPos = exoCenter.clone().add(new THREE.Vector3(-8, 16, 8));
     const label = this._spriteLabel('EXO SITE \u00b7 2\u00d7 Mg\u00b2\u207a', '#d0d8e0', '#b85c5c', 300);
     label.scale.set(11, 3, 1);
@@ -821,7 +1000,7 @@ export class POLEViewer {
 
   _buildAccessorySubunits() {
     this.groups.accessory = new THREE.Group();
-    this.groups.accessory.visible = false;
+    this.groups.accessory.visible = true;
     this.scene.add(this.groups.accessory);
 
     const ctdCenter = new THREE.Vector3(...DOMAINS.ctd.center);
@@ -856,7 +1035,7 @@ export class POLEViewer {
       wire.position.copy(pos);
       this.groups.accessory.add(wire);
 
-      // Label — pushed away from model
+      // Label -pushed away from model
       const subLabelPos = pos.clone().add(new THREE.Vector3(
         sub.offset[0] > 9 ? 4 : -3, sub.radius + 5, sub.offset[2] > 0 ? 3 : -3));
       const label = this._spriteLabel(sub.name, '#d0d8e0', '#' + new THREE.Color(sub.color).getHexString(), 240);
@@ -875,7 +1054,7 @@ export class POLEViewer {
 
   _buildPCNA() {
     this.groups.pcna = new THREE.Group();
-    this.groups.pcna.visible = false;
+    this.groups.pcna.visible = true;
     this.scene.add(this.groups.pcna);
 
     const thumbCenter = new THREE.Vector3(...DOMAINS.thumb.center);
@@ -926,14 +1105,21 @@ export class POLEViewer {
       this.groups.pcna.add(marker);
     }
 
-    // PIP-box interface label
-    const pipLabelPos = pcnaPos.clone().add(new THREE.Vector3(-7, -5, 3));
-    const pipLabel = this._spriteLabel('PIP-box interface', '#7abba8', '#7abba8', 240);
-    pipLabel.scale.set(9, 2.5, 1);
-    pipLabel.position.copy(pipLabelPos);
-    pipLabel.userData.labelPriority = 1;
-    this.groups.pcna.add(pipLabel);
-    this.groups.pcna.add(this._leaderLine(pipLabelPos, pcnaPos, new THREE.Color(0x7abba8)));
+    // Tripartite interface labels
+    const triLabels = [
+      { text:'PIP-box interface', offset:[-7, -5, 3] },
+      { text:'Thumb insertion', offset:[5, -4, -5] },
+      { text:'P-domain contact', offset:[-5, 4, -6] },
+    ];
+    for (const tl of triLabels) {
+      const tlPos = pcnaPos.clone().add(new THREE.Vector3(...tl.offset));
+      const tlLabel = this._spriteLabel(tl.text, '#7abba8', '#7abba8', 240);
+      tlLabel.scale.set(9, 2.5, 1);
+      tlLabel.position.copy(tlPos);
+      tlLabel.userData.labelPriority = 1;
+      this.groups.pcna.add(tlLabel);
+      this.groups.pcna.add(this._leaderLine(tlPos, pcnaPos, new THREE.Color(0x7abba8)));
+    }
 
     // Main label
     const mainLabelPos = pcnaPos.clone().add(new THREE.Vector3(0, 10, 0));
@@ -970,7 +1156,19 @@ export class POLEViewer {
         new THREE.MeshBasicMaterial({ color:PAL.mutMarker, transparent:true, opacity:0.1, depthWrite:false }));
       g.add(halo);
       g.position.copy(pos);
-      g.userData = { halo, ring, name:mut.label, detail:mut.detail, mut:mut.id, pulseBoost:0 };
+      // Enrich tooltip detail with pipeline data (signatures, classification, DDG)
+      let enrichedDetail = mut.detail;
+      if (mut.classification) {
+        enrichedDetail += ` / ${mut.classification.acmg_class} (P=${mut.classification.posterior})`;
+      }
+      if (mut.ddg !== undefined) {
+        enrichedDetail += ` / \u0394\u0394G=${mut.ddg} kcal/mol`;
+      }
+      if (mut.signature) {
+        const topSig = Object.entries(mut.signature).sort((a,b) => b[1]-a[1])[0];
+        if (topSig) enrichedDetail += ` / ${topSig[0]}:${(topSig[1]*100).toFixed(0)}%`;
+      }
+      g.userData = { halo, ring, name:mut.label, detail:enrichedDetail, mut:mut.id, pulseBoost:0 };
       this.groups.mutations.add(g);
       this.mutMarkers[mut.id] = g;
     }
@@ -987,8 +1185,10 @@ export class POLEViewer {
       ntd:     { dx: -8, dy: 16, dz: -6 },
       exo:     { dx: -8, dy: 16, dz:  8 },
       palm:    { dx:-12, dy: 22, dz:-10 },
+      pdomain: { dx:  6, dy: 18, dz: -8 },
       fingers: { dx: 10, dy: 20, dz:  8 },
       thumb:   { dx:-10, dy:-16, dz: 14 },
+      inactpol:{ dx: 14, dy: 14, dz:  4 },
       ctd:     { dx:  8, dy: 16, dz: -6 },
     };
 
@@ -1000,7 +1200,7 @@ export class POLEViewer {
       const anchor = new THREE.Vector3(...dom.center);
       const labelPos = anchor.clone().add(new THREE.Vector3(off.dx, off.dy, off.dz));
 
-      // Domain abbreviated label — high priority
+      // Domain abbreviated label -high priority
       const label = this._spriteLabel(dom.abbrev, '#d0d8e0', hex);
       label.position.copy(labelPos);
       label.userData.labelPriority = 3;
@@ -1009,7 +1209,7 @@ export class POLEViewer {
       // Leader line from label down to domain center
       this.groups.labels.add(this._leaderLine(labelPos, anchor, col));
 
-      // Domain header comment — positioned above the abbreviation
+      // Domain header comment -positioned above the abbreviation
       const header = this._spriteLabel(
         `// ${dom.abbrev} (${dom.range[0]}-${dom.range[1]})`,
         hex, hex, 320
@@ -1106,7 +1306,7 @@ export class POLEViewer {
       if (s.isSprite) labels.push(s);
     });
     // Also include labels from other visible groups
-    for (const gk of ['exoPolPath', 'zincMotifs', 'exoSite', 'accessory', 'pcna']) {
+    for (const gk of ['exoPolPath', 'zincMotifs', 'fesCluster', 'exoSite', 'accessory', 'pcna']) {
       if (this.groups[gk] && this.groups[gk].visible) {
         this.groups[gk].children.forEach(s => {
           if (s.isSprite) labels.push(s);
@@ -1138,13 +1338,13 @@ export class POLEViewer {
     // Sort: highest priority first, then closest to camera (lower z)
     projected.sort((a, b) => b.priority - a.priority || a.z - b.z);
 
-    // Check overlap — each label occupies a screen-space rect
+    // Check overlap -each label occupies a screen-space rect
     const placed = [];
     const LABEL_W = 130; // approximate half-width in pixels
     const LABEL_H = 35; // approximate half-height in pixels
 
     for (const p of projected) {
-      // Behind camera — hide
+      // Behind camera -hide
       if (p.z > 1 || p.z < -1) {
         p.sprite.material.opacity = 0;
         p.sprite.visible = false;
@@ -1177,7 +1377,7 @@ export class POLEViewer {
 
   _buildHydrogenBonds() {
     this.groups.hbonds = new THREE.Group();
-    this.groups.hbonds.visible = false;
+    this.groups.hbonds.visible = true;
     this.scene.add(this.groups.hbonds);
 
     for (const key of DOMAIN_ORDER) {
@@ -1204,7 +1404,7 @@ export class POLEViewer {
 
   _buildBetaSheetHBonds() {
     this.groups.sheetHbonds = new THREE.Group();
-    this.groups.sheetHbonds.visible = false;
+    this.groups.sheetHbonds.visible = true;
     this.scene.add(this.groups.sheetHbonds);
 
     for (const key of DOMAIN_ORDER) {
@@ -1255,7 +1455,7 @@ export class POLEViewer {
 
   _buildExoPolPath() {
     this.groups.exoPolPath = new THREE.Group();
-    this.groups.exoPolPath.visible = false;
+    this.groups.exoPolPath.visible = true;
     this.scene.add(this.groups.exoPolPath);
 
     const exoCenter = new THREE.Vector3(...DOMAINS.exo.center);
@@ -1360,7 +1560,7 @@ export class POLEViewer {
     });
     el.addEventListener('wheel', e => {
       e.preventDefault();
-      this.cameraRadius = Math.max(25,Math.min(140,this.cameraRadius+e.deltaY*0.04));
+      this.cameraRadius = Math.max(25,Math.min(200,this.cameraRadius+e.deltaY*0.04));
       this._updateCamera();
     }, {passive:false});
 
@@ -1408,7 +1608,7 @@ export class POLEViewer {
           e.touches[0].clientX - e.touches[1].clientX,
           e.touches[0].clientY - e.touches[1].clientY);
         const delta = lastPinchDist - dist;
-        this.cameraRadius = Math.max(25, Math.min(140, this.cameraRadius + delta * 0.1));
+        this.cameraRadius = Math.max(25, Math.min(200, this.cameraRadius + delta * 0.1));
         lastPinchDist = dist;
 
         // Two-finger pan
@@ -1455,7 +1655,7 @@ export class POLEViewer {
     this.groups.protein.traverse(o => { if (o.isMesh&&o.userData.domain) targets.push(o); });
     this.groups.metals.traverse(o => { if (o.isMesh&&o.userData.name) targets.push(o); });
     this.groups.mutations.traverse(o => { if (o.isGroup&&o.userData.name) targets.push(o); });
-    for (const gk of ['exoSite','zincMotifs','accessory','pcna']) {
+    for (const gk of ['exoSite','zincMotifs','fesCluster','accessory','pcna']) {
       if (this.groups[gk] && this.groups[gk].visible) {
         this.groups[gk].traverse(o => { if (o.isMesh && o.userData.name) targets.push(o); });
       }
@@ -1517,7 +1717,7 @@ export class POLEViewer {
       }
     }
 
-    // Clicked empty space — deselect and zoom back out
+    // Clicked empty space -deselect and zoom back out
     if (this._highlightedDomain) {
       this.highlightDomain(this._highlightedDomain, false);
       this.resetView();
@@ -1648,8 +1848,8 @@ export class POLEViewer {
   setToggle(name,on) {
     const map = { dna:'dna', metals:'metals', dntp:'dntp', labels:'labels',
       mutations:'mutations', surface:'surface', hbonds:'hbonds', exoPolPath:'exoPolPath',
-      sheetHbonds:'sheetHbonds', zincMotifs:'zincMotifs', exoSite:'exoSite',
-      accessory:'accessory', pcna:'pcna' };
+      sheetHbonds:'sheetHbonds', zincMotifs:'zincMotifs', fesCluster:'fesCluster',
+      exoSite:'exoSite', accessory:'accessory', pcna:'pcna' };
     if (name==='rotate') { this.autoRotate=on; return; }
     if (name==='exoPolPath') { this.exoPolPlaying=on; }
     const g = this.groups[map[name]]; if (g) g.visible=on;
@@ -1762,25 +1962,69 @@ export class POLEViewer {
 
         switch (mode) {
           case 'bfactor': {
-            const bval = BFACTOR_MAP[ssType] || 0.5;
+            // Use per-residue B-factor from pipeline if available
+            let bval;
+            if (PER_RESIDUE_SCORES?.bfactor && mesh.userData.startIdx !== undefined) {
+              const dom = DOMAINS[key];
+              const bb = this.backboneCache[key];
+              const totalRes = bb ? bb.length : 1;
+              const midIdx = Math.floor((mesh.userData.startIdx + mesh.userData.endIdx) / 2);
+              const residue = dom.range[0] + Math.round((midIdx / Math.max(1, totalRes - 1)) * (dom.range[1] - dom.range[0]));
+              bval = PER_RESIDUE_SCORES.bfactor[residue - 1] ?? BFACTOR_MAP[ssType] ?? 0.5;
+            } else {
+              bval = BFACTOR_MAP[ssType] || 0.5;
+            }
             color = new THREE.Color().setHSL(0.66 - bval * 0.66, 0.8, 0.5);
             break;
           }
           case 'conservation': {
-            const score = CONSERVATION[key] || 0.5;
+            // Use per-residue conservation from pipeline if available
+            let score;
+            if (PER_RESIDUE_SCORES?.conservation && mesh.userData.startIdx !== undefined) {
+              const dom = DOMAINS[key];
+              const bb = this.backboneCache[key];
+              const totalRes = bb ? bb.length : 1;
+              const midIdx = Math.floor((mesh.userData.startIdx + mesh.userData.endIdx) / 2);
+              const residue = dom.range[0] + Math.round((midIdx / Math.max(1, totalRes - 1)) * (dom.range[1] - dom.range[0]));
+              score = PER_RESIDUE_SCORES.conservation[residue - 1] ?? CONSERVATION[key] ?? 0.5;
+            } else {
+              score = CONSERVATION[key] || 0.5;
+            }
             color = new THREE.Color().lerpColors(
               new THREE.Color(0x2288cc), new THREE.Color(0x8822aa), score);
             break;
           }
           case 'heatmap': {
-            const density = VARIANT_DENSITY[key] || 0.1;
+            // Use per-residue variant density from pipeline if available
+            let density;
+            if (PER_RESIDUE_SCORES?.variant_density && mesh.userData.startIdx !== undefined) {
+              const dom = DOMAINS[key];
+              const bb = this.backboneCache[key];
+              const totalRes = bb ? bb.length : 1;
+              const midIdx = Math.floor((mesh.userData.startIdx + mesh.userData.endIdx) / 2);
+              const residue = dom.range[0] + Math.round((midIdx / Math.max(1, totalRes - 1)) * (dom.range[1] - dom.range[0]));
+              density = PER_RESIDUE_SCORES.variant_density[residue - 1] ?? VARIANT_DENSITY[key] ?? 0.1;
+            } else {
+              density = VARIANT_DENSITY[key] || 0.1;
+            }
             color = new THREE.Color().lerpColors(
               new THREE.Color(0x2244aa), new THREE.Color(0xff2200), density);
             break;
           }
           case 'electrostatic': {
-            const charges = { ntd:0, exo:-0.3, palm:-0.8, fingers:0.5, thumb:0.6, ctd:0.2 };
-            const charge = charges[key] || 0;
+            // Use per-residue charge from pipeline if available
+            let charge;
+            if (PER_RESIDUE_SCORES?.electrostatic_charge && mesh.userData.startIdx !== undefined) {
+              const dom = DOMAINS[key];
+              const bb = this.backboneCache[key];
+              const totalRes = bb ? bb.length : 1;
+              const midIdx = Math.floor((mesh.userData.startIdx + mesh.userData.endIdx) / 2);
+              const residue = dom.range[0] + Math.round((midIdx / Math.max(1, totalRes - 1)) * (dom.range[1] - dom.range[0]));
+              charge = PER_RESIDUE_SCORES.electrostatic_charge[residue - 1] ?? 0;
+            } else {
+              const charges = { ntd:0, exo:-0.3, palm:-0.8, pdomain:-0.2, fingers:0.5, thumb:0.6, inactpol:0.1, ctd:0.2 };
+              charge = charges[key] || 0;
+            }
             if (charge >= 0) color = new THREE.Color().lerpColors(
               new THREE.Color(0xffffff), new THREE.Color(0x2244ff), charge);
             else color = new THREE.Color().lerpColors(
@@ -1792,14 +2036,20 @@ export class POLEViewer {
             const totalRes = bb ? bb.length : 1;
             const midIdx = mesh.userData.startIdx !== undefined
               ? Math.floor((mesh.userData.startIdx + mesh.userData.endIdx) / 2) : 0;
-            const score = getPathogenicityScore(key, midIdx, totalRes);
+            // Use per-residue pathogenicity from pipeline if available
+            let score;
+            if (PER_RESIDUE_SCORES?.pathogenicity) {
+              const dom = DOMAINS[key];
+              const residue = dom.range[0] + Math.round((midIdx / Math.max(1, totalRes - 1)) * (dom.range[1] - dom.range[0]));
+              score = PER_RESIDUE_SCORES.pathogenicity[residue - 1] ?? getPathogenicityScore(key, midIdx, totalRes);
+            } else {
+              score = getPathogenicityScore(key, midIdx, totalRes);
+            }
             if (score <= 0.5) {
-              // Benign: blue-green → white
               const t = score / 0.5;
               color = new THREE.Color().lerpColors(
                 new THREE.Color(0x228888), new THREE.Color(0xeeeeee), t);
             } else {
-              // Pathogenic: white → red
               const t = (score - 0.5) / 0.5;
               color = new THREE.Color().lerpColors(
                 new THREE.Color(0xeeeeee), new THREE.Color(0xcc2222), t);
@@ -1822,8 +2072,10 @@ export class POLEViewer {
         const dk = mesh.userData.surfaceDomain;
         if (!dk) return;
         if (mode === 'electrostatic') {
-          const charges = { ntd:0, exo:-0.3, palm:-0.8, fingers:0.5, thumb:0.6, ctd:0.2 };
-          const charge = charges[dk] || 0;
+          // Use per-domain charge from pipeline or fallback
+          const chargesFallback = { ntd:0, exo:-0.3, palm:-0.8, pdomain:-0.2, fingers:0.5, thumb:0.6, inactpol:0.1, ctd:0.2 };
+          const domCharges = (PER_RESIDUE_SCORES && CONSERVATION._charge) || chargesFallback;
+          const charge = domCharges[dk] ?? chargesFallback[dk] ?? 0;
           let col;
           if (charge >= 0) col = new THREE.Color().lerpColors(
             new THREE.Color(0xffffff), new THREE.Color(0x2244ff), charge);

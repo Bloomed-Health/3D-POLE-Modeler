@@ -160,7 +160,7 @@
     <div class="panel">
       <h3>Molecular consequence</h3>
       <p style="font-family:'Fraunces',serif;font-size:12.5px;line-height:1.6;color:var(--ink);font-weight:300">
-        This <em style="color:var(--warn)">ultra-rare germline frameshift</em> truncates the POLE catalytic subunit at residue 54 of 2,286 — within the N-terminal domain, long before any catalytic residues are encoded.
+        This <em style="color:var(--warn)">ultra-rare germline frameshift</em> truncates the POLE catalytic subunit at residue 54 of 2,286 -within the N-terminal domain, long before any catalytic residues are encoded.
       </p>
       <p style="font-family:'Fraunces',serif;font-size:12px;line-height:1.6;color:var(--ink-dim);margin-top:10px;font-weight:300">
         The 3D comparison (left: ghost wild-type, right: translated fragment) illustrates the catastrophic structural loss. The small peptide retains none of the protein&rsquo;s enzymatic or structural capabilities.
@@ -226,6 +226,18 @@
       </p>
     </div>
 
+    <div class="panel" style="background:var(--accent-dim);border-bottom:1px solid rgba(122,187,168,0.18)">
+      <h3 style="color:var(--accent)">Clinical interpretation note</h3>
+      <div style="background:rgba(8,11,17,0.55);border:1px solid rgba(122,187,168,0.2);border-left:2px solid var(--accent);border-radius:2px;padding:12px 13px">
+        <p style="font-family:'Fraunces',serif;font-size:12px;line-height:1.6;color:var(--ink);font-weight:300">
+          Truncating <em>POLE</em> variants (including c.138del) are typically classified as <b style="color:var(--accent);font-weight:500">likely benign</b> for polymerase-proofreading-associated polyposis (PPAP). PPAP requires an active but proofreading-deficient polymerase &mdash; a null allele does not generate the ultra-mutator phenotype.
+        </p>
+        <p style="font-family:'JetBrains Mono',monospace;font-size:9.5px;line-height:1.5;color:var(--ink-faint);margin-top:10px;letter-spacing:0.02em">
+          Classification per Mur et al., <em>Genome Med</em> 2023.
+        </p>
+      </div>
+    </div>
+
     <div class="panel">
       <h3>Comparison with known variants</h3>
       <div class="mutation" style="cursor:default">
@@ -278,7 +290,7 @@
 </script>
 
 <script type="module">
-import { MutationViewer } from './js/mutation-viewer.js';
+import { MutationViewer, loadMutationPipelineData } from './js/mutation-viewer.js';
 
 // Loading progress
 const progressFill = document.getElementById('progress-fill');
@@ -287,6 +299,9 @@ function setProgress(pct, text) {
   progressFill.style.width = pct + '%';
   if (text) loadingText.textContent = text;
 }
+
+setProgress(10, 'Loading pipeline data\u2026');
+await loadMutationPipelineData('./data').catch(() => null);
 
 setProgress(20, 'Building molecular models\u2026');
 
