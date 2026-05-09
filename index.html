@@ -74,7 +74,7 @@
         <div>
           <div class="name">Processivity (P) domain</div>
           <div class="range">res. 700&ndash;760</div>
-          <div class="desc">Houses the [4Fe-4S] iron-sulfur cluster (CysX motif) essential for polymerase activity. Provides one of three contact surfaces with the PCNA sliding clamp.</div>
+          <div class="desc">Pol&nbsp;&epsilon;-specific insertion between Palm and Fingers that distinguishes it from all other B-family polymerases. Houses the [4Fe-4S] iron-sulfur cluster (CysX motif) essential for polymerase activity, contacts the nascent duplex, and forms one of three PCNA contact surfaces.</div>
         </div>
         <span class="range">P-DOM</span>
       </div>
@@ -84,7 +84,7 @@
         <div>
           <div class="name">Fingers subdomain</div>
           <div class="range">res. 870&ndash;1020</div>
-          <div class="desc">Predominantly &alpha;-helical region. The O-helix undergoes conformational closure upon dNTP binding, ensuring Watson&ndash;Crick base-pair geometry and templated fidelity. Rate-limiting step for nucleotide incorporation.</div>
+          <div class="desc">Predominantly &alpha;-helical region. The O-helix undergoes a 28&deg;/19&nbsp;&Aring; conformational closure upon dNTP binding (open &rarr; ajar &rarr; closed; PDB 9F6D/9F6E/9F6F), ensuring Watson&ndash;Crick base-pair geometry. Rate-limiting step for nucleotide incorporation and the structural basis of replicative fidelity.</div>
         </div>
         <span class="range">FNG</span>
       </div>
@@ -94,7 +94,7 @@
         <div>
           <div class="name">Thumb subdomain</div>
           <div class="range">res. 1020&ndash;1190</div>
-          <div class="desc">Helical bundle that grips the minor groove of the nascent duplex DNA product, providing processivity along the leading strand. Contacts extend ~8 bp into the product duplex.</div>
+          <div class="desc">Helical bundle that grips the minor groove of the nascent duplex DNA product. Contacts extend ~8&nbsp;bp into the product duplex. The Thumb insertion (res.&nbsp;1102&ndash;1122) forms a second PCNA contact, contributing to the tripartite interface that makes Pol&nbsp;&epsilon;&ndash;PCNA resistant to displacement by Pol&nbsp;&delta; and FEN1.</div>
         </div>
         <span class="range">THM</span>
       </div>
@@ -104,7 +104,7 @@
         <div>
           <div class="name">Inactive Pol module</div>
           <div class="range">res. 1198&ndash;1900</div>
-          <div class="desc">Non-catalytic polymerase fold that has lost enzymatic activity but serves as the structural scaffold bridging the catalytic NTD to the CTD. Provides the platform for accessory subunit assembly.</div>
+          <div class="desc">Non-catalytic B-family polymerase fold (the &ldquo;Pol2 module&rdquo; of Yuan et&nbsp;al. 2020) that retains the canonical Palm/Fingers/Thumb architecture but has lost all enzymatic activity. Serves as the structural platform for POLE2/3/4 accessory subunit assembly and bridges the catalytic N-terminal half to the CTD zinc-finger appendix.</div>
         </div>
         <span class="range">INACT</span>
       </div>
@@ -140,7 +140,7 @@
     </div>
 
     <div class="panel">
-      <h3>Color mode</h3>
+      <h3>Color mode <span class="num" title="Approximate values — see model note below">approx.</span></h3>
       <div class="color-mode-selector" id="color-mode">
         <button class="active" data-mode="default">Domain</button>
         <button data-mode="bfactor">B-factor</button>
@@ -171,10 +171,25 @@
 
     <div class="panel">
       <h3>Navigation</h3>
-      <a href="mutation.html" style="display:block;padding:9px 10px;background:rgba(196,92,92,0.08);border:1px solid rgba(196,92,92,0.2);border-left:2px solid var(--warn);border-radius:2px;text-decoration:none;color:var(--ink);font-size:11px;transition:background .2s">
-        <div style="font-family:'Fraunces',serif;font-size:13px;color:var(--warn);font-weight:500;margin-bottom:3px">c.138del Mutation Viewer</div>
-        <div style="font-size:10px;color:var(--ink-dim)">p.Leu46Phefs*8 &middot; germline frameshift</div>
+      <a href="molstar.html" style="display:block;padding:9px 10px;background:rgba(122,187,168,0.08);border:1px solid rgba(122,187,168,0.2);border-left:2px solid var(--accent);border-radius:2px;text-decoration:none;color:var(--ink);font-size:11px;transition:background .2s;margin-bottom:6px">
+        <div style="font-family:'Fraunces',serif;font-size:13px;color:var(--accent);font-weight:500;margin-bottom:3px">Mol* Coordinate Viewer</div>
+        <div style="font-size:10px;color:var(--ink-dim)">PDB 9F6D &middot; real atomic coordinates &middot; DSSP &middot; B-factors</div>
       </a>
+      <a href="variant.html" style="display:block;padding:9px 10px;background:rgba(155,89,182,0.08);border:1px solid rgba(155,89,182,0.2);border-left:2px solid #9b59b6;border-radius:2px;text-decoration:none;color:var(--ink);font-size:11px;transition:background .2s;margin-bottom:6px">
+        <div style="font-family:'Fraunces',serif;font-size:13px;color:#9b59b6;font-weight:500;margin-bottom:3px">Variant Catalogue</div>
+        <div style="font-size:10px;color:var(--ink-dim)">ACMG classification &middot; SBS signatures &middot; &Delta;&Delta;G</div>
+      </a>
+      <a href="mutation.html" style="display:block;padding:9px 10px;background:rgba(196,92,92,0.08);border:1px solid rgba(196,92,92,0.2);border-left:2px solid var(--warn);border-radius:2px;text-decoration:none;color:var(--ink);font-size:11px;transition:background .2s">
+        <div style="font-family:'Fraunces',serif;font-size:13px;color:var(--warn);font-weight:500;margin-bottom:3px">c.138del Frameshift Viewer</div>
+        <div style="font-size:10px;color:var(--ink-dim)">p.Leu46Phefs*8 &middot; germline truncation analysis</div>
+      </a>
+    </div>
+
+    <div class="panel" style="background:rgba(14,20,30,0.5);border-top:1px solid var(--line)">
+      <h3 style="color:var(--ink-faint);font-size:10px;letter-spacing:0.08em">Model note</h3>
+      <p style="font-family:'Fraunces',serif;font-size:10.5px;line-height:1.55;color:var(--ink-faint);font-weight:300;margin:0">
+        This is a <b style="color:var(--ink-dim)">procedural schematic</b>, not an atomic-coordinate rendering. Ribbon geometry is algorithmically generated to illustrate domain topology. Color modes (B-factor, conservation, charge) display approximate values, not crystallographic or computed data. For coordinate-derived analysis, use the <a href="molstar.html" style="color:var(--accent);text-decoration:none;font-weight:500">Mol* Coordinate Viewer</a> (PDB 9F6D, Roske &amp; Yeeles 2024) or load into <a href="https://molstar.org/" target="_blank" style="color:var(--accent);text-decoration:none">Mol*</a> / PyMOL.
+      </p>
     </div>
   </aside>
 
@@ -241,8 +256,8 @@
         <div class="v mono">POLE2 · POLE3 · POLE4</div>
       </div>
       <div class="info-card">
-        <div class="k">PDB references</div>
-        <div class="v mono" style="font-size:10.5px">4M8O · 6WJV · 8D32</div>
+        <div class="k">PDB structures</div>
+        <div class="v mono" style="font-size:10.5px">9F6D · 9F6E · 9F6F · 9B8S · 4M8O</div>
       </div>
     </div>
 
@@ -252,7 +267,7 @@
         Pol &epsilon; performs <em style="color:var(--accent)">leading-strand synthesis</em> at the eukaryotic replisome, copying the template 3&prime;&rarr;5&prime; while extending the nascent strand 5&prime;&rarr;3&prime; at &gt;50 nt/s. Base-substitution error rate approaches <span style="font-family:'JetBrains Mono',monospace;font-size:10.5px">10&minus;7</span> per nucleotide incorporated.
       </p>
       <p style="font-family:'Fraunces',serif;font-size:12px;line-height:1.55;color:var(--ink-dim);margin-top:8px;font-weight:300">
-        The intrinsic 3&prime;&rarr;5&prime; exonuclease excises misincorporated nucleotides via an intramolecular shuttling mechanism, switching the primer terminus between the polymerase and exonuclease active sites separated by ~30&ndash;40 &Aring;.
+        The intrinsic 3&prime;&rarr;5&prime; exonuclease excises misincorporated nucleotides via an intramolecular shuttling mechanism, switching the primer terminus between the polymerase and exonuclease active sites separated by ~40&nbsp;&Aring; (Roske &amp; Yeeles 2024). The mismatch-recognition pathway proceeds through four structurally resolved states: post-insertion &rarr; arrest &rarr; frayed substrate &rarr; mismatch excision.
       </p>
     </div>
 
@@ -278,10 +293,22 @@
       <div class="mutation" data-mut="S297F">
         <div class="head">
           <div class="name">S297F</div>
-          <div class="loc">EXO · germline / Lynch-like</div>
+          <div class="loc">EXO &middot; germline / Lynch-like</div>
         </div>
         <div class="text">Germline variant in the ExoI motif; predisposes to polymerase-proofreading-associated polyposis (PPAP). Autosomal dominant with variable penetrance for colorectal adenomas.</div>
       </div>
+
+      <div class="mutation" data-mut="F367S">
+        <div class="head">
+          <div class="name">F367S</div>
+          <div class="loc">EXO &middot; germline PPAP</div>
+        </div>
+        <div class="text">Adjacent to ExoIII catalytic residue D368. Germline variant associated with polymerase proofreading-associated polyposis.</div>
+      </div>
+
+      <a href="variant.html" style="display:block;padding:8px 10px;margin-top:8px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--accent);text-decoration:none;text-align:center;border:1px dashed var(--line);border-radius:2px;transition:border-color .2s">
+        View all 9 variants with ACMG classification &rarr;
+      </a>
     </div>
 
     <div class="panel">
@@ -290,13 +317,25 @@
         <b style="color:var(--ink);font-weight:500">Two-metal-ion catalysis:</b> Metal A (Mg²⁺) lowers the p<em>K</em>a of the primer 3&prime;-OH, generating the nucleophile. Metal B (Mg²⁺) coordinates the &beta;,&gamma;-phosphates of the incoming dNTP and stabilizes the pentacoordinate transition state. Both metals are chelated by conserved aspartate carboxylates (D640, D642, D860).
       </p>
     </div>
+
+    <div class="panel" style="border-top:1px solid var(--line)">
+      <h3 style="font-size:10px;color:var(--ink-faint);letter-spacing:0.08em">References</h3>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:9px;line-height:1.65;color:var(--ink-faint)">
+        Roske &amp; Yeeles, <em>NSMB</em> 31:1921 (2024)<br>
+        He et al., <em>Nat Commun</em> 15:7847 (2024)<br>
+        Mur et al., <em>Genome Med</em> 15:85 (2023)<br>
+        Yuan et al., <em>Nat Commun</em> 11:3156 (2020)<br>
+        Coorens et al., <em>Nat Genet</em> 53:1434 (2021)<br>
+        Hogg et al., <em>NSMB</em> 21:49 (2014)
+      </div>
+    </div>
   </aside>
 
   <footer>
     <div class="left">
-      <span class="ax">model · <b>cartoon ribbon + CPK</b></span>
+      <span class="ax">model · <b>procedural schematic</b></span>
       <span class="ax">render · <b>WebGL</b></span>
-      <span class="ax">basis · <b>B-family pol architecture</b></span>
+      <span class="ax">basis · <b>Roske &amp; Yeeles 2024 · 9F6D</b></span>
     </div>
     <div>POLE · 3D STRUCTURAL VIEWER</div>
   </footer>

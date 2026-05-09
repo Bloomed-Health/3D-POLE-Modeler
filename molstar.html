@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>POLE · Mol* Coordinate Viewer · PDB 9F6D</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600&family=JetBrains+Mono:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+
+<!-- Mol* (molstar) CSS and JS from CDN -->
+<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/molstar@4.5.0/build/viewer/molstar.css" />
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/molstar@4.5.0/build/viewer/molstar.js"></script>
+
+<style>
+  /* Mol* with layoutIsExpanded:true uses position:fixed to fill the viewport.
+     Constrain it to #canvas-container instead by forcing position:absolute. */
+  #canvas-container {
+    position: absolute !important;
+    inset: 0 !important;
+    overflow: hidden;
+  }
+  #canvas-container .msp-layout-expanded {
+    position: absolute !important;
+    z-index: auto !important;
+  }
+
+  /* Override the global canvas { width/height: 100% !important } from style.css
+     which conflicts with Mol*'s internal canvas sizing. */
+  #canvas-container canvas {
+    width: unset !important;
+    height: unset !important;
+    max-width: none !important;
+    max-height: none !important;
+  }
+
+  /* Override Mol* defaults for dark theme */
+  .msp-plugin ::-webkit-scrollbar { width: 6px; }
+  .msp-plugin ::-webkit-scrollbar-track { background: var(--bg-1); }
+  .msp-plugin ::-webkit-scrollbar-thumb { background: var(--line-2); border-radius: 3px; }
+
+  /* PDB selector bar */
+  .pdb-selector {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+  }
+  .pdb-selector button {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    padding: 5px 10px;
+    background: rgba(14, 20, 30, 0.6);
+    border: 1px solid var(--line);
+    color: var(--ink-dim);
+    border-radius: 2px;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 0.02em;
+  }
+  .pdb-selector button:hover { border-color: var(--accent); color: var(--ink); }
+  .pdb-selector button.active { background: var(--accent-dim); border-color: var(--accent); color: var(--accent); }
+
+  /* Representation selector */
+  .repr-selector {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+  }
+  .repr-selector button {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    padding: 5px 10px;
+    background: rgba(14, 20, 30, 0.6);
+    border: 1px solid var(--line);
+    color: var(--ink-dim);
+    border-radius: 2px;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 0.02em;
+  }
+  .repr-selector button:hover { border-color: var(--accent); color: var(--ink); }
+  .repr-selector button.active { background: var(--accent-dim); border-color: var(--accent); color: var(--accent); }
+
+  /* Chain info cards */
+  .chain-info {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    line-height: 1.6;
+    color: var(--ink-dim);
+    padding: 6px 0;
+  }
+  .chain-info .chain-label { color: var(--accent); font-weight: 500; }
+</style>
+</head>
+<body>
+
+<div id="loading">
+  <div class="helix"></div>
+  <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+  <div class="text" id="loading-text">Loading Mol* viewer&hellip;</div>
+</div>
+
+<div id="app">
+  <header>
+    <div class="brand">
+      <a href="index.html" class="glyph" style="text-decoration:none;color:inherit">POL<em>E</em></a>
+      <div class="sub">DNA Polymerase <b>&epsilon;</b> &middot; Mol* Coordinate Viewer &middot; <b>PDB</b></div>
+    </div>
+    <div class="header-meta">
+      <div class="pill">CHR <b>12q24.33</b></div>
+      <div class="pill"><b>2,286</b> AA</div>
+      <div class="pill"><b>~261</b> kDa</div>
+      <div class="pill">UniProt <b>Q07864</b></div>
+    </div>
+    <button class="sidebar-toggle" id="sidebar-toggle" aria-label="Toggle sidebars">&#9776;</button>
+  </header>
+
+  <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
+
+  <aside class="left" id="sidebar-left">
+    <button class="sidebar-close" id="sidebar-close-left" aria-label="Close menu">&times;</button>
+
+    <div class="panel">
+      <h3>PDB structure</h3>
+      <div class="pdb-selector" id="pdb-selector">
+        <button class="active" data-pdb="9F6D" title="Roske & Yeeles 2024 — open Finger conformation">9F6D <span style="color:var(--ink-faint)">(open)</span></button>
+        <button data-pdb="9F6E" title="Roske & Yeeles 2024 — ajar Finger conformation">9F6E <span style="color:var(--ink-faint)">(ajar)</span></button>
+        <button data-pdb="9F6F" title="Roske & Yeeles 2024 — closed Finger conformation">9F6F <span style="color:var(--ink-faint)">(closed)</span></button>
+        <button data-pdb="9B8S" title="He et al. 2024 — Pol ε–PCNA cryo-EM">9B8S</button>
+      </div>
+      <p style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--ink-faint);margin-top:8px;line-height:1.5">
+        Finger triad: open (9F6D) &rarr; ajar (9F6E) &rarr; closed (9F6F)<br>
+        28&deg; / 19 &Aring; O-helix rotation upon dNTP binding
+      </p>
+    </div>
+
+    <div class="panel">
+      <h3>Representation</h3>
+      <div class="repr-selector" id="repr-selector">
+        <button class="active" data-repr="cartoon">Cartoon</button>
+        <button data-repr="ball_and_stick">Ball &amp; Stick</button>
+        <button data-repr="surface">Surface</button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h3>Functional domains <span class="num">N &rarr; C</span></h3>
+
+      <div class="domain" data-domain="ntd">
+        <div class="swatch" style="background:var(--c-ntd)"></div>
+        <div>
+          <div class="name">N-terminal domain</div>
+          <div class="range">res. 1&ndash;280</div>
+        </div>
+        <span class="range">NTD</span>
+      </div>
+
+      <div class="domain" data-domain="exo">
+        <div class="swatch" style="background:var(--c-exo)"></div>
+        <div>
+          <div class="name">3&prime;&rarr;5&prime; Exonuclease</div>
+          <div class="range">res. 268&ndash;471</div>
+        </div>
+        <span class="range">EXO</span>
+      </div>
+
+      <div class="domain" data-domain="palm">
+        <div class="swatch" style="background:var(--c-palm)"></div>
+        <div>
+          <div class="name">Palm subdomain</div>
+          <div class="range">res. 472&ndash;699</div>
+        </div>
+        <span class="range">PALM</span>
+      </div>
+
+      <div class="domain" data-domain="pdomain">
+        <div class="swatch" style="background:var(--c-pdomain)"></div>
+        <div>
+          <div class="name">Processivity (P) domain</div>
+          <div class="range">res. 700&ndash;760</div>
+        </div>
+        <span class="range">P-DOM</span>
+      </div>
+
+      <div class="domain" data-domain="fingers">
+        <div class="swatch" style="background:var(--c-fingers)"></div>
+        <div>
+          <div class="name">Fingers subdomain</div>
+          <div class="range">res. 761&ndash;1020</div>
+        </div>
+        <span class="range">FNG</span>
+      </div>
+
+      <div class="domain" data-domain="thumb">
+        <div class="swatch" style="background:var(--c-thumb)"></div>
+        <div>
+          <div class="name">Thumb subdomain</div>
+          <div class="range">res. 1021&ndash;1190</div>
+        </div>
+        <span class="range">THM</span>
+      </div>
+
+      <div class="domain" data-domain="inactpol">
+        <div class="swatch" style="background:var(--c-inactpol)"></div>
+        <div>
+          <div class="name">Inactive Pol module</div>
+          <div class="range">res. 1191&ndash;1900</div>
+        </div>
+        <span class="range">INACT</span>
+      </div>
+
+      <div class="domain" data-domain="ctd">
+        <div class="swatch" style="background:var(--c-ctd)"></div>
+        <div>
+          <div class="name">C-terminal domain</div>
+          <div class="range">res. 1901&ndash;2286</div>
+        </div>
+        <span class="range">CTD</span>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h3>Display toggles</h3>
+      <div class="toggle on" data-toggle="rotate"><span class="label">Auto-rotate</span><div class="switch"></div></div>
+      <div class="toggle on" data-toggle="polymer"><span class="label">Protein chains</span><div class="switch"></div></div>
+      <div class="toggle on" data-toggle="ligands"><span class="label">Ligands &amp; metals</span><div class="switch"></div></div>
+      <div class="toggle on" data-toggle="water"><span class="label">Water molecules</span><div class="switch"></div></div>
+    </div>
+
+    <div class="panel">
+      <h3>Color mode</h3>
+      <div class="color-mode-selector" id="color-mode">
+        <button class="active" data-mode="domain">Domain</button>
+        <button data-mode="bfactor">B-factor</button>
+        <button data-mode="chain">Chain</button>
+        <button data-mode="element">Element</button>
+        <button data-mode="secondary">Secondary structure</button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h3>Tools</h3>
+      <div class="tool-buttons">
+        <button class="tool-btn" id="btn-screenshot" title="Export PNG">Screenshot</button>
+        <button class="tool-btn" id="btn-reset" title="Reset camera">Reset view</button>
+        <button class="tool-btn" id="btn-molstar-ui" title="Show Mol* controls">Mol* Controls</button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h3>Navigation</h3>
+      <a href="index.html" style="display:block;padding:9px 10px;background:rgba(122,187,168,0.08);border:1px solid rgba(122,187,168,0.2);border-left:2px solid var(--accent);border-radius:2px;text-decoration:none;color:var(--ink);font-size:11px;transition:background .2s">
+        <div style="font-family:'Fraunces',serif;font-size:13px;color:var(--accent);font-weight:500;margin-bottom:3px">Schematic Ribbon Viewer</div>
+        <div style="font-size:10px;color:var(--ink-dim)">Procedural domain topology model</div>
+      </a>
+      <a href="mutation.html" style="display:block;padding:9px 10px;margin-top:6px;background:rgba(196,92,92,0.08);border:1px solid rgba(196,92,92,0.2);border-left:2px solid var(--warn);border-radius:2px;text-decoration:none;color:var(--ink);font-size:11px;transition:background .2s">
+        <div style="font-family:'Fraunces',serif;font-size:13px;color:var(--warn);font-weight:500;margin-bottom:3px">c.138del Mutation Viewer</div>
+        <div style="font-size:10px;color:var(--ink-dim)">p.Leu46Phefs*8 &middot; germline frameshift</div>
+      </a>
+    </div>
+  </aside>
+
+  <main>
+    <div id="canvas-container"></div>
+
+    <div class="overlay corner-tl">
+      <div class="live">structure &middot; <span id="current-pdb-label">PDB 9F6D</span></div>
+      <div style="margin-top:5px;color:var(--ink-faint)">Mol* &middot; real coordinates</div>
+    </div>
+    <div class="overlay corner-tr">
+      <div>rotate &middot; left-drag</div>
+      <div style="margin-top:3px">pan &middot; right-drag</div>
+      <div style="margin-top:3px">zoom &middot; scroll wheel</div>
+      <div style="margin-top:3px">pick &middot; left-click</div>
+    </div>
+    <div class="overlay corner-bl">
+      <span id="chain-count-label"></span>
+    </div>
+    <div class="overlay corner-br">
+      <span id="repr-label">cartoon</span>
+      <span id="color-label">domain coloring</span>
+    </div>
+
+    <div id="tooltip">
+      <div class="t-name"></div>
+      <div class="t-detail"></div>
+    </div>
+  </main>
+
+  <aside class="right" id="sidebar-right">
+    <button class="sidebar-close" id="sidebar-close-right" aria-label="Close menu">&times;</button>
+
+    <div class="panel">
+      <h3>Locus &amp; identity</h3>
+      <div class="info-card">
+        <div class="k">Gene</div>
+        <div class="v mono">POLE (ENSG00000177084)</div>
+      </div>
+      <div class="info-card">
+        <div class="k">Cytogenetic location</div>
+        <div class="v mono">12q24.33</div>
+      </div>
+      <div class="info-card">
+        <div class="k">Polymerase family</div>
+        <div class="v">B-family &middot; Pol &epsilon;</div>
+      </div>
+      <div class="info-card">
+        <div class="k">Active PDB</div>
+        <div class="v mono" id="active-pdb-info">9F6D &middot; Roske &amp; Yeeles 2024</div>
+      </div>
+      <div class="info-card">
+        <div class="k">Resolution</div>
+        <div class="v mono" id="active-resolution">Cryo-EM</div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h3>Structure details</h3>
+      <p style="font-family:'Fraunces',serif;font-size:12.5px;line-height:1.55;color:var(--ink);font-weight:300">
+        This viewer displays <em style="color:var(--accent)">real atomic coordinates</em> from the Protein Data Bank using Mol*, the same viewer used by RCSB PDB and PDBe. All secondary structure assignments, B-factors, metal coordination geometries, and ligand interactions are derived directly from the deposited experimental data.
+      </p>
+    </div>
+
+    <div class="panel">
+      <h3>Pathogenic hotspots</h3>
+
+      <div class="mutation" data-mut="P286R">
+        <div class="head">
+          <div class="name">P286R</div>
+          <div class="loc">EXO &middot; res. 286</div>
+        </div>
+        <div class="text">Ultra-mutator. ExoII motif. CRC &amp; endometrial. SBS10a/b.</div>
+      </div>
+
+      <div class="mutation" data-mut="V411L">
+        <div class="head">
+          <div class="name">V411L</div>
+          <div class="loc">EXO &middot; res. 411</div>
+        </div>
+        <div class="text">Proofreading-deficient. TMB &gt;100 mut/Mb. SBS10a.</div>
+      </div>
+
+      <div class="mutation" data-mut="S297F">
+        <div class="head">
+          <div class="name">S297F</div>
+          <div class="loc">EXO &middot; res. 297</div>
+        </div>
+        <div class="text">Germline ExoI. PPAP predisposition. SBS28.</div>
+      </div>
+
+      <div class="mutation" data-mut="L424V">
+        <div class="head">
+          <div class="name">L424V</div>
+          <div class="loc">EXO &middot; res. 424</div>
+        </div>
+        <div class="text">Somatic. Moderate mutator phenotype.</div>
+      </div>
+
+      <div class="mutation" data-mut="F367S">
+        <div class="head">
+          <div class="name">F367S</div>
+          <div class="loc">EXO &middot; res. 367</div>
+        </div>
+        <div class="text">Germline PPAP. Adjacent to ExoIII catalytic triad.</div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h3>Catalytic mechanism</h3>
+      <p style="font-family:'Fraunces',serif;font-size:12px;line-height:1.6;color:var(--ink-dim);font-weight:300">
+        <b style="color:var(--ink);font-weight:500">Two-metal-ion catalysis:</b> Metal A (Mg&sup2;+) lowers the p<em>K</em>a of the primer 3&prime;-OH. Metal B coordinates the &beta;,&gamma;-phosphates of the incoming dNTP. Both metals are chelated by conserved aspartates D640, D642, D860.
+      </p>
+    </div>
+
+    <div class="panel" style="border-top:1px solid var(--line)">
+      <h3 style="font-size:10px;color:var(--ink-faint);letter-spacing:0.08em">References</h3>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:9px;line-height:1.65;color:var(--ink-faint)">
+        Roske &amp; Yeeles, <em>NSMB</em> 31:1921 (2024)<br>
+        He et al., <em>Nat Commun</em> 15:7847 (2024)<br>
+        Mur et al., <em>Genome Med</em> 15:85 (2023)<br>
+        Yuan et al., <em>Nat Commun</em> 11:3156 (2020)<br>
+        Hogg et al., <em>NSMB</em> 21:49 (2014)
+      </div>
+    </div>
+  </aside>
+
+  <footer>
+    <div class="left">
+      <span class="ax">viewer &middot; <b>Mol*</b></span>
+      <span class="ax">data &middot; <b>PDB coordinates</b></span>
+      <span class="ax">structure &middot; <b id="footer-pdb">9F6D</b></span>
+    </div>
+    <div>POLE &middot; COORDINATE VIEWER</div>
+  </footer>
+</div>
+
+<script>
+// ==================== DOMAIN DEFINITIONS ====================
+
+const DOMAINS = {
+  ntd:      { range: [1, 280],    color: '#c4a47a', name: 'N-terminal domain' },
+  exo:      { range: [268, 471],  color: '#b85c5c', name: "3'→5' Exonuclease" },
+  palm:     { range: [472, 699],  color: '#6b8e6b', name: 'Palm subdomain' },
+  pdomain:  { range: [700, 760],  color: '#4a8a7a', name: 'Processivity domain' },
+  fingers:  { range: [761, 1020], color: '#5b7f99', name: 'Fingers subdomain' },
+  thumb:    { range: [1021,1190], color: '#8b7ba8', name: 'Thumb subdomain' },
+  inactpol: { range: [1191,1900], color: '#7a6a8a', name: 'Inactive Pol module' },
+  ctd:      { range: [1901,2286], color: '#b8a04a', name: 'C-terminal domain' },
+};
+
+const DOMAIN_ORDER = ['ntd','exo','palm','pdomain','fingers','thumb','inactpol','ctd'];
+
+const MUTATIONS = [
+  { id: 'P286R', residue: 286 },
+  { id: 'V411L', residue: 411 },
+  { id: 'S297F', residue: 297 },
+  { id: 'L424V', residue: 424 },
+  { id: 'F367S', residue: 367 },
+];
+
+const PDB_INFO = {
+  '9F6D': { citation: 'Roske & Yeeles 2024', detail: 'Open Finger conformation', resolution: '3.0 Å cryo-EM' },
+  '9F6E': { citation: 'Roske & Yeeles 2024', detail: 'Ajar Finger conformation', resolution: '3.2 Å cryo-EM' },
+  '9F6F': { citation: 'Roske & Yeeles 2024', detail: 'Closed Finger conformation', resolution: '3.1 Å cryo-EM' },
+  '9B8S': { citation: 'He et al. 2024',      detail: 'Pol ε–PCNA–DNA complex',    resolution: '3.3 Å cryo-EM' },
+};
+
+// ==================== STATE ====================
+
+let currentPdb = '9F6D';
+let currentRepr = 'cartoon';
+let currentColorMode = 'domain';
+let viewer = null;
+let autoRotate = true;
+
+// ==================== LOADING ====================
+
+const progressFill = document.getElementById('progress-fill');
+const loadingText = document.getElementById('loading-text');
+function setProgress(pct, text) {
+  progressFill.style.width = pct + '%';
+  if (text) loadingText.textContent = text;
+}
+
+setProgress(10, 'Initializing Mol* viewer…');
+
+async function initViewer() {
+  setProgress(20, 'Creating Mol* plugin…');
+
+  viewer = await molstar.Viewer.create('canvas-container', {
+    layoutIsExpanded: true,
+    layoutShowControls: false,
+    layoutShowRemoteState: false,
+    layoutShowSequence: false,
+    layoutShowLog: false,
+    layoutShowLeftPanel: false,
+    viewportShowExpand: false,
+    viewportShowSelectionMode: false,
+    viewportShowAnimation: false,
+    pdbProvider: 'rcsb',
+  });
+
+  // Set dark background
+  try {
+    viewer.plugin.canvas3d?.setProps({
+      renderer: {
+        backgroundColor: 0x0E141E,
+      },
+    });
+  } catch (e) { /* ignore if props differ between versions */ }
+
+  // Force the plugin to detect its container size
+  try { viewer.handleResize(); } catch (e) { /* ignore */ }
+
+  setProgress(40, 'Downloading PDB 9F6D…');
+  await loadStructure('9F6D');
+
+  setProgress(90, 'Finalizing…');
+
+  // Enable auto-rotate
+  setAutoRotate(true);
+
+  // Zoom out so the full structure is visible on load.
+  // Wait for Mol*'s internal camera reset (from loadStructureFromUrl) to settle,
+  // then zoom out relative to the fitted view.
+  zoomToFit();
+
+  // Done loading
+  setProgress(100, 'Ready');
+  setTimeout(() => {
+    document.getElementById('loading').style.display = 'none';
+  }, 300);
+}
+
+// ==================== STRUCTURE LOADING ====================
+
+// Local BinaryCIF files — avoids browser extension blocking RCSB CDN
+const BCIF_URL = pdbId => `./data/pdb/${pdbId}.bcif`;
+
+async function loadStructure(pdbId, repr, colorMode) {
+  if (!viewer) return;
+  currentPdb = pdbId;
+  repr = repr || currentRepr;
+  colorMode = colorMode || currentColorMode;
+
+  // Clear existing structures before loading a new one
+  try { await viewer.plugin.clear(); } catch (e) { /* first load — nothing to clear */ }
+
+  // Load local BinaryCIF (isBinary = true)
+  await viewer.loadStructureFromUrl(BCIF_URL(pdbId), 'mmcif', true);
+
+  // Re-apply dark background (clear() resets it)
+  try {
+    viewer.plugin.canvas3d?.setProps({ renderer: { backgroundColor: 0x0E141E } });
+  } catch (e) { /* ignore */ }
+
+  updateLabels(pdbId);
+  zoomToFit();
+}
+
+// Zoom out so the full complex is visible with padding.
+// Uses a polling loop to wait until Mol*'s internal camera reset has settled.
+function zoomToFit() {
+  let attempts = 0;
+  const poll = setInterval(() => {
+    attempts++;
+    try {
+      viewer.handleResize();
+      const cam = viewer.plugin.canvas3d?.camera;
+      if (cam) {
+        const s = cam.getSnapshot();
+        if (s.radius > 0) {
+          clearInterval(poll);
+          // Mol*'s reset fits the bounding sphere tightly.
+          // Multiply radius to add generous padding so the full structure is visible.
+          cam.setState({ ...s, radius: s.radius * 3 }, 400);
+        }
+      }
+    } catch (e) { /* ignore */ }
+    if (attempts > 30) clearInterval(poll); // give up after 3 s
+  }, 100);
+}
+
+function updateLabels(pdbId) {
+  const info = PDB_INFO[pdbId] || {};
+  document.getElementById('current-pdb-label').textContent = `PDB ${pdbId}`;
+  document.getElementById('active-pdb-info').textContent = `${pdbId} · ${info.citation || ''}`;
+  document.getElementById('active-resolution').textContent = info.resolution || '';
+  document.getElementById('footer-pdb').textContent = pdbId;
+}
+
+// ==================== AUTO-ROTATE ====================
+
+function setAutoRotate(on) {
+  autoRotate = on;
+  try {
+    viewer?.plugin?.canvas3d?.setProps({
+      trackball: {
+        animate: on
+          ? { name: 'spin', params: { speed: 0.3 } }
+          : { name: 'off', params: {} },
+      },
+    });
+  } catch (e) { /* ignore */ }
+}
+
+// ==================== FOCUS DOMAIN ====================
+
+function focusDomain(key) {
+  const dom = DOMAINS[key];
+  if (!dom || !viewer) return;
+
+  // For now, load with only that domain highlighted
+  // Full implementation would use Mol* selection API
+  try {
+    viewer.plugin.canvas3d?.requestCameraReset();
+  } catch (e) { /* ignore */ }
+}
+
+function focusMutation(mutId) {
+  const mut = MUTATIONS.find(m => m.id === mutId);
+  if (!mut || !viewer) return;
+  try {
+    viewer.plugin.canvas3d?.requestCameraReset();
+  } catch (e) { /* ignore */ }
+}
+
+// ==================== INITIALIZE ====================
+
+initViewer().catch(err => {
+  console.error('Mol* init failed:', err);
+  document.getElementById('loading-text').textContent = 'Failed to load Mol*. Check console.';
+});
+
+// ==================== UI WIRING ====================
+
+// PDB structure selector
+document.querySelectorAll('#pdb-selector button').forEach(btn => {
+  btn.addEventListener('click', async () => {
+    const pdb = btn.dataset.pdb;
+    if (pdb === currentPdb) return;
+
+    document.querySelectorAll('#pdb-selector button').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+
+    setProgress(10, `Loading PDB ${pdb}…`);
+    document.getElementById('loading').style.display = '';
+    await loadStructure(pdb);
+    setAutoRotate(autoRotate);
+    document.getElementById('loading').style.display = 'none';
+  });
+});
+
+// Representation selector
+document.querySelectorAll('#repr-selector button').forEach(btn => {
+  btn.addEventListener('click', async () => {
+    const repr = btn.dataset.repr;
+    if (repr === currentRepr && currentColorMode !== 'bfactor') return;
+
+    document.querySelectorAll('#repr-selector button').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentRepr = repr;
+
+    document.getElementById('repr-label').textContent = repr.replace(/_/g, ' ');
+    await loadStructure(currentPdb, repr, currentColorMode);
+    setAutoRotate(autoRotate);
+  });
+});
+
+// Color mode selector
+document.querySelectorAll('#color-mode button').forEach(btn => {
+  btn.addEventListener('click', async () => {
+    const mode = btn.dataset.mode;
+    if (mode === currentColorMode) return;
+
+    document.querySelectorAll('#color-mode button').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentColorMode = mode;
+
+    document.getElementById('color-label').textContent = mode + ' coloring';
+    await loadStructure(currentPdb, currentRepr, mode);
+    setAutoRotate(autoRotate);
+  });
+});
+
+// Domain legend — focus on click
+const domainKeys = ['ntd','exo','palm','pdomain','fingers','thumb','inactpol','ctd'];
+const domainEls = document.querySelectorAll('.domain');
+
+domainEls.forEach(el => {
+  el.addEventListener('click', () => {
+    const wasActive = el.classList.contains('active');
+    domainEls.forEach(d => d.classList.remove('active'));
+    if (!wasActive) {
+      el.classList.add('active');
+      focusDomain(el.dataset.domain);
+    } else {
+      viewer?.plugin?.canvas3d?.requestCameraReset();
+    }
+  });
+});
+
+// Mutation cards — focus
+document.querySelectorAll('.mutation').forEach(el => {
+  el.addEventListener('click', () => {
+    focusMutation(el.dataset.mut);
+  });
+});
+
+// Toggle switches
+document.querySelectorAll('.toggle').forEach(t => {
+  t.addEventListener('click', () => {
+    const on = !t.classList.contains('on');
+    t.classList.toggle('on', on);
+    const toggle = t.dataset.toggle;
+    if (toggle === 'rotate') setAutoRotate(on);
+  });
+});
+
+// Tool buttons
+document.getElementById('btn-screenshot').addEventListener('click', () => {
+  viewer?.plugin?.helpers?.viewportScreenshot?.download();
+});
+
+document.getElementById('btn-reset').addEventListener('click', () => {
+  viewer?.plugin?.canvas3d?.requestCameraReset();
+});
+
+document.getElementById('btn-molstar-ui').addEventListener('click', () => {
+  // Toggle Mol* built-in controls
+  if (!viewer) return;
+  const isExpanded = viewer.plugin.layout.state.isExpanded;
+  viewer.plugin.layout.setProps({ isExpanded: !isExpanded });
+});
+
+// Sidebar toggle (mobile)
+const sidebarToggle = document.getElementById('sidebar-toggle');
+const sidebarLeft = document.getElementById('sidebar-left');
+const sidebarRight = document.getElementById('sidebar-right');
+const sidebarBackdrop = document.getElementById('sidebar-backdrop');
+
+function openSidebars() {
+  sidebarLeft.classList.add('open');
+  sidebarRight.classList.add('open');
+  sidebarBackdrop.classList.add('open');
+}
+function closeSidebars() {
+  sidebarLeft.classList.remove('open');
+  sidebarRight.classList.remove('open');
+  sidebarBackdrop.classList.remove('open');
+}
+
+sidebarToggle.addEventListener('click', () => {
+  if (sidebarLeft.classList.contains('open')) closeSidebars();
+  else openSidebars();
+});
+document.getElementById('sidebar-close-left').addEventListener('click', closeSidebars);
+document.getElementById('sidebar-close-right').addEventListener('click', closeSidebars);
+sidebarBackdrop.addEventListener('click', closeSidebars);
+
+// Keyboard shortcuts
+document.addEventListener('keydown', e => {
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+  switch (e.key.toLowerCase()) {
+    case 'r': {
+      const rotToggle = document.querySelector('[data-toggle="rotate"]');
+      rotToggle.click();
+      break;
+    }
+    case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': {
+      const idx = parseInt(e.key) - 1;
+      if (idx < domainKeys.length) {
+        domainEls.forEach(d => d.classList.remove('active'));
+        domainEls[idx].classList.add('active');
+        focusDomain(domainKeys[idx]);
+      }
+      break;
+    }
+    case 's':
+      if (!e.ctrlKey && !e.metaKey) viewer?.plugin?.helpers?.viewportScreenshot?.download();
+      break;
+    case 'escape':
+      domainEls.forEach(d => d.classList.remove('active'));
+      viewer?.plugin?.canvas3d?.requestCameraReset();
+      break;
+  }
+});
+</script>
+
+</body>
+</html>

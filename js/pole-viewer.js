@@ -7,9 +7,20 @@
 // DNA template/primer rendered as backbone tubes with base-pair rungs.
 //
 // References:
-//   UniProt Q07864 (POLE_HUMAN), PDB 4M8O / 6WJV / 8D32
-//   Lancey et al., Nat Struct Mol Biol 2020
-//   Hogg et al., Nat Struct Mol Biol 2014
+//   UniProt Q07864 (POLE_HUMAN)
+//   PDB: 9F6D / 9F6E / 9F6F (Roske & Yeeles 2024), 9B8S (He et al. 2024),
+//        4M8O (Hogg et al. 2014), 6WJV (Lancey et al. 2020, Pol delta for comparison)
+//   Roske & Yeeles, Nat Struct Mol Biol 31:1921 (2024) — human Pol ε structures
+//   He, Wang, Yao, O'Donnell & Li, Nat Commun 15:7847 (2024) — human Pol ε–PCNA
+//   Mur et al., Genome Med 15:85 (2023) — POLE/POLD1 ACMG classification
+//   Yuan, Georgescu, Schauer, O'Donnell & Li, Nat Commun 11:3156 (2020) — yeast Pol ε
+//   Robinson, Coorens et al., Nat Genet 53:1434 (2021) — normal-tissue mutation rates
+//   Hogg et al., Nat Struct Mol Biol 21:49 (2014) — S. cerevisiae Pol2 NTD (4M8O)
+//
+// NOTE: This viewer renders a procedural cartoon-ribbon schematic, not atomic
+// coordinates from PDB depositions. Color modes (B-factor, conservation, charge,
+// pathogenicity) use approximate domain-level or synthetic per-residue values.
+// For coordinate-derived analysis, load PDB 9F6D into Mol* or PyMOL.
 // ==========================================================================
 
 import * as THREE from 'three';
@@ -168,6 +179,8 @@ let MUTATIONS = [
     label:'Met444\u2192Lys', detail:'Somatic / ExoIII motif / CRC / SBS10b' },
   { id:'S459F', residue:459, domain:'exo', offset:[-3.0,0.5,-0.5],
     label:'Ser459\u2192Phe', detail:'Germline / PPAP-associated / Valle 2023' },
+  { id:'F367S', residue:367, domain:'exo', offset:[2.0,0.8,-2.0],
+    label:'Phe367\u2192Ser', detail:'Germline PPAP / adjacent to ExoIII catalytic triad' },
 ];
 
 // ==================== PIPELINE DATA LOADER ====================
@@ -1071,7 +1084,7 @@ export class POLEViewer {
     ghostTorus.position.copy(pcnaPos);
     ghostTorus.rotation.y = Math.PI / 2;
     ghostTorus.rotation.x = 0.2;
-    ghostTorus.userData = { name: 'PCNA sliding clamp', detail: 'Homotrimeric processivity factor' };
+    ghostTorus.userData = { name: 'PCNA sliding clamp', detail: 'Homotrimeric processivity factor · Pol \u03b5 contacts all three protomers via PIP-box (Q1180), Thumb insertion (res. 1102\u20131122), and P domain \u2014 tripartite interface impervious to FEN1/Pol \u03b4 displacement (Roske & Yeeles 2024)' };
     this.groups.pcna.add(ghostTorus);
 
     // Wireframe torus
@@ -1107,8 +1120,8 @@ export class POLEViewer {
 
     // Tripartite interface labels
     const triLabels = [
-      { text:'PIP-box interface', offset:[-7, -5, 3] },
-      { text:'Thumb insertion', offset:[5, -4, -5] },
+      { text:'PIP-box (Q1180)', offset:[-7, -5, 3] },
+      { text:'Thumb insert (1102\u20131122)', offset:[5, -4, -5] },
       { text:'P-domain contact', offset:[-5, 4, -6] },
     ];
     for (const tl of triLabels) {
@@ -1495,9 +1508,8 @@ export class POLEViewer {
     polLabel.position.copy(palmCenter.clone().add(new THREE.Vector3(0, 2, 0)));
     this.groups.exoPolPath.add(polLabel);
 
-    // Distance annotation
-    const dist = exoCenter.distanceTo(palmCenter) / SCALE;
-    const distLabel = this._spriteLabel(`~${Math.round(dist)} \u00c5 shuttling distance`, '#7abba8', '#7abba8', 320);
+    // Distance annotation (Roske & Yeeles 2024: "almost 40 A" between active sites)
+    const distLabel = this._spriteLabel('~40 \u00c5 shuttling distance', '#7abba8', '#7abba8', 320);
     distLabel.scale.set(10, 2, 1);
     distLabel.position.copy(mid.clone().add(new THREE.Vector3(0, 2, 0)));
     this.groups.exoPolPath.add(distLabel);

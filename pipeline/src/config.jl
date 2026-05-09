@@ -43,6 +43,7 @@ const PDB_IDS = ["4M8O", "6WJV", "8D32", "9F6D", "9F6E", "9F6F", "9B8S"]
 const PRIMARY_PDB = "4M8O"  # Primary structure for initial pipeline
 
 # Known POLE pathogenic mutations
+# Clinical and somatic POLE mutations (viewer markers)
 const POLE_MUTATIONS = [
     (id="P286R",  residue=286,  ref_aa='P', alt_aa='R', domain=:exo,
      label="Pro286→Arg",
@@ -53,27 +54,40 @@ const POLE_MUTATIONS = [
     (id="S297F",  residue=297,  ref_aa='S', alt_aa='F', domain=:exo,
      label="Ser297→Phe",
      detail="Germline ExoI / PPAP predisposition / SBS28"),
-    (id="D275A",  residue=275,  ref_aa='D', alt_aa='A', domain=:exo,
-     label="Asp275→Ala",
-     detail="ExoI catalytic / abolishes proofreading"),
-    (id="D368A",  residue=368,  ref_aa='D', alt_aa='A', domain=:exo,
-     label="Asp368→Ala",
-     detail="ExoIII catalytic / Mg²⁺ coordination"),
-    (id="F367S",  residue=367,  ref_aa='F', alt_aa='S', domain=:exo,
-     label="Phe367→Ser",
-     detail="Germline PPAP / adjacent to catalytic triad"),
     (id="L424V",  residue=424,  ref_aa='L', alt_aa='V', domain=:exo,
      label="Leu424→Val",
      detail="Somatic / moderate mutator phenotype"),
+    (id="D287E",  residue=287,  ref_aa='D', alt_aa='E', domain=:exo,
+     label="Asp287→Glu",
+     detail="Somatic ExoII adjacent / CRC / SBS10b"),
+    (id="P436R",  residue=436,  ref_aa='P', alt_aa='R', domain=:exo,
+     label="Pro436→Arg",
+     detail="Somatic ExoIII / endometrial / SBS10a"),
     (id="M444K",  residue=444,  ref_aa='M', alt_aa='K', domain=:exo,
      label="Met444→Lys",
      detail="Germline PPAP / exonuclease domain"),
+    (id="S459F",  residue=459,  ref_aa='S', alt_aa='F', domain=:exo,
+     label="Ser459→Phe",
+     detail="Germline / PPAP-associated / Valle 2023"),
+    (id="F367S",  residue=367,  ref_aa='F', alt_aa='S', domain=:exo,
+     label="Phe367→Ser",
+     detail="Germline PPAP / adjacent to catalytic triad"),
+]
+
+# Engineered catalytic-dead mutants (for active site annotation, not viewer markers)
+const ENGINEERED_MUTANTS = [
+    (id="D275A",  residue=275,  ref_aa='D', alt_aa='A', domain=:exo,
+     label="Asp275→Ala",
+     detail="ExoI catalytic / engineered / abolishes proofreading"),
+    (id="D368A",  residue=368,  ref_aa='D', alt_aa='A', domain=:exo,
+     label="Asp368→Ala",
+     detail="ExoIII catalytic / engineered / Mg²⁺ coordination"),
 ]
 
 # Frameshift variant data (c.138del)
 const FRAMESHIFT_VARIANT = (
     hgvs_c = "c.138del",
-    hgvs_p = "p.Glu47Argfs*8",
+    hgvs_p = "p.Leu46Phefs*8",
     truncation_site = 54,
     wt_codons = [
         (codon="GAG", aa="Glu", pos=43),

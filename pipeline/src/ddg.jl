@@ -1,5 +1,12 @@
 """
 DDG stability estimation for point mutants using statistical potential approach.
+
+DISCLAIMER: This is a heuristic estimate based on amino acid property differences
+(hydrophobicity, volume, charge, SS propensity, conservation) — NOT a physics-based
+calculation. For validated ΔΔG predictions, use FoldX (Schymkowitz et al. 2005),
+Rosetta ddg_monomer (Kellogg et al. 2011), or DynaMut2 (Rodrigues et al. 2021)
+with the PDB 9F6D coordinate file. Values from this module should be treated as
+qualitative indicators (destabilizing/neutral/stabilizing), not quantitative kcal/mol.
 """
 
 # Amino acid hydrophobicity scale (Kyte-Doolittle, normalized to [-1, 1])

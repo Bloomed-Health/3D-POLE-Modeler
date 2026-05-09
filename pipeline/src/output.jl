@@ -172,13 +172,26 @@ function write_mutations_json(
         )
 
         if classif !== nothing
+            # Get auditable citations for each evidence code
+            cit_map = get_pole_evidence_citations(mut.id)
+            evidence_detail = []
+            for e in classif.evidence
+                entry = OrderedDict("code" => string(e), "lr" => get(EVIDENCE_LR, e, 1.0))
+                citation = get(cit_map, e, "")
+                if !isempty(citation)
+                    entry["citation"] = citation
+                end
+                push!(evidence_detail, entry)
+            end
+
             mut_entry["classification"] = OrderedDict(
                 "acmg_class" => classif.acmg_class,
                 "posterior" => classif.posterior,
                 "ci_lower" => classif.ci_lower,
                 "ci_upper" => classif.ci_upper,
-                "evidence" => [string(e) for e in classif.evidence],
+                "evidence" => evidence_detail,
                 "lr_product" => classif.lr_product,
+                "framework" => "Mur et al. 2023 (Genome Med 15:85) / Tavtigian et al. 2018",
             )
         end
 

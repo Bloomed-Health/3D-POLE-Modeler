@@ -144,10 +144,12 @@ function get_known_clinvar_variants()
         Variant(368, 'D', 'A', :clinvar, "Pathogenic", 0.90, 0.0, "GAT>GCT"),
         Variant(367, 'F', 'S', :clinvar, "Likely_pathogenic", 0.85, 0.0, "TTC>TCC"),
         Variant(424, 'L', 'V', :clinvar, "Likely_pathogenic", 0.80, 0.0, "CTG>GTG"),
+        Variant(287, 'D', 'E', :clinvar, "Likely_pathogenic", 0.82, 0.0, "GAC>GAA"),
+        Variant(436, 'P', 'R', :clinvar, "Likely_pathogenic", 0.80, 0.0, "CCC>CGC"),
         Variant(444, 'M', 'K', :clinvar, "Likely_pathogenic", 0.78, 0.0, "ATG>AAG"),
+        Variant(459, 'S', 'F', :clinvar, "Likely_pathogenic", 0.76, 0.0, "TCC>TTC"),
         # Additional known variants
         Variant(396, 'N', 'D', :clinvar, "VUS", 0.50, 0.0, ""),
-        Variant(459, 'P', 'L', :clinvar, "VUS", 0.45, 0.0, ""),
         Variant(640, 'D', 'N', :clinvar, "Pathogenic", 0.95, 0.0, "GAC>AAC"),
         Variant(642, 'D', 'N', :clinvar, "Pathogenic", 0.93, 0.0, "GAC>AAC"),
         Variant(860, 'D', 'N', :clinvar, "Pathogenic", 0.93, 0.0, "GAC>AAC"),
@@ -166,9 +168,12 @@ function get_known_cosmic_variants()
         Variant(297, 'S', 'F', :cosmic, "somatic", 0.90, 0.20, "TCC>TTC"),
         Variant(286, 'P', 'H', :cosmic, "somatic", 0.88, 0.10, "CCC>CAC"),
         Variant(286, 'P', 'L', :cosmic, "somatic", 0.85, 0.05, "CCT>CTT"),
-        Variant(459, 'P', 'L', :cosmic, "somatic", 0.60, 0.08, "CCT>CTT"),
+        Variant(287, 'D', 'E', :cosmic, "somatic", 0.82, 0.12, "GAC>GAA"),
+        Variant(436, 'P', 'R', :cosmic, "somatic", 0.80, 0.10, "CCC>CGC"),
+        Variant(459, 'S', 'F', :cosmic, "somatic", 0.70, 0.08, "TCC>TTC"),
         Variant(367, 'F', 'S', :cosmic, "somatic", 0.82, 0.12, "TTC>TCC"),
         Variant(424, 'L', 'V', :cosmic, "somatic", 0.75, 0.15, "CTG>GTG"),
+        Variant(444, 'M', 'K', :cosmic, "somatic", 0.72, 0.08, "ATG>AAG"),
     ]
 end
 

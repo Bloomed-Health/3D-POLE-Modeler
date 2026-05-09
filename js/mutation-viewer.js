@@ -15,7 +15,9 @@
 //   3. Sequence: reading frame analysis showing frameshift
 //
 // References:
-//   UniProt Q07864 (POLE_HUMAN), PDB 4M8O / 6WJV / 8D32
+//   UniProt Q07864 (POLE_HUMAN)
+//   PDB: 9F6D/9F6E/9F6F (Roske & Yeeles 2024), 9B8S (He et al. 2024), 4M8O (Hogg et al. 2014)
+//   Mur et al., Genome Med 15:85 (2023) — POLE/POLD1 ACMG classification
 // ==========================================================================
 
 import * as THREE from 'three';

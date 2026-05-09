@@ -1,5 +1,14 @@
 """
 Mutational signature deconvolution: NMF/NNLS for SBS10a/b/28/14 attribution.
+
+NOTE: The built-in 96-channel signature profiles are approximations derived from
+COSMIC SBS v3.4 (Alexandrov et al., Nature 2020) with hand-curated channel weights.
+For production use, download the official COSMIC SBS v3.4 signature profiles from:
+https://cancer.sanger.ac.uk/signatures/documents/2123/COSMIC_v3.4_SBS_GRCh38.txt
+
+The per-variant signature attributions in get_pole_mutation_signatures() are
+literature-informed estimates, not computed from actual tumour sequencing data.
+For real deconvolution, provide a 96-channel mutation catalogue from WGS/WES data.
 """
 
 # POLE-associated mutational signatures (COSMIC v3.4)
@@ -344,8 +353,8 @@ end
 """
     get_pole_mutation_signatures() -> Vector{Dict{Symbol, Float64}}
 
-Get pre-computed signature attributions for the 8 known POLE mutations.
-Based on published COSMIC/TCGA data.
+Get pre-computed signature attributions for known POLE mutations.
+Order matches POLE_MUTATIONS in config.jl. Based on published COSMIC/TCGA data.
 """
 function get_pole_mutation_signatures()
     return [
@@ -355,15 +364,17 @@ function get_pole_mutation_signatures()
         Dict(:SBS10a => 0.70, :SBS10b => 0.15, :SBS28 => 0.05, :SBS14 => 0.10),
         # S297F - SBS28 germline
         Dict(:SBS10a => 0.10, :SBS10b => 0.05, :SBS28 => 0.75, :SBS14 => 0.10),
-        # D275A - functional study (no clear signature)
-        Dict(:SBS10a => 0.40, :SBS10b => 0.20, :SBS28 => 0.20, :SBS14 => 0.20),
-        # D368A - functional study
-        Dict(:SBS10a => 0.35, :SBS10b => 0.25, :SBS28 => 0.20, :SBS14 => 0.20),
-        # F367S - germline PPAP
-        Dict(:SBS10a => 0.15, :SBS10b => 0.10, :SBS28 => 0.60, :SBS14 => 0.15),
         # L424V - moderate mutator
         Dict(:SBS10a => 0.45, :SBS10b => 0.25, :SBS28 => 0.15, :SBS14 => 0.15),
+        # D287E - somatic ExoII adjacent, SBS10b enriched
+        Dict(:SBS10a => 0.25, :SBS10b => 0.50, :SBS28 => 0.10, :SBS14 => 0.15),
+        # P436R - somatic ExoIII, SBS10a
+        Dict(:SBS10a => 0.50, :SBS10b => 0.20, :SBS28 => 0.15, :SBS14 => 0.15),
         # M444K - germline PPAP
         Dict(:SBS10a => 0.20, :SBS10b => 0.10, :SBS28 => 0.55, :SBS14 => 0.15),
+        # S459F - germline PPAP
+        Dict(:SBS10a => 0.15, :SBS10b => 0.10, :SBS28 => 0.60, :SBS14 => 0.15),
+        # F367S - germline PPAP
+        Dict(:SBS10a => 0.15, :SBS10b => 0.10, :SBS28 => 0.60, :SBS14 => 0.15),
     ]
 end
