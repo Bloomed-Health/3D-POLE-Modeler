@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='28' font-size='28'>E</text></svg>">
 <title>POLE · DNA Polymerase ε Catalytic Subunit · 3D Structural Viewer</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -36,6 +37,10 @@
 
   <aside class="left" id="sidebar-left">
     <button class="sidebar-close" id="sidebar-close-left" aria-label="Close menu">&times;</button>
+    <div class="mobile-sidebar-tabs">
+      <button class="active" data-sidebar="left">Controls</button>
+      <button data-sidebar="right">Info</button>
+    </div>
     <div class="panel">
       <h3>Functional domains <span class="num">N &rarr; C</span></h3>
 
@@ -176,6 +181,10 @@
         <div style="font-family:'Fraunces',serif;font-size:13px;color:var(--accent);font-weight:500;margin-bottom:3px">Mol* Coordinate Viewer</div>
         <div style="font-size:10px;color:var(--ink-dim)">PDB 9F6D &middot; real atomic coordinates &middot; DSSP &middot; B-factors</div>
       </a>
+      <a href="alphafold.html" style="display:block;padding:9px 10px;background:rgba(101,203,243,0.08);border:1px solid rgba(101,203,243,0.2);border-left:2px solid var(--plddt-confident,#65CBF3);border-radius:2px;text-decoration:none;color:var(--ink);font-size:11px;transition:background .2s;margin-bottom:6px">
+        <div style="font-family:'Fraunces',serif;font-size:13px;color:var(--plddt-confident,#65CBF3);font-weight:500;margin-bottom:3px">AlphaFold Predicted Structure</div>
+        <div style="font-size:10px;color:var(--ink-dim)">Full-length 2,286 AA &middot; pLDDT confidence &middot; AlphaFold v4</div>
+      </a>
       <a href="variant.html" style="display:block;padding:9px 10px;background:rgba(155,89,182,0.08);border:1px solid rgba(155,89,182,0.2);border-left:2px solid #9b59b6;border-radius:2px;text-decoration:none;color:var(--ink);font-size:11px;transition:background .2s;margin-bottom:6px">
         <div style="font-family:'Fraunces',serif;font-size:13px;color:#9b59b6;font-weight:500;margin-bottom:3px">Variant Catalogue</div>
         <div style="font-size:10px;color:var(--ink-dim)">ACMG classification &middot; SBS signatures &middot; &Delta;&Delta;G</div>
@@ -234,6 +243,10 @@
 
   <aside class="right" id="sidebar-right">
     <button class="sidebar-close" id="sidebar-close-right" aria-label="Close menu">&times;</button>
+    <div class="mobile-sidebar-tabs">
+      <button data-sidebar="left">Controls</button>
+      <button class="active" data-sidebar="right">Info</button>
+    </div>
     <div class="panel">
       <h3>Locus &amp; identity</h3>
       <div class="info-card">
@@ -500,10 +513,13 @@ const sidebarLeft = document.getElementById('sidebar-left');
 const sidebarRight = document.getElementById('sidebar-right');
 const sidebarBackdrop = document.getElementById('sidebar-backdrop');
 
-function openSidebars() {
-  sidebarLeft.classList.add('open');
-  sidebarRight.classList.add('open');
+function openSidebar(which) {
+  sidebarLeft.classList.toggle('open', which === 'left');
+  sidebarRight.classList.toggle('open', which === 'right');
   sidebarBackdrop.classList.add('open');
+  document.querySelectorAll('.mobile-sidebar-tabs button').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.sidebar === which);
+  });
 }
 function closeSidebars() {
   sidebarLeft.classList.remove('open');
@@ -512,12 +528,15 @@ function closeSidebars() {
 }
 
 sidebarToggle.addEventListener('click', () => {
-  if (sidebarLeft.classList.contains('open')) closeSidebars();
-  else openSidebars();
+  if (sidebarLeft.classList.contains('open') || sidebarRight.classList.contains('open')) closeSidebars();
+  else openSidebar('left');
 });
 document.getElementById('sidebar-close-left').addEventListener('click', closeSidebars);
 document.getElementById('sidebar-close-right').addEventListener('click', closeSidebars);
 sidebarBackdrop.addEventListener('click', closeSidebars);
+document.querySelectorAll('.mobile-sidebar-tabs button').forEach(btn => {
+  btn.addEventListener('click', () => openSidebar(btn.dataset.sidebar));
+});
 
 // Keyboard help
 const helpOverlay = document.getElementById('keyboard-help');

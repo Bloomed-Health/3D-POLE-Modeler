@@ -897,6 +897,12 @@ footer .ax b { color: var(--ink); font-weight: 500; }
   padding: 2px 0;
 }
 
+/* ---- Mobile sidebar tabs (hidden on desktop) ---- */
+
+.mobile-sidebar-tabs {
+  display: none;
+}
+
 /* ---- Responsive ---- */
 
 @media (max-width: 1100px) {
@@ -913,11 +919,45 @@ footer .ax b { color: var(--ink); font-weight: 500; }
     position: fixed;
     top: 0;
     bottom: 0;
-    width: 320px;
+    width: 100%;
     z-index: 50;
     background: rgba(8, 11, 17, 0.96);
     backdrop-filter: blur(12px);
     transition: transform 0.3s ease;
+  }
+
+  .mobile-sidebar-tabs {
+    display: flex;
+    position: sticky;
+    top: 0;
+    z-index: 59;
+    width: 100%;
+    background: rgba(8, 11, 17, 0.95);
+    border-bottom: 1px solid var(--line-2);
+  }
+
+  .mobile-sidebar-tabs button {
+    flex: 1;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--ink-faint);
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid transparent;
+    padding: 12px 16px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .mobile-sidebar-tabs button:hover {
+    color: var(--ink-dim);
+  }
+
+  .mobile-sidebar-tabs button.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
   }
 
   aside.left {

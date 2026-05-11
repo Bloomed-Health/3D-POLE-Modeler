@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='28' font-size='28'>E</text></svg>">
-<title>POLE · Mol* Coordinate Viewer · PDB 9F6D</title>
+<title>POLE · AlphaFold Predicted Structure · UniProt Q07864</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600&family=JetBrains+Mono:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -42,27 +42,6 @@
   .msp-plugin ::-webkit-scrollbar-track { background: var(--bg-1); }
   .msp-plugin ::-webkit-scrollbar-thumb { background: var(--line-2); border-radius: 3px; }
 
-  /* PDB selector bar */
-  .pdb-selector {
-    display: flex;
-    gap: 4px;
-    flex-wrap: wrap;
-  }
-  .pdb-selector button {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10px;
-    padding: 5px 10px;
-    background: rgba(14, 20, 30, 0.6);
-    border: 1px solid var(--line);
-    color: var(--ink-dim);
-    border-radius: 2px;
-    cursor: pointer;
-    transition: all 0.2s;
-    letter-spacing: 0.02em;
-  }
-  .pdb-selector button:hover { border-color: var(--accent); color: var(--ink); }
-  .pdb-selector button.active { background: var(--accent-dim); border-color: var(--accent); color: var(--accent); }
-
   /* Representation selector */
   .repr-selector {
     display: flex;
@@ -81,18 +60,12 @@
     transition: all 0.2s;
     letter-spacing: 0.02em;
   }
-  .repr-selector button:hover { border-color: var(--accent); color: var(--ink); }
-  .repr-selector button.active { background: var(--accent-dim); border-color: var(--accent); color: var(--accent); }
+  .repr-selector button:hover { border-color: #65CBF3; color: var(--ink); }
+  .repr-selector button.active { background: rgba(101,203,243,0.1); border-color: #65CBF3; color: #65CBF3; }
 
-  /* Chain info cards */
-  .chain-info {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10px;
-    line-height: 1.6;
-    color: var(--ink-dim);
-    padding: 6px 0;
-  }
-  .chain-info .chain-label { color: var(--accent); font-weight: 500; }
+  /* AlphaFold accent overrides */
+  .af-accent { color: #65CBF3 !important; }
+  .af-accent-border { border-color: #65CBF3 !important; }
 </style>
 </head>
 <body>
@@ -100,20 +73,20 @@
 <div id="loading">
   <div class="helix"></div>
   <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
-  <div class="text" id="loading-text">Loading Mol* viewer&hellip;</div>
+  <div class="text" id="loading-text">Loading AlphaFold viewer&hellip;</div>
 </div>
 
 <div id="app">
   <header>
     <div class="brand">
       <a href="index.html" class="glyph" style="text-decoration:none;color:inherit">POL<em>E</em></a>
-      <div class="sub">DNA Polymerase <b>&epsilon;</b> &middot; Mol* Coordinate Viewer &middot; <b>PDB</b></div>
+      <div class="sub">DNA Polymerase <b>&epsilon;</b> &middot; <span style="color:#65CBF3;font-weight:500">AlphaFold</span> Predicted Structure</div>
     </div>
     <div class="header-meta">
-      <div class="pill">CHR <b>12q24.33</b></div>
-      <div class="pill"><b>2,286</b> AA</div>
-      <div class="pill"><b>~261</b> kDa</div>
       <div class="pill">UniProt <b>Q07864</b></div>
+      <div class="pill"><b>2,286</b> AA</div>
+      <div class="pill">AlphaFold <b>v4</b></div>
+      <div class="pill" style="border-color:rgba(101,203,243,0.3);color:#65CBF3"><b>predicted</b></div>
     </div>
     <button class="sidebar-toggle" id="sidebar-toggle" aria-label="Toggle sidebars">&#9776;</button>
   </header>
@@ -128,25 +101,22 @@
     </div>
 
     <div class="panel">
-      <h3>PDB structure</h3>
-      <div class="pdb-selector" id="pdb-selector">
-        <button class="active" data-pdb="9F6D" title="Roske & Yeeles 2024 — open Finger conformation">9F6D <span style="color:var(--ink-faint)">(open)</span></button>
-        <button data-pdb="9F6E" title="Roske & Yeeles 2024 — ajar Finger conformation">9F6E <span style="color:var(--ink-faint)">(ajar)</span></button>
-        <button data-pdb="9F6F" title="Roske & Yeeles 2024 — closed Finger conformation">9F6F <span style="color:var(--ink-faint)">(closed)</span></button>
-        <button data-pdb="9B8S" title="He et al. 2024 — Pol ε–PCNA cryo-EM">9B8S</button>
-      </div>
-      <p style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--ink-faint);margin-top:8px;line-height:1.5">
-        Finger triad: open (9F6D) &rarr; ajar (9F6E) &rarr; closed (9F6F)<br>
-        28&deg; / 19 &Aring; O-helix rotation upon dNTP binding
-      </p>
-    </div>
-
-    <div class="panel">
       <h3>Representation</h3>
       <div class="repr-selector" id="repr-selector">
         <button class="active" data-repr="cartoon">Cartoon</button>
         <button data-repr="ball_and_stick">Ball &amp; Stick</button>
         <button data-repr="surface">Surface</button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h3>Color mode</h3>
+      <div class="color-mode-selector" id="color-mode">
+        <button class="active" data-mode="plddt" style="border-color:#65CBF3;color:#65CBF3">pLDDT</button>
+        <button data-mode="domain">Domain</button>
+        <button data-mode="chain">Chain</button>
+        <button data-mode="element">Element</button>
+        <button data-mode="secondary">Secondary structure</button>
       </div>
     </div>
 
@@ -229,21 +199,7 @@
     <div class="panel">
       <h3>Display toggles</h3>
       <div class="toggle on" data-toggle="rotate"><span class="label">Auto-rotate</span><div class="switch"></div></div>
-      <div class="toggle on" data-toggle="polymer"><span class="label">Protein chains</span><div class="switch"></div></div>
-      <div class="toggle on" data-toggle="ligands"><span class="label">Ligands &amp; metals</span><div class="switch"></div></div>
-      <div class="toggle on" data-toggle="water"><span class="label">Water molecules</span><div class="switch"></div></div>
-    </div>
-
-    <div class="panel">
-      <h3>Color mode</h3>
-      <div class="color-mode-selector" id="color-mode">
-        <button class="active" data-mode="domain">Domain</button>
-        <button data-mode="bfactor">B-factor</button>
-        <button data-mode="chain">Chain</button>
-        <button data-mode="element">Element</button>
-        <button data-mode="secondary">Secondary structure</button>
-        <button data-mode="plddt">pLDDT</button>
-      </div>
+      <div class="toggle on" data-toggle="polymer"><span class="label">Protein chain</span><div class="switch"></div></div>
     </div>
 
     <div class="panel">
@@ -258,17 +214,21 @@
 
     <div class="panel">
       <h3>Navigation</h3>
-      <a href="index.html" style="display:block;padding:9px 10px;background:rgba(122,187,168,0.08);border:1px solid rgba(122,187,168,0.2);border-left:2px solid var(--accent);border-radius:2px;text-decoration:none;color:var(--ink);font-size:11px;transition:background .2s">
+      <a href="index.html" style="display:block;padding:9px 10px;background:rgba(122,187,168,0.08);border:1px solid rgba(122,187,168,0.2);border-left:2px solid var(--accent);border-radius:2px;text-decoration:none;color:var(--ink);font-size:11px;transition:background .2s;margin-bottom:6px">
         <div style="font-family:'Fraunces',serif;font-size:13px;color:var(--accent);font-weight:500;margin-bottom:3px">Schematic Ribbon Viewer</div>
         <div style="font-size:10px;color:var(--ink-dim)">Procedural domain topology model</div>
       </a>
-      <a href="alphafold.html" style="display:block;padding:9px 10px;margin-top:6px;background:rgba(101,203,243,0.08);border:1px solid rgba(101,203,243,0.2);border-left:2px solid #65CBF3;border-radius:2px;text-decoration:none;color:var(--ink);font-size:11px;transition:background .2s">
-        <div style="font-family:'Fraunces',serif;font-size:13px;color:#65CBF3;font-weight:500;margin-bottom:3px">AlphaFold Predicted Structure</div>
-        <div style="font-size:10px;color:var(--ink-dim)">Full-length 2,286 AA &middot; pLDDT confidence</div>
+      <a href="molstar.html" style="display:block;padding:9px 10px;background:rgba(122,187,168,0.08);border:1px solid rgba(122,187,168,0.2);border-left:2px solid var(--accent);border-radius:2px;text-decoration:none;color:var(--ink);font-size:11px;transition:background .2s;margin-bottom:6px">
+        <div style="font-family:'Fraunces',serif;font-size:13px;color:var(--accent);font-weight:500;margin-bottom:3px">Mol* Coordinate Viewer</div>
+        <div style="font-size:10px;color:var(--ink-dim)">PDB 9F6D &middot; real atomic coordinates</div>
       </a>
-      <a href="mutation.html" style="display:block;padding:9px 10px;margin-top:6px;background:rgba(196,92,92,0.08);border:1px solid rgba(196,92,92,0.2);border-left:2px solid var(--warn);border-radius:2px;text-decoration:none;color:var(--ink);font-size:11px;transition:background .2s">
-        <div style="font-family:'Fraunces',serif;font-size:13px;color:var(--warn);font-weight:500;margin-bottom:3px">c.138del Mutation Viewer</div>
-        <div style="font-size:10px;color:var(--ink-dim)">p.Leu46Phefs*8 &middot; germline frameshift</div>
+      <a href="variant.html" style="display:block;padding:9px 10px;background:rgba(155,89,182,0.08);border:1px solid rgba(155,89,182,0.2);border-left:2px solid #9b59b6;border-radius:2px;text-decoration:none;color:var(--ink);font-size:11px;transition:background .2s;margin-bottom:6px">
+        <div style="font-family:'Fraunces',serif;font-size:13px;color:#9b59b6;font-weight:500;margin-bottom:3px">Variant Catalogue</div>
+        <div style="font-size:10px;color:var(--ink-dim)">ACMG classification &middot; SBS signatures</div>
+      </a>
+      <a href="mutation.html" style="display:block;padding:9px 10px;background:rgba(196,92,92,0.08);border:1px solid rgba(196,92,92,0.2);border-left:2px solid var(--warn);border-radius:2px;text-decoration:none;color:var(--ink);font-size:11px;transition:background .2s">
+        <div style="font-family:'Fraunces',serif;font-size:13px;color:var(--warn);font-weight:500;margin-bottom:3px">c.138del Frameshift</div>
+        <div style="font-size:10px;color:var(--ink-dim)">Truncation analysis</div>
       </a>
     </div>
   </aside>
@@ -277,8 +237,8 @@
     <div id="canvas-container"></div>
 
     <div class="overlay corner-tl">
-      <div class="live">structure &middot; <span id="current-pdb-label">PDB 9F6D</span></div>
-      <div style="margin-top:5px;color:var(--ink-faint)">Mol* &middot; real coordinates</div>
+      <div class="live" style="color:#65CBF3">AlphaFold &middot; predicted</div>
+      <div style="margin-top:5px;color:var(--ink-faint)">AF-Q07864 &middot; full-length 2,286 AA</div>
     </div>
     <div class="overlay corner-tr">
       <div>rotate &middot; left-drag</div>
@@ -287,11 +247,11 @@
       <div style="margin-top:3px">pick &middot; left-click</div>
     </div>
     <div class="overlay corner-bl">
-      <span id="chain-count-label"></span>
+      <span>AlphaFold v4 &middot; UniProt Q07864</span>
     </div>
     <div class="overlay corner-br">
       <span id="repr-label">cartoon</span>
-      <span id="color-label">domain coloring</span>
+      <span id="color-label">pLDDT coloring</span>
     </div>
 
     <div id="tooltip">
@@ -308,105 +268,65 @@
     </div>
 
     <div class="panel">
-      <h3>Locus &amp; identity</h3>
+      <h3>AlphaFold model</h3>
       <div class="info-card">
-        <div class="k">Gene</div>
-        <div class="v mono">POLE (ENSG00000177084)</div>
+        <div class="k">UniProt accession</div>
+        <div class="v mono">Q07864 (DPOE1_HUMAN)</div>
       </div>
       <div class="info-card">
-        <div class="k">Cytogenetic location</div>
-        <div class="v mono">12q24.33</div>
+        <div class="k">AlphaFold version</div>
+        <div class="v mono">v4 (AlphaFold2)</div>
       </div>
       <div class="info-card">
-        <div class="k">Polymerase family</div>
-        <div class="v">B-family &middot; Pol &epsilon;</div>
+        <div class="k">Residues</div>
+        <div class="v mono">2,286 AA (full-length)</div>
       </div>
       <div class="info-card">
-        <div class="k">Active PDB</div>
-        <div class="v mono" id="active-pdb-info">9F6D &middot; Roske &amp; Yeeles 2024</div>
+        <div class="k">Coverage</div>
+        <div class="v">Predicted full-length structure</div>
       </div>
       <div class="info-card">
-        <div class="k">Resolution</div>
-        <div class="v mono" id="active-resolution">Cryo-EM</div>
+        <div class="k">Confidence metric</div>
+        <div class="v">pLDDT (per-residue)</div>
       </div>
     </div>
 
-    <div class="panel">
-      <h3>Structure details</h3>
-      <p style="font-family:'Fraunces',serif;font-size:12.5px;line-height:1.55;color:var(--ink);font-weight:300">
-        This viewer displays <em style="color:var(--accent)">real atomic coordinates</em> from the Protein Data Bank using Mol*, the same viewer used by RCSB PDB and PDBe. All secondary structure assignments, B-factors, metal coordination geometries, and ligand interactions are derived directly from the deposited experimental data.
-      </p>
-    </div>
-
-    <div class="panel" id="plddt-legend-panel" style="display:none">
-      <h3>pLDDT confidence</h3>
+    <div class="panel" id="plddt-legend-panel">
+      <h3 style="color:#65CBF3">pLDDT confidence</h3>
       <div style="font-family:'JetBrains Mono',monospace;font-size:10px;line-height:2">
         <div style="display:flex;align-items:center;gap:8px"><span style="display:inline-block;width:14px;height:14px;border-radius:2px;background:var(--plddt-very-high,#0053D6)"></span> <span style="color:var(--ink)">&gt;90</span> <span style="color:var(--ink-faint)">Very high confidence</span></div>
         <div style="display:flex;align-items:center;gap:8px"><span style="display:inline-block;width:14px;height:14px;border-radius:2px;background:var(--plddt-confident,#65CBF3)"></span> <span style="color:var(--ink)">70&ndash;90</span> <span style="color:var(--ink-faint)">Confident</span></div>
         <div style="display:flex;align-items:center;gap:8px"><span style="display:inline-block;width:14px;height:14px;border-radius:2px;background:var(--plddt-low,#FFDB13)"></span> <span style="color:var(--ink)">50&ndash;70</span> <span style="color:var(--ink-faint)">Low confidence</span></div>
         <div style="display:flex;align-items:center;gap:8px"><span style="display:inline-block;width:14px;height:14px;border-radius:2px;background:var(--plddt-very-low,#FF7D45)"></span> <span style="color:var(--ink)">&lt;50</span> <span style="color:var(--ink-faint)">Very low / disordered</span></div>
       </div>
+      <p style="font-family:'Fraunces',serif;font-size:10.5px;line-height:1.55;color:var(--ink-faint);font-weight:300;margin-top:10px">
+        pLDDT (predicted Local Distance Difference Test) is a per-residue confidence metric ranging from 0&ndash;100. Regions with pLDDT &lt;50 are likely disordered or poorly predicted. Regions &gt;90 are expected to be modeled with high accuracy.
+      </p>
     </div>
 
     <div class="panel">
-      <h3>Pathogenic hotspots</h3>
-
-      <div class="mutation" data-mut="P286R">
-        <div class="head">
-          <div class="name">P286R</div>
-          <div class="loc">EXO &middot; res. 286</div>
-        </div>
-        <div class="text">Ultra-mutator. ExoII motif. CRC &amp; endometrial. SBS10a/b.</div>
-      </div>
-
-      <div class="mutation" data-mut="V411L">
-        <div class="head">
-          <div class="name">V411L</div>
-          <div class="loc">EXO &middot; res. 411</div>
-        </div>
-        <div class="text">Proofreading-deficient. TMB &gt;100 mut/Mb. SBS10a.</div>
-      </div>
-
-      <div class="mutation" data-mut="S297F">
-        <div class="head">
-          <div class="name">S297F</div>
-          <div class="loc">EXO &middot; res. 297</div>
-        </div>
-        <div class="text">Germline ExoI. PPAP predisposition. SBS28.</div>
-      </div>
-
-      <div class="mutation" data-mut="L424V">
-        <div class="head">
-          <div class="name">L424V</div>
-          <div class="loc">EXO &middot; res. 424</div>
-        </div>
-        <div class="text">Somatic. Moderate mutator phenotype.</div>
-      </div>
-
-      <div class="mutation" data-mut="F367S">
-        <div class="head">
-          <div class="name">F367S</div>
-          <div class="loc">EXO &middot; res. 367</div>
-        </div>
-        <div class="text">Germline PPAP. Adjacent to ExoIII catalytic triad.</div>
-      </div>
+      <h3>Structure details</h3>
+      <p style="font-family:'Fraunces',serif;font-size:12.5px;line-height:1.55;color:var(--ink);font-weight:300">
+        This viewer displays the <em style="color:#65CBF3">AlphaFold predicted structure</em> for the full-length POLE catalytic subunit (2,286 residues). Unlike experimental PDB structures which capture partial complexes, this model covers the entire polypeptide chain including regions not resolved in cryo-EM.
+      </p>
+      <p style="font-family:'Fraunces',serif;font-size:12px;line-height:1.55;color:var(--ink-dim);margin-top:8px;font-weight:300">
+        The default pLDDT coloring highlights regions of high vs. low prediction confidence. Structured catalytic domains (exonuclease, polymerase) typically show high confidence (&gt;90), while flexible loops and disordered termini may show lower scores.
+      </p>
     </div>
 
-    <div class="panel">
-      <h3>Catalytic mechanism</h3>
-      <p style="font-family:'Fraunces',serif;font-size:12px;line-height:1.6;color:var(--ink-dim);font-weight:300">
-        <b style="color:var(--ink);font-weight:500">Two-metal-ion catalysis:</b> Metal A (Mg&sup2;+) lowers the p<em>K</em>a of the primer 3&prime;-OH. Metal B coordinates the &beta;,&gamma;-phosphates of the incoming dNTP. Both metals are chelated by conserved aspartates D640, D642, D860.
+    <div class="panel" style="background:rgba(101,203,243,0.04);border:1px solid rgba(101,203,243,0.12)">
+      <h3 style="color:#65CBF3;font-size:10px;letter-spacing:0.08em">Model note</h3>
+      <p style="font-family:'Fraunces',serif;font-size:10.5px;line-height:1.55;color:var(--ink-faint);font-weight:300;margin:0">
+        This is a <b style="color:var(--ink-dim)">computational prediction</b>, not an experimentally determined structure. AlphaFold predictions should be interpreted alongside experimental data. For atomic-coordinate analysis from cryo-EM, use the <a href="molstar.html" style="color:var(--accent);text-decoration:none;font-weight:500">Mol* Coordinate Viewer</a> (PDB 9F6D).
       </p>
     </div>
 
     <div class="panel" style="border-top:1px solid var(--line)">
       <h3 style="font-size:10px;color:var(--ink-faint);letter-spacing:0.08em">References</h3>
       <div style="font-family:'JetBrains Mono',monospace;font-size:9px;line-height:1.65;color:var(--ink-faint)">
-        Roske &amp; Yeeles, <em>NSMB</em> 31:1921 (2024)<br>
-        He et al., <em>Nat Commun</em> 15:7847 (2024)<br>
-        Mur et al., <em>Genome Med</em> 15:85 (2023)<br>
-        Yuan et al., <em>Nat Commun</em> 11:3156 (2020)<br>
-        Hogg et al., <em>NSMB</em> 21:49 (2014)
+        Jumper et al., <em>Nature</em> 596:583 (2021)<br>
+        Varadi et al., <em>NAR</em> 50:D439 (2022)<br>
+        Roske &amp; Yeeles, <em>NSMB</em> 31:1921 (2024)
       </div>
     </div>
   </aside>
@@ -414,10 +334,10 @@
   <footer>
     <div class="left">
       <span class="ax">viewer &middot; <b>Mol*</b></span>
-      <span class="ax">data &middot; <b>PDB coordinates</b></span>
-      <span class="ax">structure &middot; <b id="footer-pdb">9F6D</b></span>
+      <span class="ax">source &middot; <b>AlphaFold v4</b></span>
+      <span class="ax">entry &middot; <b>AF-Q07864-F1</b></span>
     </div>
-    <div>POLE &middot; COORDINATE VIEWER</div>
+    <div>POLE &middot; ALPHAFOLD PREDICTED STRUCTURE</div>
   </footer>
 </div>
 
@@ -437,26 +357,10 @@ const DOMAINS = {
 
 const DOMAIN_ORDER = ['ntd','exo','palm','pdomain','fingers','thumb','inactpol','ctd'];
 
-const MUTATIONS = [
-  { id: 'P286R', residue: 286 },
-  { id: 'V411L', residue: 411 },
-  { id: 'S297F', residue: 297 },
-  { id: 'L424V', residue: 424 },
-  { id: 'F367S', residue: 367 },
-];
-
-const PDB_INFO = {
-  '9F6D': { citation: 'Roske & Yeeles 2024', detail: 'Open Finger conformation', resolution: '3.0 Å cryo-EM' },
-  '9F6E': { citation: 'Roske & Yeeles 2024', detail: 'Ajar Finger conformation', resolution: '3.2 Å cryo-EM' },
-  '9F6F': { citation: 'Roske & Yeeles 2024', detail: 'Closed Finger conformation', resolution: '3.1 Å cryo-EM' },
-  '9B8S': { citation: 'He et al. 2024',      detail: 'Pol ε–PCNA–DNA complex',    resolution: '3.3 Å cryo-EM' },
-};
-
 // ==================== STATE ====================
 
-let currentPdb = '9F6D';
 let currentRepr = 'cartoon';
-let currentColorMode = 'domain';
+let currentColorMode = 'plddt';
 let viewer = null;
 let autoRotate = true;
 
@@ -484,8 +388,6 @@ async function initViewer() {
     viewportShowExpand: false,
     viewportShowSelectionMode: false,
     viewportShowAnimation: false,
-    pdbProvider: 'rcsb',
-    volumeStreamingServer: 'https://maps.rcsb.org',
   });
 
   // Set dark background
@@ -500,17 +402,23 @@ async function initViewer() {
   // Force the plugin to detect its container size
   try { viewer.handleResize(); } catch (e) { /* ignore */ }
 
-  setProgress(40, 'Downloading PDB 9F6D…');
-  await loadStructure('9F6D');
+  setProgress(40, 'Downloading AlphaFold structure…');
+
+  // Load AlphaFold mmCIF from EBI
+  const afUrl = 'https://alphafold.ebi.ac.uk/files/AF-Q07864-F1-model_v4.cif';
+  await viewer.loadStructureFromUrl(afUrl, 'mmcif', false);
+
+  // Re-apply dark background
+  try {
+    viewer.plugin.canvas3d?.setProps({ renderer: { backgroundColor: 0x0E141E } });
+  } catch (e) { /* ignore */ }
 
   setProgress(90, 'Finalizing…');
 
   // Enable auto-rotate
   setAutoRotate(true);
 
-  // Zoom out so the full structure is visible on load.
-  // Wait for Mol*'s internal camera reset (from loadStructureFromUrl) to settle,
-  // then zoom out relative to the fitted view.
+  // Zoom to fit
   zoomToFit();
 
   // Done loading
@@ -522,31 +430,23 @@ async function initViewer() {
 
 // ==================== STRUCTURE LOADING ====================
 
-// Local BinaryCIF files — avoids browser extension blocking RCSB CDN
-const BCIF_URL = pdbId => `./data/pdb/${pdbId}.bcif`;
-
-async function loadStructure(pdbId, repr, colorMode) {
+async function reloadStructure() {
   if (!viewer) return;
-  currentPdb = pdbId;
-  repr = repr || currentRepr;
-  colorMode = colorMode || currentColorMode;
 
-  // Clear existing structures before loading a new one
-  try { await viewer.plugin.clear(); } catch (e) { /* first load — nothing to clear */ }
+  try { await viewer.plugin.clear(); } catch (e) { /* ignore */ }
 
-  // Load local BinaryCIF (isBinary = true)
-  await viewer.loadStructureFromUrl(BCIF_URL(pdbId), 'mmcif', true);
+  const afUrl = 'https://alphafold.ebi.ac.uk/files/AF-Q07864-F1-model_v4.cif';
+  await viewer.loadStructureFromUrl(afUrl, 'mmcif', false);
 
-  // Re-apply dark background (clear() resets it)
+  // Re-apply dark background
   try {
     viewer.plugin.canvas3d?.setProps({ renderer: { backgroundColor: 0x0E141E } });
   } catch (e) { /* ignore */ }
 
-  updateLabels(pdbId);
   zoomToFit();
 }
 
-// Zoom out so the full complex is visible with generous padding.
+// Zoom out so the full structure is visible with generous padding.
 function zoomToFit() {
   const doReset = () => {
     try {
@@ -554,18 +454,9 @@ function zoomToFit() {
       viewer.plugin.canvas3d?.requestCameraReset({ durationMs: 0 });
     } catch (e) { /* ignore */ }
   };
-  // Let Mol* finish loading, then trigger a proper resize + camera reset.
   setTimeout(doReset, 300);
   setTimeout(doReset, 1000);
   setTimeout(doReset, 2500);
-}
-
-function updateLabels(pdbId) {
-  const info = PDB_INFO[pdbId] || {};
-  document.getElementById('current-pdb-label').textContent = `PDB ${pdbId}`;
-  document.getElementById('active-pdb-info').textContent = `${pdbId} · ${info.citation || ''}`;
-  document.getElementById('active-resolution').textContent = info.resolution || '';
-  document.getElementById('footer-pdb').textContent = pdbId;
 }
 
 // ==================== AUTO-ROTATE ====================
@@ -588,17 +479,6 @@ function setAutoRotate(on) {
 function focusDomain(key) {
   const dom = DOMAINS[key];
   if (!dom || !viewer) return;
-
-  // For now, load with only that domain highlighted
-  // Full implementation would use Mol* selection API
-  try {
-    viewer.plugin.canvas3d?.requestCameraReset();
-  } catch (e) { /* ignore */ }
-}
-
-function focusMutation(mutId) {
-  const mut = MUTATIONS.find(m => m.id === mutId);
-  if (!mut || !viewer) return;
   try {
     viewer.plugin.canvas3d?.requestCameraReset();
   } catch (e) { /* ignore */ }
@@ -608,40 +488,23 @@ function focusMutation(mutId) {
 
 initViewer().catch(err => {
   console.error('Mol* init failed:', err);
-  document.getElementById('loading-text').textContent = 'Failed to load Mol*. Check console.';
+  document.getElementById('loading-text').textContent = 'Failed to load AlphaFold structure. Check console.';
 });
 
 // ==================== UI WIRING ====================
-
-// PDB structure selector
-document.querySelectorAll('#pdb-selector button').forEach(btn => {
-  btn.addEventListener('click', async () => {
-    const pdb = btn.dataset.pdb;
-    if (pdb === currentPdb) return;
-
-    document.querySelectorAll('#pdb-selector button').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-
-    setProgress(10, `Loading PDB ${pdb}…`);
-    document.getElementById('loading').style.display = '';
-    await loadStructure(pdb);
-    setAutoRotate(autoRotate);
-    document.getElementById('loading').style.display = 'none';
-  });
-});
 
 // Representation selector
 document.querySelectorAll('#repr-selector button').forEach(btn => {
   btn.addEventListener('click', async () => {
     const repr = btn.dataset.repr;
-    if (repr === currentRepr && currentColorMode !== 'bfactor') return;
+    if (repr === currentRepr) return;
 
     document.querySelectorAll('#repr-selector button').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     currentRepr = repr;
 
     document.getElementById('repr-label').textContent = repr.replace(/_/g, ' ');
-    await loadStructure(currentPdb, repr, currentColorMode);
+    await reloadStructure();
     setAutoRotate(autoRotate);
   });
 });
@@ -657,12 +520,8 @@ document.querySelectorAll('#color-mode button').forEach(btn => {
     currentColorMode = mode;
 
     document.getElementById('color-label').textContent = mode + ' coloring';
-    await loadStructure(currentPdb, currentRepr, mode);
+    await reloadStructure();
     setAutoRotate(autoRotate);
-
-    // Toggle pLDDT legend visibility
-    const plddtPanel = document.getElementById('plddt-legend-panel');
-    if (plddtPanel) plddtPanel.style.display = (mode === 'plddt') ? '' : 'none';
   });
 });
 
@@ -680,13 +539,6 @@ domainEls.forEach(el => {
     } else {
       viewer?.plugin?.canvas3d?.requestCameraReset();
     }
-  });
-});
-
-// Mutation cards — focus
-document.querySelectorAll('.mutation').forEach(el => {
-  el.addEventListener('click', () => {
-    focusMutation(el.dataset.mut);
   });
 });
 
@@ -711,7 +563,6 @@ document.getElementById('btn-reset').addEventListener('click', () => {
 
 document.getElementById('btn-measure').addEventListener('click', () => {
   if (!viewer) return;
-  // Toggle Mol*'s built-in selection/measurement mode
   const btn = document.getElementById('btn-measure');
   const isActive = btn.classList.toggle('active');
   try {
@@ -724,7 +575,6 @@ document.getElementById('btn-measure').addEventListener('click', () => {
 });
 
 document.getElementById('btn-molstar-ui').addEventListener('click', () => {
-  // Toggle Mol* built-in controls
   if (!viewer) return;
   const isExpanded = viewer.plugin.layout.state.isExpanded;
   viewer.plugin.layout.setProps({ isExpanded: !isExpanded });

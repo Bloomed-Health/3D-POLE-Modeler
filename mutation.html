@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='28' font-size='28'>E</text></svg>">
 <title>POLE c.138del · p.Leu46Phefs*8 · Mutation Structural Analysis</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -32,7 +33,14 @@
     <button class="sidebar-toggle" id="sidebar-toggle" aria-label="Toggle sidebars">&#9776;</button>
   </header>
 
+  <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
+
   <aside class="left" id="sidebar-left">
+    <button class="sidebar-close" id="sidebar-close-left" aria-label="Close menu">&times;</button>
+    <div class="mobile-sidebar-tabs">
+      <button class="active" data-sidebar="left">Controls</button>
+      <button data-sidebar="right">Info</button>
+    </div>
     <div class="panel">
       <h3>Variant details</h3>
       <div class="info-card">
@@ -94,9 +102,13 @@
         <div style="font-family:'Fraunces',serif;font-size:13px;color:var(--accent);font-weight:500;margin-bottom:3px">&larr; Schematic Ribbon Viewer</div>
         <div style="font-size:10px;color:var(--ink-dim)">Procedural domain topology model</div>
       </a>
-      <a href="molstar.html" style="display:block;padding:9px 10px;background:rgba(122,187,168,0.08);border:1px solid rgba(122,187,168,0.2);border-left:2px solid var(--accent);border-radius:2px;text-decoration:none;color:var(--ink);font-size:11px;transition:background .2s">
+      <a href="molstar.html" style="display:block;padding:9px 10px;background:rgba(122,187,168,0.08);border:1px solid rgba(122,187,168,0.2);border-left:2px solid var(--accent);border-radius:2px;text-decoration:none;color:var(--ink);font-size:11px;transition:background .2s;margin-bottom:6px">
         <div style="font-family:'Fraunces',serif;font-size:13px;color:var(--accent);font-weight:500;margin-bottom:3px">Mol* Coordinate Viewer</div>
         <div style="font-size:10px;color:var(--ink-dim)">PDB 9F6D &middot; real atomic coordinates</div>
+      </a>
+      <a href="alphafold.html" style="display:block;padding:9px 10px;background:rgba(101,203,243,0.08);border:1px solid rgba(101,203,243,0.2);border-left:2px solid #65CBF3;border-radius:2px;text-decoration:none;color:var(--ink);font-size:11px;transition:background .2s">
+        <div style="font-family:'Fraunces',serif;font-size:13px;color:#65CBF3;font-weight:500;margin-bottom:3px">AlphaFold Predicted Structure</div>
+        <div style="font-size:10px;color:var(--ink-dim)">Full-length 2,286 AA &middot; pLDDT confidence</div>
       </a>
     </div>
   </aside>
@@ -161,6 +173,11 @@
   </main>
 
   <aside class="right" id="sidebar-right">
+    <button class="sidebar-close" id="sidebar-close-right" aria-label="Close menu">&times;</button>
+    <div class="mobile-sidebar-tabs">
+      <button data-sidebar="left">Controls</button>
+      <button class="active" data-sidebar="right">Info</button>
+    </div>
     <div class="panel">
       <h3>Molecular consequence</h3>
       <p style="font-family:'Fraunces',serif;font-size:12.5px;line-height:1.6;color:var(--ink);font-weight:300">
@@ -355,9 +372,34 @@ document.getElementById('btn-screenshot').addEventListener('click', () => viewer
 document.getElementById('btn-reset').addEventListener('click', () => viewer.resetView());
 
 // ---- Sidebar toggle (mobile) ----
-document.getElementById('sidebar-toggle').addEventListener('click', () => {
-  document.getElementById('sidebar-left').classList.toggle('open');
-  document.getElementById('sidebar-right').classList.toggle('open');
+const sidebarToggle = document.getElementById('sidebar-toggle');
+const sidebarLeft = document.getElementById('sidebar-left');
+const sidebarRight = document.getElementById('sidebar-right');
+const sidebarBackdrop = document.getElementById('sidebar-backdrop');
+
+function openSidebar(which) {
+  sidebarLeft.classList.toggle('open', which === 'left');
+  sidebarRight.classList.toggle('open', which === 'right');
+  sidebarBackdrop.classList.add('open');
+  document.querySelectorAll('.mobile-sidebar-tabs button').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.sidebar === which);
+  });
+}
+function closeSidebars() {
+  sidebarLeft.classList.remove('open');
+  sidebarRight.classList.remove('open');
+  sidebarBackdrop.classList.remove('open');
+}
+
+sidebarToggle.addEventListener('click', () => {
+  if (sidebarLeft.classList.contains('open') || sidebarRight.classList.contains('open')) closeSidebars();
+  else openSidebar('left');
+});
+document.getElementById('sidebar-close-left').addEventListener('click', closeSidebars);
+document.getElementById('sidebar-close-right').addEventListener('click', closeSidebars);
+sidebarBackdrop.addEventListener('click', closeSidebars);
+document.querySelectorAll('.mobile-sidebar-tabs button').forEach(btn => {
+  btn.addEventListener('click', () => openSidebar(btn.dataset.sidebar));
 });
 
 // ---- Keyboard help ----
