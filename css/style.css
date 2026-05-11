@@ -929,7 +929,7 @@ footer .ax b { color: var(--ink); font-weight: 500; }
   .mobile-sidebar-tabs {
     display: flex;
     position: sticky;
-    top: 0;
+    top: 49px;
     z-index: 59;
     width: 100%;
     background: rgba(8, 11, 17, 0.95);
