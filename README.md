@@ -1,5 +1,10 @@
 # 3D POLE Modeler
 
+[![CI](https://github.com/bloomed-health/3D-POLE-Render/actions/workflows/ci.yml/badge.svg)](https://github.com/bloomed-health/3D-POLE-Render/actions/workflows/ci.yml)
+[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
+[![Node](https://img.shields.io/badge/node-%3E%3D20-brightgreen.svg)](https://nodejs.org/)
+[![Contributing](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
+
 Interactive 3D structural viewer for the human DNA Polymerase epsilon (Pol e) catalytic subunit (p261, UniProt Q07864).
 
 ## Overview
@@ -134,4 +139,4 @@ For coordinate-derived molecular visualization, load PDB **9F6D** (human Pol e-P
 
 ## License
 
-Proprietary - Bloomed Health
+[Apache 2.0](LICENSE) — see [SECURITY.md](SECURITY.md) for vulnerability reporting.

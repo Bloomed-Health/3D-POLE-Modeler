@@ -1,0 +1,25 @@
+{
+  "name": "3d-pole-render",
+  "version": "0.1.0",
+  "description": "3D structural viewer for DNA Polymerase Epsilon (POLE)",
+  "type": "module",
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "lint": "eslint js/",
+    "lint:fix": "eslint js/ --fix"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.0.0",
+    "@vitest/coverage-v8": "^3.2.4",
+    "eslint": "^9.0.0",
+    "three": "0.160.0",
+    "vitest": "^3.2.4"
+  },
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/bloomed-health/3D-POLE-Render.git"
+  }
+}

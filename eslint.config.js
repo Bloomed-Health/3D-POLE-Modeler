@@ -1,0 +1,50 @@
+import js from '@eslint/js';
+
+export default [
+  js.configs.recommended,
+  {
+    ignores: ['js/molstar-viewer.js'],
+  },
+  {
+    files: ['js/**/*.js'],
+    languageOptions: {
+      ecmaVersion: 2022,
+      sourceType: 'module',
+      globals: {
+        document: 'readonly',
+        window: 'readonly',
+        fetch: 'readonly',
+        console: 'readonly',
+        requestAnimationFrame: 'readonly',
+        cancelAnimationFrame: 'readonly',
+        performance: 'readonly',
+        setTimeout: 'readonly',
+        clearTimeout: 'readonly',
+        setInterval: 'readonly',
+        clearInterval: 'readonly',
+        URL: 'readonly',
+        HTMLElement: 'readonly',
+        MouseEvent: 'readonly',
+        KeyboardEvent: 'readonly',
+        ResizeObserver: 'readonly',
+        IntersectionObserver: 'readonly',
+        alert: 'readonly',
+        confirm: 'readonly',
+        navigator: 'readonly',
+        location: 'readonly',
+        history: 'readonly',
+        localStorage: 'readonly',
+        sessionStorage: 'readonly',
+        Image: 'readonly',
+        Event: 'readonly',
+        CustomEvent: 'readonly',
+      },
+    },
+    rules: {
+      'no-unused-vars': 'warn',
+      'no-undef': 'error',
+      'semi': 'warn',
+      'eqeqeq': 'warn',
+    },
+  },
+];
