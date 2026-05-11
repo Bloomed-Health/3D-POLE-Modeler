@@ -42,6 +42,24 @@ For per-residue conservation (ConSurf-style):
 2. Official 96-channel mutational signature profiles
 3. Reference: Alexandrov et al., Nature 578:94-101 (2020)
 
+### AlphaFold predicted structure (`raw/`)
+Downloaded automatically by the pipeline from AlphaFold EBI.
+- AF-Q07864-F1-model_v4.cif (full 2286-residue predicted structure)
+- B-factor field stores pLDDT confidence scores (0–100)
+
+### DSSP secondary structure (external binary)
+The pipeline attempts to use `mkdssp` (or `dssp`) if available on `$PATH`.
+- Install: `conda install -c salilab dssp` or `apt install dssp`
+- Produces more accurate SS assignments than mmCIF records or geometry heuristics
+- Fallback chain: DSSP binary → mmCIF `_struct_conf` records → Cα geometry heuristic
+
+### COSMIC SBS signatures (`COSMIC_v3.4_SBS_GRCh38.txt`)
+Place in `pipeline/data/` for the pipeline to use official profiles:
+1. Download from https://cancer.sanger.ac.uk/signatures/documents/2123/COSMIC_v3.4_SBS_GRCh38.txt
+2. Official 96-channel mutational signature profiles
+3. Reference: Alexandrov et al., Nature 578:94-101 (2020)
+4. When present, the pipeline uses official profiles instead of built-in approximations
+
 ## Fallback Behavior
 
 When data files are absent, the pipeline falls back to built-in values:
@@ -50,6 +68,8 @@ When data files are absent, the pipeline falls back to built-in values:
 - **Conservation**: Generates synthetic per-domain estimates (NOT real per-residue data)
 - **Signatures**: Uses hand-curated approximations of SBS10a/b/28/14 profiles
 - **PDB**: Downloads from RCSB automatically
+- **AlphaFold**: Downloads from EBI automatically; skipped on failure
+- **DSSP**: Falls back to mmCIF records, then geometry heuristic
 
 Built-in fallback values are clearly labeled in the JSON output with
 `"source": "built_in"` vs `"source": "file"` provenance tracking.

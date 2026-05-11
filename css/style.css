@@ -31,6 +31,12 @@
   --c-dna-template: #8c9aa8;
   --c-dna-primer: #6a9e96;
   --c-mg: #7abb4e;
+
+  /* AlphaFold pLDDT confidence colors */
+  --plddt-very-high: #0053D6;   /* >90: very high confidence */
+  --plddt-confident: #65CBF3;   /* 70–90: confident */
+  --plddt-low: #FFDB13;         /* 50–70: low confidence */
+  --plddt-very-low: #FF7D45;    /* <50: very low / disordered */
 }
 
 *, *::before, *::after {

@@ -42,14 +42,28 @@ function run_pipeline(; use_pdb::Bool=true)
             # Extract C-alpha backbone
             residues = POLEPipeline.extract_ca_backbone(struc, config.primary_chain)
 
-            # Extract secondary structure from mmCIF
-            ss_elements = POLEPipeline.extract_ss_from_mmcif(pdb_path)
+            # Secondary structure assignment: DSSP → mmCIF records → geometry heuristic
+            ss_elements = POLEPipeline.SSElement[]
+
+            # Try DSSP binary first (most accurate)
+            dssp_result = POLEPipeline.run_dssp(pdb_path)
+            if dssp_result !== nothing && !isempty(dssp_result)
+                ss_elements = dssp_result
+                @info "Using DSSP binary for SS assignment"
+            else
+                # Fallback: mmCIF _struct_conf records
+                ss_elements = POLEPipeline.extract_ss_from_mmcif(pdb_path)
+                if !isempty(ss_elements)
+                    @info "Using mmCIF SS records for SS assignment"
+                end
+            end
 
             # Assign SS to residues
             if !isempty(ss_elements)
                 residues = POLEPipeline.assign_ss_to_residues(residues, ss_elements)
             else
-                # Fallback to geometry-based assignment
+                # Final fallback: geometry-based assignment
+                @info "Using geometry heuristic for SS assignment"
                 residues = POLEPipeline.assign_secondary_structure(residues)
             end
 
@@ -122,6 +136,23 @@ function run_pipeline(; use_pdb::Bool=true)
     )
 
     # ═══════════════════════════════════════════════════════════════════
+    # Phase 1b: AlphaFold
+    # ═══════════════════════════════════════════════════════════════════
+    @info "─── Phase 1b: AlphaFold ───"
+
+    plddt = Float64[]
+    try
+        af_path = POLEPipeline.download_alphafold(
+            POLEPipeline.ALPHAFOLD_UNIPROT, config.cache_dir)
+        af_struc = POLEPipeline.parse_structure(af_path)
+        plddt = POLEPipeline.extract_plddt_scores(af_struc, "A";
+            total_residues=config.total_residues)
+        @info "AlphaFold pLDDT: mean=$(round(mean(plddt), digits=2)), min=$(round(minimum(plddt), digits=2)), max=$(round(maximum(plddt), digits=2))"
+    catch e
+        @warn "AlphaFold download/parsing failed, continuing without pLDDT" exception=e
+    end
+
+    # ═══════════════════════════════════════════════════════════════════
     # Phase 2: Per-Residue Scores
     # ═══════════════════════════════════════════════════════════════════
     @info "─── Phase 2: Per-Residue Scores ───"
@@ -190,6 +221,7 @@ function run_pipeline(; use_pdb::Bool=true)
         variant_density=variant_density,
         pathogenicity=pathogenicity,
         charge=charge,
+        plddt=plddt,
         domain_conservation=domain_conservation,
         domain_density=domain_density,
         domain_charge=domain_charge,
@@ -203,7 +235,10 @@ function run_pipeline(; use_pdb::Bool=true)
     mutations = POLEPipeline.POLE_MUTATIONS
 
     # Signature deconvolution
-    sig_refs = POLEPipeline.load_reference_signatures()
+    # Prefer official COSMIC v3.4 file when present; fall back to built-in approximations
+    cosmic_sigs_path = joinpath(config.data_dir, "COSMIC_v3.4_SBS_GRCh38.txt")
+    sig_refs = POLEPipeline.load_reference_signatures(
+        isfile(cosmic_sigs_path) ? cosmic_sigs_path : "")
     signatures = POLEPipeline.get_pole_mutation_signatures()
 
     # ACMG classification

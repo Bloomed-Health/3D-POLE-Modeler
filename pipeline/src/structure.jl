@@ -3,11 +3,92 @@ Structural math: SS assignment, B-factors, domain geometry.
 """
 
 """
+    run_dssp(pdb_path) -> Union{Vector{SSElement}, Nothing}
+
+Attempt to run the external `mkdssp` binary for DSSP secondary structure assignment.
+Returns `nothing` if mkdssp is not available or fails.
+"""
+function run_dssp(pdb_path::AbstractString)
+    dssp_cmd = Sys.which("mkdssp")
+    if dssp_cmd === nothing
+        dssp_cmd = Sys.which("dssp")
+    end
+    dssp_cmd === nothing && return nothing
+
+    try
+        output = read(`$dssp_cmd -i $pdb_path --output-format dssp`, String)
+        return parse_dssp_output(output)
+    catch e
+        @warn "DSSP execution failed" exception=e
+        return nothing
+    end
+end
+
+"""
+    parse_dssp_output(dssp_text) -> Vector{SSElement}
+
+Parse DSSP output into SSElement vector. Reads the residue lines after the header
+and maps DSSP codes (H/G/I → :H, E/B → :E, else → :L).
+"""
+function parse_dssp_output(dssp_text::AbstractString)
+    elements = SSElement[]
+    in_residues = false
+    current_type = :L
+    current_start = 0
+    prev_resnum = 0
+
+    for line in split(dssp_text, '\n')
+        if startswith(line, "  #  RESIDUE")
+            in_residues = true
+            continue
+        end
+        !in_residues && continue
+        length(line) < 17 && continue
+
+        # DSSP format: columns 6-10 = residue number, column 17 = SS code
+        resnum_str = strip(line[6:min(10, length(line))])
+        resnum = tryparse(Int, resnum_str)
+        resnum === nothing && continue
+
+        ss_char = length(line) >= 17 ? line[17] : ' '
+        ss_type = if ss_char in ('H', 'G', 'I')
+            :H
+        elseif ss_char in ('E', 'B')
+            :E
+        else
+            :L
+        end
+
+        if ss_type != current_type || resnum != prev_resnum + 1
+            if current_start > 0 && current_type != :L
+                push!(elements, SSElement(current_type, current_start, prev_resnum,
+                    prev_resnum - current_start + 1))
+            end
+            current_type = ss_type
+            current_start = resnum
+        end
+        prev_resnum = resnum
+    end
+
+    # Flush last element
+    if current_start > 0 && current_type != :L
+        push!(elements, SSElement(current_type, current_start, prev_resnum,
+            prev_resnum - current_start + 1))
+    end
+
+    sort!(elements, by=e -> e.start_res)
+    @info "DSSP: $(length(elements)) SS elements ($(count(e->e.type==:H, elements)) helices, $(count(e->e.type==:E, elements)) strands)"
+    return elements
+end
+
+"""
     assign_secondary_structure(residues) -> Vector{Residue3D}
 
 DSSP-inspired secondary structure assignment from C-alpha geometry.
 Uses C-alpha distance patterns to identify helices and strands when PDB SS records
 are not available.
+
+Fallback chain: DSSP binary → mmCIF `_struct_conf` records → geometry heuristic (this function).
 
 - α-helix: Cα(i) to Cα(i+3) distance ~5.0-5.5 Å
 - β-strand: Cα(i) to Cα(i+2) distance ~6.5-7.0 Å (extended)

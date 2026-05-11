@@ -236,37 +236,66 @@ function compute_variant_density(
 end
 
 """
-    compute_pathogenicity_map(clinvar, cosmic, alphamissense, total_residues) -> Vector{Float64}
+Pathogenicity source weights for combining ClinVar, COSMIC, and AlphaMissense scores.
+
+Rationale:
+- ClinVar (0.5): Expert-reviewed clinical variant classifications with structured
+  evidence codes. Highest weight because assessments are curated by clinical labs
+  and reviewed against ACMG/AMP guidelines.
+- COSMIC (0.3): Somatic mutation recurrence across cancer cohorts. Recurrent somatic
+  mutations in a specific gene/domain are strong evidence for functional impact,
+  but lack germline clinical interpretation.
+- AlphaMissense (0.2): Computational pathogenicity predictor based on protein language
+  models. Genome-wide coverage but lower weight because purely computational with
+  no clinical review.
+
+Note: These weights are heuristic and not derived from a formal calibration study.
+For clinical use, individual source scores should be evaluated independently.
+"""
+const PATHOGENICITY_WEIGHTS = (clinvar=0.5, cosmic=0.3, alphamissense=0.2)
+
+"""
+    compute_pathogenicity_map(clinvar, cosmic, alphamissense, total_residues;
+                              weights=PATHOGENICITY_WEIGHTS) -> Vector{Float64}
 
 Combine variant sources into per-residue pathogenicity score.
 Weights: ClinVar (0.5), COSMIC recurrence (0.3), AlphaMissense (0.2).
+
+The weights are heuristic: ClinVar = expert-reviewed clinical classifications,
+COSMIC = somatic recurrence across cancer cohorts, AlphaMissense = computational
+protein language model predictions. See `PATHOGENICITY_WEIGHTS` for rationale.
 """
 function compute_pathogenicity_map(
     clinvar::Vector{Variant},
     cosmic::Vector{Variant},
     alphamissense::Vector{Variant},
-    total_residues::Int,
+    total_residues::Int;
+    weights::NamedTuple=PATHOGENICITY_WEIGHTS,
 )
     scores = fill(0.05, total_residues)  # baseline
 
-    # ClinVar - highest weight
+    w_cv = weights.clinvar
+    w_co = weights.cosmic
+    w_am = weights.alphamissense
+
+    # ClinVar - highest weight (expert-reviewed clinical classifications)
     for v in clinvar
         if 1 <= v.residue <= total_residues
-            scores[v.residue] = max(scores[v.residue], v.score * 0.5 + scores[v.residue] * 0.5)
+            scores[v.residue] = max(scores[v.residue], v.score * w_cv + scores[v.residue] * (1 - w_cv))
         end
     end
 
-    # COSMIC recurrence
+    # COSMIC recurrence (somatic mutation frequency across cancer cohorts)
     for v in cosmic
         if 1 <= v.residue <= total_residues
-            scores[v.residue] = max(scores[v.residue], v.score * 0.3 + scores[v.residue] * 0.7)
+            scores[v.residue] = max(scores[v.residue], v.score * w_co + scores[v.residue] * (1 - w_co))
         end
     end
 
-    # AlphaMissense
+    # AlphaMissense (computational pathogenicity predictor)
     for v in alphamissense
         if 1 <= v.residue <= total_residues
-            scores[v.residue] = max(scores[v.residue], v.score * 0.2 + scores[v.residue] * 0.8)
+            scores[v.residue] = max(scores[v.residue], v.score * w_am + scores[v.residue] * (1 - w_am))
         end
     end
 

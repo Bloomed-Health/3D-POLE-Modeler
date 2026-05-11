@@ -103,8 +103,9 @@ function shannon_conservation(residues::Vector{Char})
         end
     end
 
-    # Maximum possible entropy for 20 amino acids
-    H_max = log2(min(20, n))
+    # Maximum possible entropy for the number of distinct amino acid types observed
+    n_types = length(counts)
+    H_max = log2(min(n_types, 20))
     if H_max ≈ 0.0
         return 1.0
     end

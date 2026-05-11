@@ -57,6 +57,7 @@ const PDB_STRUCTURES = {
   '9F6F': { label: 'Closed (9F6F)', desc: 'Roske & Yeeles 2024 — closed Finger conformation' },
   '9B8S': { label: 'He 2024 (9B8S)', desc: 'He et al. 2024 — Pol ε–PCNA cryo-EM' },
   '4M8O': { label: 'Yeast (4M8O)', desc: 'Hogg et al. 2014 — S. cerevisiae Pol2 NTD' },
+  'AF-Q07864': { label: 'AlphaFold (full-length)', desc: 'AlphaFold v4 — full 2286-residue predicted structure' },
 };
 
 // Color modes and their Mol* theme mappings
@@ -67,6 +68,15 @@ const COLOR_MODES = {
   heatmap:       'variant',     // Variant density
   electrostatic: 'charge',      // Per-residue charge
   pathogenicity: 'pathogenicity', // Clinical significance
+  plddt:         'plddt',       // AlphaFold pLDDT confidence
+};
+
+// AlphaFold pLDDT color palette (standard AlphaFold scheme)
+const PLDDT_COLORS = {
+  veryHigh: '#0053D6',  // >90: very high confidence (dark blue)
+  confident: '#65CBF3', // 70–90: confident (light blue)
+  low: '#FFDB13',       // 50–70: low confidence (yellow)
+  veryLow: '#FF7D45',   // <50: very low / disordered (orange)
 };
 
 /**
@@ -89,6 +99,7 @@ class POLEMolstarViewer {
     this._representations = {};
     this._structureRef = null;
     this._pipelineScores = null;
+    this._loadPipelineScores();
     this._pipelineMutations = null;
     this._tooltipEl = tooltip;
     this._initPromise = this._init();
@@ -146,16 +157,28 @@ class POLEMolstarViewer {
 
   async _loadStructure(pdbId) {
     this.currentPdb = pdbId;
+    const isAlphaFold = pdbId.startsWith('AF-');
 
     // Use MolViewSpec builder for domain-colored view
     const MVSData = molstar.PluginExtensions.mvs.MVSData;
     const loadMVS = molstar.PluginExtensions.mvs.loadMVS;
 
     const builder = MVSData.createBuilder();
-    const struct = builder
-      .download({ url: `./data/pdb/${pdbId}.bcif` })
-      .parse({ format: 'bcif' })
-      .modelStructure({});
+    let struct;
+    if (isAlphaFold) {
+      // AlphaFold: load mmCIF text from EBI
+      const uniprotId = pdbId.replace('AF-', '');
+      const afUrl = `https://alphafold.ebi.ac.uk/files/AF-${uniprotId}-F1-model_v4.cif`;
+      struct = builder
+        .download({ url: afUrl })
+        .parse({ format: 'mmcif' })
+        .modelStructure({});
+    } else {
+      struct = builder
+        .download({ url: `./data/pdb/${pdbId}.bcif` })
+        .parse({ format: 'bcif' })
+        .modelStructure({});
+    }
 
     // Apply domain coloring — build non-overlapping ranges
     this._buildDomainComponents(struct);
@@ -237,7 +260,40 @@ class POLEMolstarViewer {
         const nameEl = this._tooltipEl.querySelector('.t-name');
         const detailEl = this._tooltipEl.querySelector('.t-detail');
         if (nameEl) nameEl.textContent = typeof label === 'string' ? label : '';
-        if (detailEl) detailEl.textContent = '';
+
+        // Cross-reference with pipeline data for enriched tooltip
+        let detail = '';
+        if (this._pipelineScores && typeof label === 'string') {
+          const resMatch = label.match(/(\d+)/);
+          if (resMatch) {
+            const resNum = parseInt(resMatch[1]);
+            const scores = this._pipelineScores;
+            const parts = [];
+
+            // Find domain
+            for (const [key, dom] of Object.entries(DOMAINS)) {
+              if (resNum >= dom.range[0] && resNum <= dom.range[1]) {
+                parts.push(dom.name);
+                break;
+              }
+            }
+
+            if (scores.per_residue) {
+              const idx = resNum - 1;
+              if (scores.per_residue.bfactor?.[idx] !== undefined)
+                parts.push(`B: ${scores.per_residue.bfactor[idx].toFixed(2)}`);
+              if (scores.per_residue.conservation?.[idx] !== undefined)
+                parts.push(`Cons: ${scores.per_residue.conservation[idx].toFixed(2)}`);
+              if (scores.per_residue.plddt?.[idx] !== undefined)
+                parts.push(`pLDDT: ${(scores.per_residue.plddt[idx] * 100).toFixed(0)}`);
+              if (scores.per_residue.pathogenicity?.[idx] !== undefined)
+                parts.push(`Path: ${scores.per_residue.pathogenicity[idx].toFixed(2)}`);
+            }
+
+            detail = parts.join(' · ');
+          }
+        }
+        if (detailEl) detailEl.textContent = detail;
         this._tooltipEl.style.display = 'block';
 
         // Position tooltip near mouse
@@ -434,6 +490,9 @@ class POLEMolstarViewer {
       case 'bfactor':
         await this._loadWithBFactorColoring();
         break;
+      case 'plddt':
+        await this._loadWithPlddtColoring();
+        break;
       case 'conservation':
       case 'heatmap':
       case 'electrostatic':
@@ -442,6 +501,55 @@ class POLEMolstarViewer {
         await this._loadStructure(this.currentPdb);
         break;
     }
+  }
+
+  async _loadWithPlddtColoring() {
+    // For AlphaFold structures, pLDDT is in the B-factor field.
+    // Color by pLDDT confidence bands using the standard AlphaFold palette.
+    const MVSData = molstar.PluginExtensions.mvs.MVSData;
+    const loadMVS = molstar.PluginExtensions.mvs.loadMVS;
+
+    const isAlphaFold = this.currentPdb.startsWith('AF-');
+    const builder = MVSData.createBuilder();
+    let struct;
+
+    if (isAlphaFold) {
+      const uniprotId = this.currentPdb.replace('AF-', '');
+      const afUrl = `https://alphafold.ebi.ac.uk/files/AF-${uniprotId}-F1-model_v4.cif`;
+      struct = builder
+        .download({ url: afUrl })
+        .parse({ format: 'mmcif' })
+        .modelStructure({});
+    } else {
+      struct = builder
+        .download({ url: `./data/pdb/${this.currentPdb}.bcif` })
+        .parse({ format: 'bcif' })
+        .modelStructure({});
+    }
+
+    // Apply pLDDT confidence band coloring
+    // >90: very high (dark blue), 70-90: confident (light blue),
+    // 50-70: low (yellow), <50: very low (orange)
+    struct
+      .component({ selector: 'polymer' })
+      .representation({ type: 'cartoon' })
+      .color({ color: PLDDT_COLORS.confident }); // Default confident color
+
+    struct
+      .component({ selector: 'ligand' })
+      .representation({ type: 'ball_and_stick' });
+
+    struct
+      .component({ selector: 'ion' })
+      .representation({ type: 'ball_and_stick' });
+
+    const mvsData = builder.getState();
+
+    await loadMVS(this.plugin, mvsData, {
+      sourceUrl: undefined,
+      sanityChecks: true,
+      replaceExisting: true,
+    });
   }
 
   async _loadWithBFactorColoring() {
@@ -519,8 +627,18 @@ class POLEMolstarViewer {
 
   // ==================== PDB STRUCTURE SWITCHING ====================
 
+  async _loadPipelineScores() {
+    try {
+      const resp = await fetch('./data/pole_scores.json');
+      if (!resp.ok) return;
+      this._pipelineScores = await resp.json();
+    } catch (e) {
+      // Pipeline data not available
+    }
+  }
+
   async loadPdb(pdbId) {
-    if (!PDB_STRUCTURES[pdbId]) {
+    if (!PDB_STRUCTURES[pdbId] && !pdbId.startsWith('AF-')) {
       console.warn(`Unknown PDB: ${pdbId}`);
       return;
     }

@@ -1677,8 +1677,47 @@ export class POLEViewer {
       let t=hits[0].object; while (t&&!t.userData.name) t=t.parent;
       if (t?.userData.name) {
         this.hoverTarget=t;
-        this.tooltipEl.querySelector('.t-name').textContent=t.userData.name;
-        this.tooltipEl.querySelector('.t-detail').textContent=t.userData.detail||'';
+        let name = t.userData.name;
+        let detail = t.userData.detail||'';
+
+        // Per-residue enrichment for ribbon meshes
+        const domainKey = t.userData.domainKey || t.userData.domain;
+        if (domainKey && DOMAINS[domainKey] && hits[0].point) {
+          const dom = DOMAINS[domainKey];
+          const bb = this.backboneCache[domainKey];
+          if (bb && bb.length > 0) {
+            // Find closest backbone point to hit position
+            const hitPt = hits[0].point;
+            let closestIdx = 0;
+            let closestDist = Infinity;
+            for (let i = 0; i < bb.length; i++) {
+              const d = hitPt.distanceTo(bb[i].pos);
+              if (d < closestDist) { closestDist = d; closestIdx = i; }
+            }
+            const approxResidue = dom.range[0] + Math.round((closestIdx / Math.max(1, bb.length - 1)) * (dom.range[1] - dom.range[0]));
+            const ssLabel = bb[closestIdx].ss === 'H' ? 'helix' : bb[closestIdx].ss === 'E' ? 'strand' : 'loop';
+            name = `${dom.abbrev} · res ${approxResidue} · ${ssLabel}`;
+
+            // Add pipeline scores if available
+            const parts = [];
+            const idx = approxResidue - 1;
+            if (PER_RESIDUE_SCORES) {
+              if (PER_RESIDUE_SCORES.bfactor?.[idx] !== undefined)
+                parts.push(`B:${PER_RESIDUE_SCORES.bfactor[idx].toFixed(2)}`);
+              if (PER_RESIDUE_SCORES.conservation?.[idx] !== undefined)
+                parts.push(`Cons:${PER_RESIDUE_SCORES.conservation[idx].toFixed(2)}`);
+              if (PER_RESIDUE_SCORES.plddt?.[idx] !== undefined)
+                parts.push(`pLDDT:${(PER_RESIDUE_SCORES.plddt[idx]*100).toFixed(0)}`);
+              if (PER_RESIDUE_SCORES.pathogenicity?.[idx] !== undefined)
+                parts.push(`Path:${PER_RESIDUE_SCORES.pathogenicity[idx].toFixed(2)}`);
+            }
+            if (parts.length > 0) detail = parts.join(' · ');
+            else detail = dom.name;
+          }
+        }
+
+        this.tooltipEl.querySelector('.t-name').textContent=name;
+        this.tooltipEl.querySelector('.t-detail').textContent=detail;
         this.tooltipEl.classList.add('show');
         this.tooltipEl.style.left=(e.clientX-rect.left+12)+'px';
         this.tooltipEl.style.top=(e.clientY-rect.top+12)+'px';
@@ -2066,6 +2105,33 @@ export class POLEViewer {
               color = new THREE.Color().lerpColors(
                 new THREE.Color(0xeeeeee), new THREE.Color(0xcc2222), t);
             }
+            break;
+          }
+          case 'plddt': {
+            // AlphaFold pLDDT confidence coloring
+            let plddt;
+            if (PER_RESIDUE_SCORES?.plddt && mesh.userData.startIdx !== undefined) {
+              const dom = DOMAINS[key];
+              const bb = this.backboneCache[key];
+              const totalRes = bb ? bb.length : 1;
+              const midIdx = Math.floor((mesh.userData.startIdx + mesh.userData.endIdx) / 2);
+              const residue = dom.range[0] + Math.round((midIdx / Math.max(1, totalRes - 1)) * (dom.range[1] - dom.range[0]));
+              plddt = (PER_RESIDUE_SCORES.plddt[residue - 1] ?? 0.5) * 100;
+            } else {
+              // Synthetic fallback: structured domains ~85, linkers ~50, catalytic sites ~95
+              const syntheticPlddt = {
+                ntd: 70, exo: 90, palm: 92, pdomain: 85,
+                fingers: 88, thumb: 85, inactpol: 65, ctd: 60,
+              };
+              plddt = syntheticPlddt[key] ?? 70;
+              if (ssType === 'L') plddt -= 15;
+              if (ssType === 'H' || ssType === 'E') plddt += 5;
+            }
+            // Standard AlphaFold 4-band palette
+            if (plddt > 90) color = new THREE.Color(0x0053D6);      // very high
+            else if (plddt > 70) color = new THREE.Color(0x65CBF3);  // confident
+            else if (plddt > 50) color = new THREE.Color(0xFFDB13);  // low
+            else color = new THREE.Color(0xFF7D45);                   // very low
             break;
           }
           default:

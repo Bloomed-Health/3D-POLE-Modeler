@@ -207,22 +207,45 @@ end
 
 Extract metal ions and heteroatoms of specified types from structure.
 """
-function extract_heteroatoms(struc, chain_id::AbstractString, types::Vector{String}=METAL_TYPES)
+function extract_heteroatoms(struc, chain_id::AbstractString, types::Vector{String}=METAL_TYPES;
+                             adjacent_cutoff::Float64=5.0)
     metals = MetalSite[]
     model1 = defaultmodel(struc)
 
-    for ch in collectchains(model1)
-        for res in collectresidues(ch, heteroselector)
-            rn = resname(res)
-            rn in types || continue
-            atoms = collectatoms(res)
-            isempty(atoms) && continue
-            a = first(atoms)
-            push!(metals, MetalSite(rn, x(a), y(a), z(a), Int[], Float64[]))
+    # First: extract metals from the target chain
+    target_ch = model1[chain_id]
+    for res in collectresidues(target_ch, heteroselector)
+        rn = resname(res)
+        rn in types || continue
+        atoms = collectatoms(res)
+        isempty(atoms) && continue
+        a = first(atoms)
+        push!(metals, MetalSite(rn, x(a), y(a), z(a), Int[], Float64[]))
+    end
+
+    # Second: search adjacent chains for metals within distance cutoff of target chain residues
+    target_residues = collectatoms(target_ch, calphaselector)
+    if !isempty(target_residues)
+        for ch in collectchains(model1)
+            chainid(ch) == chain_id && continue  # already processed
+            for res in collectresidues(ch, heteroselector)
+                rn = resname(res)
+                rn in types || continue
+                atoms = collectatoms(res)
+                isempty(atoms) && continue
+                a = first(atoms)
+                # Check if this metal is near any residue in the target chain
+                near_target = any(target_residues) do ca
+                    sqrt((x(a) - x(ca))^2 + (y(a) - y(ca))^2 + (z(a) - z(ca))^2) <= adjacent_cutoff
+                end
+                if near_target
+                    push!(metals, MetalSite(rn, x(a), y(a), z(a), Int[], Float64[]))
+                end
+            end
         end
     end
 
-    @info "Found $(length(metals)) metal/heteroatom sites"
+    @info "Found $(length(metals)) metal/heteroatom sites (target chain + adjacent within $(adjacent_cutoff) Å)"
     return metals
 end
 
@@ -274,4 +297,58 @@ function compute_domain_centroids(
         centroids[domain] = (round(cx, digits=2), round(cy, digits=2), round(cz, digits=2))
     end
     return centroids
+end
+
+"""
+    download_alphafold(uniprot_id, cache_dir; version=4) -> String
+
+Download AlphaFold predicted structure (mmCIF) from EBI. Returns path to local file.
+The B-factor field in AlphaFold CIF files stores pLDDT confidence scores (0–100).
+"""
+function download_alphafold(uniprot_id::AbstractString, cache_dir::AbstractString;
+                            version::Int=ALPHAFOLD_MODEL_VERSION)
+    mkpath(cache_dir)
+    filename = "AF-$(uniprot_id)-F1-model_v$(version).cif"
+    local_path = joinpath(cache_dir, filename)
+    if isfile(local_path)
+        @info "AlphaFold model already cached at $local_path"
+        return local_path
+    end
+    url = "https://alphafold.ebi.ac.uk/files/$filename"
+    @info "Downloading AlphaFold model from $url"
+    Downloads.download(url, local_path)
+    return local_path
+end
+
+"""
+    extract_plddt_scores(struc, chain_id="A"; total_residues=TOTAL_RESIDUES) -> Vector{Float64}
+
+Extract per-residue pLDDT scores from an AlphaFold structure.
+In AlphaFold mmCIF files, the B-factor field stores pLDDT (0–100).
+Returns normalized scores in [0, 1] (pLDDT / 100) indexed by residue number.
+"""
+function extract_plddt_scores(struc, chain_id::AbstractString="A";
+                              total_residues::Int=TOTAL_RESIDUES)
+    plddt = fill(0.0, total_residues)
+    model1 = defaultmodel(struc)
+
+    try
+        ch = model1[chain_id]
+        for res in collectresidues(ch, standardselector)
+            ca_atoms = collectatoms(res, calphaselector)
+            isempty(ca_atoms) && continue
+            ca = first(ca_atoms)
+            resnum = resnumber(res)
+            if 1 <= resnum <= total_residues
+                # pLDDT is stored in B-factor field, range 0–100
+                plddt[resnum] = clamp(tempfactor(ca) / 100.0, 0.0, 1.0)
+            end
+        end
+        n_assigned = count(x -> x > 0, plddt)
+        @info "Extracted pLDDT for $n_assigned / $total_residues residues"
+    catch e
+        @warn "Failed to extract pLDDT scores" exception=e
+    end
+
+    return plddt
 end

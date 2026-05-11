@@ -130,6 +130,10 @@ const CATALYTIC_RESIDUES = Dict(
 const METAL_TYPES = ["MG", "ZN", "FE", "S"]
 const METAL_COORDINATION_CUTOFF = 2.5  # Angstroms
 
+# AlphaFold
+const ALPHAFOLD_UNIPROT = "Q07864"
+const ALPHAFOLD_MODEL_VERSION = 4
+
 """
     PipelineConfig
 

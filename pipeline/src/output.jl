@@ -98,6 +98,7 @@ function write_scores_json(
     variant_density::Vector{Float64},
     pathogenicity::Vector{Float64},
     charge::Vector{Float64},
+    plddt::Vector{Float64}=Float64[],
     domain_conservation::Dict{Symbol, Float64}=Dict{Symbol,Float64}(),
     domain_density::Dict{Symbol, Float64}=Dict{Symbol,Float64}(),
     domain_charge::Dict{Symbol, Float64}=Dict{Symbol,Float64}(),
@@ -112,16 +113,23 @@ function write_scores_json(
     compat_density = OrderedDict(string(k) => round(v, digits=2) for (k, v) in domain_density)
     compat_charge = OrderedDict(string(k) => round(v, digits=2) for (k, v) in domain_charge)
 
+    per_residue = OrderedDict(
+        "bfactor" => round3.(bfactors),
+        "conservation" => round3.(conservation),
+        "variant_density" => round3.(variant_density),
+        "pathogenicity" => round3.(pathogenicity),
+        "electrostatic_charge" => round3.(charge),
+    )
+
+    # Include pLDDT if available
+    if !isempty(plddt)
+        per_residue["plddt"] = round3.(plddt)
+    end
+
     output = OrderedDict(
         "version" => "1.0.0",
         "n_residues" => length(bfactors),
-        "per_residue" => OrderedDict(
-            "bfactor" => round3.(bfactors),
-            "conservation" => round3.(conservation),
-            "variant_density" => round3.(variant_density),
-            "pathogenicity" => round3.(pathogenicity),
-            "electrostatic_charge" => round3.(charge),
-        ),
+        "per_residue" => per_residue,
         "per_domain" => OrderedDict(
             "conservation" => compat_conservation,
             "variant_density" => compat_density,

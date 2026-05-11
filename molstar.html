@@ -128,6 +128,7 @@
         <button data-pdb="9F6E" title="Roske & Yeeles 2024 — ajar Finger conformation">9F6E <span style="color:var(--ink-faint)">(ajar)</span></button>
         <button data-pdb="9F6F" title="Roske & Yeeles 2024 — closed Finger conformation">9F6F <span style="color:var(--ink-faint)">(closed)</span></button>
         <button data-pdb="9B8S" title="He et al. 2024 — Pol ε–PCNA cryo-EM">9B8S</button>
+        <button data-pdb="AF-Q07864" title="AlphaFold v4 — full 2286-residue predicted structure" style="border-color:var(--plddt-confident,#65CBF3);color:var(--plddt-confident,#65CBF3)">AlphaFold</button>
       </div>
       <p style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--ink-faint);margin-top:8px;line-height:1.5">
         Finger triad: open (9F6D) &rarr; ajar (9F6E) &rarr; closed (9F6F)<br>
@@ -236,6 +237,7 @@
         <button data-mode="chain">Chain</button>
         <button data-mode="element">Element</button>
         <button data-mode="secondary">Secondary structure</button>
+        <button data-mode="plddt">pLDDT</button>
       </div>
     </div>
 
@@ -243,6 +245,7 @@
       <h3>Tools</h3>
       <div class="tool-buttons">
         <button class="tool-btn" id="btn-screenshot" title="Export PNG">Screenshot</button>
+        <button class="tool-btn" id="btn-measure" title="Toggle distance measurement">Measure</button>
         <button class="tool-btn" id="btn-reset" title="Reset camera">Reset view</button>
         <button class="tool-btn" id="btn-molstar-ui" title="Show Mol* controls">Mol* Controls</button>
       </div>
@@ -320,6 +323,16 @@
       <p style="font-family:'Fraunces',serif;font-size:12.5px;line-height:1.55;color:var(--ink);font-weight:300">
         This viewer displays <em style="color:var(--accent)">real atomic coordinates</em> from the Protein Data Bank using Mol*, the same viewer used by RCSB PDB and PDBe. All secondary structure assignments, B-factors, metal coordination geometries, and ligand interactions are derived directly from the deposited experimental data.
       </p>
+    </div>
+
+    <div class="panel" id="plddt-legend-panel" style="display:none">
+      <h3>pLDDT confidence</h3>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:10px;line-height:2">
+        <div style="display:flex;align-items:center;gap:8px"><span style="display:inline-block;width:14px;height:14px;border-radius:2px;background:var(--plddt-very-high,#0053D6)"></span> <span style="color:var(--ink)">&gt;90</span> <span style="color:var(--ink-faint)">Very high confidence</span></div>
+        <div style="display:flex;align-items:center;gap:8px"><span style="display:inline-block;width:14px;height:14px;border-radius:2px;background:var(--plddt-confident,#65CBF3)"></span> <span style="color:var(--ink)">70&ndash;90</span> <span style="color:var(--ink-faint)">Confident</span></div>
+        <div style="display:flex;align-items:center;gap:8px"><span style="display:inline-block;width:14px;height:14px;border-radius:2px;background:var(--plddt-low,#FFDB13)"></span> <span style="color:var(--ink)">50&ndash;70</span> <span style="color:var(--ink-faint)">Low confidence</span></div>
+        <div style="display:flex;align-items:center;gap:8px"><span style="display:inline-block;width:14px;height:14px;border-radius:2px;background:var(--plddt-very-low,#FF7D45)"></span> <span style="color:var(--ink)">&lt;50</span> <span style="color:var(--ink-faint)">Very low / disordered</span></div>
+      </div>
     </div>
 
     <div class="panel">
@@ -424,6 +437,7 @@ const PDB_INFO = {
   '9F6E': { citation: 'Roske & Yeeles 2024', detail: 'Ajar Finger conformation', resolution: '3.2 Å cryo-EM' },
   '9F6F': { citation: 'Roske & Yeeles 2024', detail: 'Closed Finger conformation', resolution: '3.1 Å cryo-EM' },
   '9B8S': { citation: 'He et al. 2024',      detail: 'Pol ε–PCNA–DNA complex',    resolution: '3.3 Å cryo-EM' },
+  'AF-Q07864': { citation: 'AlphaFold v4', detail: 'Full-length predicted structure', resolution: 'pLDDT confidence' },
 };
 
 // ==================== STATE ====================
@@ -507,8 +521,15 @@ async function loadStructure(pdbId, repr, colorMode) {
   // Clear existing structures before loading a new one
   try { await viewer.plugin.clear(); } catch (e) { /* first load — nothing to clear */ }
 
-  // Load local BinaryCIF (isBinary = true)
-  await viewer.loadStructureFromUrl(BCIF_URL(pdbId), 'mmcif', true);
+  if (pdbId.startsWith('AF-')) {
+    // AlphaFold: load mmCIF text from EBI
+    const uniprotId = pdbId.replace('AF-', '');
+    const afUrl = `https://alphafold.ebi.ac.uk/files/AF-${uniprotId}-F1-model_v4.cif`;
+    await viewer.loadStructureFromUrl(afUrl, 'mmcif', false);
+  } else {
+    // Load local BinaryCIF (isBinary = true)
+    await viewer.loadStructureFromUrl(BCIF_URL(pdbId), 'mmcif', true);
+  }
 
   // Re-apply dark background (clear() resets it)
   try {
@@ -641,6 +662,10 @@ document.querySelectorAll('#color-mode button').forEach(btn => {
     document.getElementById('color-label').textContent = mode + ' coloring';
     await loadStructure(currentPdb, currentRepr, mode);
     setAutoRotate(autoRotate);
+
+    // Toggle pLDDT legend visibility
+    const plddtPanel = document.getElementById('plddt-legend-panel');
+    if (plddtPanel) plddtPanel.style.display = (mode === 'plddt') ? '' : 'none';
   });
 });
 
@@ -685,6 +710,20 @@ document.getElementById('btn-screenshot').addEventListener('click', () => {
 
 document.getElementById('btn-reset').addEventListener('click', () => {
   viewer?.plugin?.canvas3d?.requestCameraReset();
+});
+
+document.getElementById('btn-measure').addEventListener('click', () => {
+  if (!viewer) return;
+  // Toggle Mol*'s built-in selection/measurement mode
+  const btn = document.getElementById('btn-measure');
+  const isActive = btn.classList.toggle('active');
+  try {
+    if (isActive) {
+      viewer.plugin.behaviors.interaction.selectionMode.next(true);
+    } else {
+      viewer.plugin.behaviors.interaction.selectionMode.next(false);
+    }
+  } catch (e) { /* measurement API may vary by Mol* version */ }
 });
 
 document.getElementById('btn-molstar-ui').addEventListener('click', () => {
