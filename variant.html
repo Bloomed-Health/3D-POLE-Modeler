@@ -256,6 +256,7 @@
       <span class="ax">framework &middot; <b>Mur 2023</b></span>
     </div>
     <div>POLE &middot; VARIANT VIEWER</div>
+    <small data-pole-provenance style="display:block;margin-top:4px;opacity:0.6;font-size:0.6rem"></small>
   </footer>
 </div>
 
@@ -939,6 +940,14 @@ sidebarBackdrop.addEventListener('click', closeSidebars);
 document.querySelectorAll('.mobile-sidebar-tabs button').forEach(btn => {
   btn.addEventListener('click', () => openSidebar(btn.dataset.sidebar));
 });
+</script>
+<script type="module">
+  import { loadPoleData, provenanceFooter } from './js/data/poleData.js';
+  try {
+    const data = await loadPoleData();
+    const el = document.querySelector('[data-pole-provenance]');
+    if (el) el.textContent = provenanceFooter(data);
+  } catch (e) { /* degrade silently if canonical JSON unavailable */ }
 </script>
 </body>
 </html>

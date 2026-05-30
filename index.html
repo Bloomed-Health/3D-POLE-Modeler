@@ -352,6 +352,7 @@
       <span class="ax">basis · <b>Roske &amp; Yeeles 2024 · 9F6D</b></span>
     </div>
     <div>POLE · 3D STRUCTURAL VIEWER</div>
+    <small data-pole-provenance style="display:block;margin-top:4px;opacity:0.6;font-size:0.6rem"></small>
   </footer>
 </div>
 
@@ -635,6 +636,14 @@ setProgress(100, 'Ready');
 setTimeout(() => {
   document.getElementById('loading').classList.add('hide');
 }, 500);
+</script>
+<script type="module">
+  import { loadPoleData, provenanceFooter } from './js/data/poleData.js';
+  try {
+    const data = await loadPoleData();
+    const el = document.querySelector('[data-pole-provenance]');
+    if (el) el.textContent = provenanceFooter(data);
+  } catch (e) { /* degrade silently if canonical JSON unavailable */ }
 </script>
 </body>
 </html>

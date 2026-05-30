@@ -39,15 +39,15 @@ const DOMAIN_ABBREVS = OrderedDict(
 const TOTAL_RESIDUES = 2286
 
 # PDB entries for POLE structures
-const PDB_IDS = ["4M8O", "6WJV", "8D32", "9F6D", "9F6E", "9F6F", "9B8S"]
-const PRIMARY_PDB = "4M8O"  # Primary structure for initial pipeline
+const PDB_IDS = ["4M8O", "8D32", "9F6D", "9F6E", "9F6F", "9B8S"]
+const PRIMARY_PDB = "9F6D"  # Human Pol epsilon (Roske & Yeeles 2024)
 
 # Known POLE pathogenic mutations
 # Clinical and somatic POLE mutations (viewer markers)
 const POLE_MUTATIONS = [
     (id="P286R",  residue=286,  ref_aa='P', alt_aa='R', domain=:exo,
      label="Pro286→Arg",
-     detail="Somatic ultra-mutator / ExoII motif / CRC & endometrial / SBS10a/b"),
+     detail="Somatic ultra-mutator / adjacent to ExoI / CRC & endometrial / SBS10a/b"),
     (id="V411L",  residue=411,  ref_aa='V', alt_aa='L', domain=:exo,
      label="Val411→Leu",
      detail="Somatic proofreading-deficient / TMB >100 mut/Mb / SBS10a"),
@@ -56,7 +56,7 @@ const POLE_MUTATIONS = [
      detail="Germline ExoI / PPAP predisposition / SBS28"),
     (id="L424V",  residue=424,  ref_aa='L', alt_aa='V', domain=:exo,
      label="Leu424→Val",
-     detail="Somatic / moderate mutator phenotype"),
+     detail="Germline ExoIII / PPAP-associated / Mur 2023"),
     (id="D287E",  residue=287,  ref_aa='D', alt_aa='E', domain=:exo,
      label="Asp287→Glu",
      detail="Somatic ExoII adjacent / CRC / SBS10b"),
@@ -121,7 +121,7 @@ const FRAMESHIFT_VARIANT = (
 
 # Catalytic residues
 const CATALYTIC_RESIDUES = Dict(
-    :exo_site => [275, 277, 368, 370],      # D275, E277, D368, D370
+    :exo_site => [275, 277, 368, 370],      # D275, E277, D368, D370 — NOTE: D370 is disputed; canonical JSON estimates D462 from yeast D477 homology. Verify against UniProt before changing.
     :pol_motif_a => [640, 642],              # D640, D642
     :pol_motif_c => [860],                   # D860
 )

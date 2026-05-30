@@ -33,6 +33,10 @@
     <button class="sidebar-toggle" id="sidebar-toggle" aria-label="Toggle sidebars">&#9776;</button>
   </header>
 
+  <div style="background:#3a2a00;color:#f0a030;padding:8px 16px;font-size:0.78rem;text-align:center;border-bottom:1px solid #f0a030;">
+    <b>Illustrative only:</b> c.138del has no ClinVar or publication anchor. Truncating POLE variants relate to the recessive FILS/IMAGEI axis, not the PPAP proofreading mechanism. <a href="variant.html#L424V" style="color:#7abba8">See verified PPAP variants &rarr;</a>
+  </div>
+
   <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
 
   <aside class="left" id="sidebar-left">
@@ -292,6 +296,7 @@
       <span class="ax">effect · <b>truncating LOF</b></span>
     </div>
     <div>POLE · MUTATION STRUCTURAL ANALYSIS</div>
+    <small data-pole-provenance style="display:block;margin-top:4px;opacity:0.6;font-size:0.6rem"></small>
   </footer>
 </div>
 
@@ -486,6 +491,14 @@ setProgress(100, 'Ready');
 setTimeout(() => {
   document.getElementById('loading').classList.add('hide');
 }, 500);
+</script>
+<script type="module">
+  import { loadPoleData, provenanceFooter } from './js/data/poleData.js';
+  try {
+    const data = await loadPoleData();
+    const el = document.querySelector('[data-pole-provenance]');
+    if (el) el.textContent = provenanceFooter(data);
+  } catch (e) { /* degrade silently if canonical JSON unavailable */ }
 </script>
 </body>
 </html>

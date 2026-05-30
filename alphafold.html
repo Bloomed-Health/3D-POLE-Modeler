@@ -338,6 +338,7 @@
       <span class="ax">entry &middot; <b>AF-Q07864-F1</b></span>
     </div>
     <div>POLE &middot; ALPHAFOLD PREDICTED STRUCTURE</div>
+    <small data-pole-provenance style="display:block;margin-top:4px;opacity:0.6;font-size:0.6rem"></small>
   </footer>
 </div>
 
@@ -638,6 +639,14 @@ document.addEventListener('keydown', e => {
       break;
   }
 });
+</script>
+<script type="module">
+  import { loadPoleData, provenanceFooter } from './js/data/poleData.js';
+  try {
+    const data = await loadPoleData();
+    const el = document.querySelector('[data-pole-provenance]');
+    if (el) el.textContent = provenanceFooter(data);
+  } catch (e) { /* degrade silently if canonical JSON unavailable */ }
 </script>
 
 </body>

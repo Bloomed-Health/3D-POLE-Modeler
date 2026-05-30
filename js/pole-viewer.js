@@ -9,7 +9,7 @@
 // References:
 //   UniProt Q07864 (POLE_HUMAN)
 //   PDB: 9F6D / 9F6E / 9F6F (Roske & Yeeles 2024), 9B8S (He et al. 2024),
-//        4M8O (Hogg et al. 2014), 6WJV (Lancey et al. 2020, Pol delta for comparison)
+//        4M8O (Hogg et al. 2014)
 //   Roske & Yeeles, Nat Struct Mol Biol 31:1921 (2024) — human Pol ε structures
 //   He, Wang, Yao, O'Donnell & Li, Nat Commun 15:7847 (2024) — human Pol ε–PCNA
 //   Mur et al., Genome Med 15:85 (2023) — POLE/POLD1 ACMG classification
@@ -164,7 +164,7 @@ const DOMAIN_ORDER = ['ntd','exo','palm','pdomain','fingers','thumb','inactpol',
 
 let MUTATIONS = [
   { id:'P286R', residue:286, domain:'exo', offset:[2.5,1.2,2.0],
-    label:'Pro286\u2192Arg', detail:'Somatic ultra-mutator / ExoII motif / CRC & endometrial / SBS10a/b' },
+    label:'Pro286\u2192Arg', detail:'Somatic ultra-mutator / adjacent to ExoI / CRC & endometrial / SBS10a/b' },
   { id:'V411L', residue:411, domain:'exo', offset:[-2.8,-0.5,1.8],
     label:'Val411\u2192Leu', detail:'Somatic proofreading-deficient / TMB >100 mut/Mb / SBS10a' },
   { id:'S297F', residue:297, domain:'exo', offset:[0.5,2.8,-1.2],
