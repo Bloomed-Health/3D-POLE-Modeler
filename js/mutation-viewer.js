@@ -22,22 +22,17 @@
 
 import * as THREE from 'three';
 import { buildSSElement, segmentBySSType } from './ribbon.js';
+import { PAL as BASE_PAL } from './pole-palette.js';
+import { SCALE, makeRng, generateLinker } from './pole-geometry.js';
 
 // ==================== PALETTE ====================
 
 const PAL = {
-  ntd:      new THREE.Color(0xc4a47a),
-  exo:      new THREE.Color(0xb85c5c),
-  palm:     new THREE.Color(0x6b8e6b),
-  fingers:  new THREE.Color(0x5b7f99),
-  thumb:    new THREE.Color(0x8b7ba8),
-  ctd:      new THREE.Color(0xb8a04a),
+  ...BASE_PAL,
   ghost:    new THREE.Color(0x2a3040),
   intact:   new THREE.Color(0x7abba8),
   frameshift: new THREE.Color(0xb8a04a),
   stop:     new THREE.Color(0xc45c5c),
-  linker:   new THREE.Color(0x464040),
-  bg:       0x080b11,
 };
 
 // ==================== SEQUENCE DATA (defaults, overridden by pipeline JSON) ====================
@@ -106,16 +101,7 @@ export async function loadMutationPipelineData(basePath = './data') {
   }
 }
 
-// ==================== UTILITIES ====================
-
-function makeRng(seed) {
-  let s = seed;
-  return () => { s = (s * 16807) % 2147483647; return (s & 0x7fffffff) / 2147483647; };
-}
-
 // ==================== BACKBONE GENERATION ====================
-
-const SCALE = 0.5;
 
 function generateHelixPoints(cur, dir, n) {
   const axis = dir.clone().normalize();
@@ -263,21 +249,6 @@ function generateDomainBackbone(key) {
   }
   return points;
 }
-
-function generateLinker(fromPos, toPos, n) {
-  const pts = [];
-  const rng = makeRng(Math.floor(fromPos.x * 100 + toPos.y * 100));
-  for (let i = 0; i <= n; i++) {
-    const t = i / n;
-    const p = fromPos.clone().lerp(toPos, t);
-    const w = 3 * Math.sin(t * Math.PI);
-    p.add(new THREE.Vector3(
-      (rng() - 0.5) * w * 2, (rng() - 0.5) * w * 2, (rng() - 0.5) * w * 1.5));
-    pts.push({ pos: p, ss: 'L' });
-  }
-  return pts;
-}
-
 
 // ==================== MAIN CLASS ====================
 

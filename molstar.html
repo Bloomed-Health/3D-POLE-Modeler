@@ -14,88 +14,8 @@
 <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/molstar@4.5.0/build/viewer/molstar.css" />
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/molstar@4.5.0/build/viewer/molstar.js"></script>
 
-<style>
-  /* Mol* with layoutIsExpanded:true uses position:fixed to fill the viewport.
-     Constrain it to #canvas-container instead by forcing position:absolute. */
-  #canvas-container {
-    position: absolute !important;
-    inset: 0 !important;
-    overflow: hidden;
-    z-index: 1;
-  }
-  #canvas-container .msp-layout-expanded {
-    position: absolute !important;
-    z-index: auto !important;
-  }
-
-  /* Override the global canvas { width/height: 100% !important } from style.css
-     which conflicts with Mol*'s internal canvas sizing and camera calculations. */
-  canvas {
-    width: unset !important;
-    height: unset !important;
-    max-width: none !important;
-    max-height: none !important;
-  }
-
-  /* Override Mol* defaults for dark theme */
-  .msp-plugin ::-webkit-scrollbar { width: 6px; }
-  .msp-plugin ::-webkit-scrollbar-track { background: var(--bg-1); }
-  .msp-plugin ::-webkit-scrollbar-thumb { background: var(--line-2); border-radius: 3px; }
-
-  /* PDB selector bar */
-  .pdb-selector {
-    display: flex;
-    gap: 4px;
-    flex-wrap: wrap;
-  }
-  .pdb-selector button {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10px;
-    padding: 5px 10px;
-    background: rgba(14, 20, 30, 0.6);
-    border: 1px solid var(--line);
-    color: var(--ink-dim);
-    border-radius: 2px;
-    cursor: pointer;
-    transition: all 0.2s;
-    letter-spacing: 0.02em;
-  }
-  .pdb-selector button:hover { border-color: var(--accent); color: var(--ink); }
-  .pdb-selector button.active { background: var(--accent-dim); border-color: var(--accent); color: var(--accent); }
-
-  /* Representation selector */
-  .repr-selector {
-    display: flex;
-    gap: 4px;
-    flex-wrap: wrap;
-  }
-  .repr-selector button {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10px;
-    padding: 5px 10px;
-    background: rgba(14, 20, 30, 0.6);
-    border: 1px solid var(--line);
-    color: var(--ink-dim);
-    border-radius: 2px;
-    cursor: pointer;
-    transition: all 0.2s;
-    letter-spacing: 0.02em;
-  }
-  .repr-selector button:hover { border-color: var(--accent); color: var(--ink); }
-  .repr-selector button.active { background: var(--accent-dim); border-color: var(--accent); color: var(--accent); }
-
-  /* Chain info cards */
-  .chain-info {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10px;
-    line-height: 1.6;
-    color: var(--ink-dim);
-    padding: 6px 0;
-  }
-  .chain-info .chain-label { color: var(--accent); font-weight: 500; }
-</style>
 </head>
-<body>
+<body class="molstar-page">
 
 <div id="loading">
   <div class="helix"></div>
@@ -232,6 +152,7 @@
       <div class="toggle on" data-toggle="polymer"><span class="label">Protein chains</span><div class="switch"></div></div>
       <div class="toggle on" data-toggle="ligands"><span class="label">Ligands &amp; metals</span><div class="switch"></div></div>
       <div class="toggle on" data-toggle="water"><span class="label">Water molecules</span><div class="switch"></div></div>
+      <div class="toggle on" data-toggle="labels"><span class="label">Domain labels</span><div class="switch"></div></div>
     </div>
 
     <div class="panel">
@@ -242,7 +163,6 @@
         <button data-mode="chain">Chain</button>
         <button data-mode="element">Element</button>
         <button data-mode="secondary">Secondary structure</button>
-        <button data-mode="plddt">pLDDT</button>
       </div>
     </div>
 
@@ -274,25 +194,69 @@
   </aside>
 
   <main>
-    <div id="canvas-container"></div>
+    <div id="canvas-container" role="img" aria-label="3D protein structure viewer"></div>
 
     <div class="overlay corner-tl">
       <div class="live">structure &middot; <span id="current-pdb-label">PDB 9F6D</span></div>
       <div style="margin-top:5px;color:var(--ink-faint)">Mol* &middot; real coordinates</div>
     </div>
-    <div class="overlay corner-tr">
-      <div>rotate &middot; left-drag</div>
-      <div style="margin-top:3px">pan &middot; right-drag</div>
-      <div style="margin-top:3px">zoom &middot; scroll wheel</div>
-      <div style="margin-top:3px">pick &middot; left-click</div>
+    <div class="overlay corner-tr" style="
+      right:52px;
+      background:rgba(14,20,30,0.75); padding:10px 14px; border-radius:4px;
+      border:1px solid var(--line); font-size:11px; letter-spacing:0.04em;
+      text-transform:none; color:var(--ink-dim); line-height:1.7;
+    ">
+      <div><span style="color:var(--ink);font-weight:500">Rotate</span> &middot; left-drag</div>
+      <div><span style="color:var(--ink);font-weight:500">Pan</span> &middot; right-drag</div>
+      <div><span style="color:var(--ink);font-weight:500">Zoom</span> &middot; scroll / pinch</div>
+      <div><span style="color:var(--ink);font-weight:500">Pick</span> &middot; left-click</div>
     </div>
     <div class="overlay corner-bl">
       <span id="chain-count-label"></span>
     </div>
-    <div class="overlay corner-br">
-      <span id="repr-label">cartoon</span>
-      <span id="color-label">domain coloring</span>
+    <div class="overlay corner-br" style="
+      bottom:62px;
+      background:rgba(14,20,30,0.75); padding:0; border-radius:4px;
+      border:1px solid var(--line); font-size:11px; letter-spacing:0.04em;
+      text-transform:none; color:var(--ink-dim); line-height:1;
+      pointer-events:auto; cursor:pointer; user-select:none;
+    ">
+      <span id="repr-label" title="Click to cycle representation" style="
+        display:inline-block; padding:8px 12px; color:var(--ink); font-weight:500;
+        border-right:1px solid var(--line); transition:color .2s;
+      ">cartoon</span><span id="color-label" title="Click to cycle color mode" style="
+        display:inline-block; padding:8px 12px; transition:color .2s;
+      ">domain coloring</span>
     </div>
+
+    <div id="zoom-slider-wrap" style="
+      position:absolute; left:14px; top:50%; transform:translateY(-50%);
+      z-index:10; pointer-events:auto; display:flex; flex-direction:column;
+      align-items:center; gap:6px;
+    ">
+      <button id="zoom-in-btn" title="Zoom in" aria-label="Zoom in" style="
+        width:28px; height:28px; border-radius:4px; border:1px solid var(--line);
+        background:rgba(14,20,30,0.80); color:var(--ink); font-size:16px;
+        font-family:'JetBrains Mono',monospace; cursor:pointer; line-height:1;
+        display:flex; align-items:center; justify-content:center;
+      ">+</button>
+      <input id="zoom-slider" type="range" min="0" max="100" value="50"
+        title="Zoom level" aria-label="Zoom level" style="
+        writing-mode:vertical-lr; direction:rtl;
+        width:28px; height:140px; cursor:pointer;
+        accent-color:var(--accent);
+      ">
+      <button id="zoom-out-btn" title="Zoom out" aria-label="Zoom out" style="
+        width:28px; height:28px; border-radius:4px; border:1px solid var(--line);
+        background:rgba(14,20,30,0.80); color:var(--ink); font-size:16px;
+        font-family:'JetBrains Mono',monospace; cursor:pointer; line-height:1;
+        display:flex; align-items:center; justify-content:center;
+      ">&minus;</button>
+    </div>
+
+    <!-- Domain labels (projected from 3D) + leader lines -->
+    <svg id="label-lines" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:8;overflow:visible"></svg>
+    <div id="domain-labels" style="position:absolute;inset:0;pointer-events:none;z-index:9;overflow:visible"></div>
 
     <div id="tooltip">
       <div class="t-name"></div>
@@ -327,25 +291,25 @@
       </div>
       <div class="info-card">
         <div class="k">Resolution</div>
-        <div class="v mono" id="active-resolution">Cryo-EM</div>
+        <div class="v mono" id="active-resolution">3.6 &Aring; &middot; Cryo-EM (FSC 0.143)</div>
       </div>
     </div>
 
     <div class="panel">
       <h3>Structure details</h3>
       <p style="font-family:'Fraunces',serif;font-size:12.5px;line-height:1.55;color:var(--ink);font-weight:300">
-        This viewer displays <em style="color:var(--accent)">real atomic coordinates</em> from the Protein Data Bank using Mol*, the same viewer used by RCSB PDB and PDBe. All secondary structure assignments, B-factors, metal coordination geometries, and ligand interactions are derived directly from the deposited experimental data.
+        This viewer displays <em style="color:var(--accent)">real atomic coordinates</em> from the Protein Data Bank using Mol*, the same viewer used by RCSB PDB and PDBe. Secondary structure assignments, metal coordination geometries, and ligand interactions are derived directly from the deposited experimental data.
+      </p>
+      <p style="font-family:'Fraunces',serif;font-size:11px;line-height:1.5;color:var(--ink-faint);margin-top:6px;font-weight:300">
+        <b style="color:var(--ink-dim)">B-factor note:</b> 9F6D is a cryo-EM structure. The temperature-factor column represents a per-residue ADP or smoothed local-resolution proxy, not the crystallographic B-factor from X-ray refinement. Interpret accordingly.
       </p>
     </div>
 
     <div class="panel" id="plddt-legend-panel" style="display:none">
       <h3>pLDDT confidence</h3>
-      <div style="font-family:'JetBrains Mono',monospace;font-size:10px;line-height:2">
-        <div style="display:flex;align-items:center;gap:8px"><span style="display:inline-block;width:14px;height:14px;border-radius:2px;background:var(--plddt-very-high,#0053D6)"></span> <span style="color:var(--ink)">&gt;90</span> <span style="color:var(--ink-faint)">Very high confidence</span></div>
-        <div style="display:flex;align-items:center;gap:8px"><span style="display:inline-block;width:14px;height:14px;border-radius:2px;background:var(--plddt-confident,#65CBF3)"></span> <span style="color:var(--ink)">70&ndash;90</span> <span style="color:var(--ink-faint)">Confident</span></div>
-        <div style="display:flex;align-items:center;gap:8px"><span style="display:inline-block;width:14px;height:14px;border-radius:2px;background:var(--plddt-low,#FFDB13)"></span> <span style="color:var(--ink)">50&ndash;70</span> <span style="color:var(--ink-faint)">Low confidence</span></div>
-        <div style="display:flex;align-items:center;gap:8px"><span style="display:inline-block;width:14px;height:14px;border-radius:2px;background:var(--plddt-very-low,#FF7D45)"></span> <span style="color:var(--ink)">&lt;50</span> <span style="color:var(--ink-faint)">Very low / disordered</span></div>
-      </div>
+      <p style="font-family:'Fraunces',serif;font-size:11px;line-height:1.5;color:var(--ink-faint);font-weight:300">
+        pLDDT is an AlphaFold per-residue confidence metric. It has no meaning for experimental structures. See the <a href="alphafold.html" style="color:#65CBF3">AlphaFold viewer</a> for pLDDT coloring.
+      </p>
     </div>
 
     <div class="panel">
@@ -356,7 +320,7 @@
           <div class="name">P286R</div>
           <div class="loc">EXO &middot; res. 286</div>
         </div>
-        <div class="text">Ultra-mutator. ExoII motif. CRC &amp; endometrial. SBS10a/b.</div>
+        <div class="text">Ultra-mutator. Adjacent to ExoI. CRC &amp; endometrial. SBS10a/b.</div>
       </div>
 
       <div class="mutation" data-mut="V411L">
@@ -422,29 +386,8 @@
   </footer>
 </div>
 
-<script>
-// ==================== DOMAIN DEFINITIONS ====================
-
-const DOMAINS = {
-  ntd:      { range: [1, 280],    color: '#c4a47a', name: 'N-terminal domain' },
-  exo:      { range: [268, 471],  color: '#b85c5c', name: "3'→5' Exonuclease" },
-  palm:     { range: [472, 699],  color: '#6b8e6b', name: 'Palm subdomain' },
-  pdomain:  { range: [700, 760],  color: '#4a8a7a', name: 'Processivity domain' },
-  fingers:  { range: [761, 1020], color: '#5b7f99', name: 'Fingers subdomain' },
-  thumb:    { range: [1021,1190], color: '#8b7ba8', name: 'Thumb subdomain' },
-  inactpol: { range: [1191,1900], color: '#7a6a8a', name: 'Inactive Pol module' },
-  ctd:      { range: [1901,2286], color: '#b8a04a', name: 'C-terminal domain' },
-};
-
-const DOMAIN_ORDER = ['ntd','exo','palm','pdomain','fingers','thumb','inactpol','ctd'];
-
-const MUTATIONS = [
-  { id: 'P286R', residue: 286 },
-  { id: 'V411L', residue: 411 },
-  { id: 'S297F', residue: 297 },
-  { id: 'L424V', residue: 424 },
-  { id: 'F367S', residue: 367 },
-];
+<script type="module">
+import { DOMAINS, DOMAIN_ORDER, MUTATIONS } from './js/data/domainConfig.js';
 
 const PDB_INFO = {
   '9F6D': { citation: 'Roske & Yeeles 2024', detail: 'Open Finger conformation', resolution: '3.0 Å cryo-EM' },
@@ -460,6 +403,7 @@ let currentRepr = 'cartoon';
 let currentColorMode = 'domain';
 let viewer = null;
 let autoRotate = true;
+let showLabels = true;
 
 // ==================== LOADING ====================
 
@@ -476,7 +420,7 @@ async function initViewer() {
   setProgress(20, 'Creating Mol* plugin…');
 
   viewer = await molstar.Viewer.create('canvas-container', {
-    layoutIsExpanded: true,
+    layoutIsExpanded: false,
     layoutShowControls: false,
     layoutShowRemoteState: false,
     layoutShowSequence: false,
@@ -498,7 +442,10 @@ async function initViewer() {
     });
   } catch (e) { /* ignore if props differ between versions */ }
 
-  // Force the plugin to detect its container size
+  // Force the plugin to detect its container size (run twice —
+  // once now and once after a frame, to catch any late CSS layout).
+  try { viewer.handleResize(); } catch (e) { /* ignore */ }
+  await new Promise(r => requestAnimationFrame(r));
   try { viewer.handleResize(); } catch (e) { /* ignore */ }
 
   setProgress(40, 'Downloading PDB 9F6D…');
@@ -532,13 +479,61 @@ async function loadStructure(pdbId, repr, colorMode) {
   repr = repr || currentRepr;
   colorMode = colorMode || currentColorMode;
 
-  // Clear existing structures before loading a new one
-  try { await viewer.plugin.clear(); } catch (e) { /* first load — nothing to clear */ }
+  const MVSData = molstar.PluginExtensions.mvs.MVSData;
+  const loadMVS = molstar.PluginExtensions.mvs.loadMVS;
 
-  // Load local BinaryCIF (isBinary = true)
-  await viewer.loadStructureFromUrl(BCIF_URL(pdbId), 'mmcif', true);
+  const builder = MVSData.createBuilder();
+  const struct = builder
+    .download({ url: BCIF_URL(pdbId) })
+    .parse({ format: 'bcif' })
+    .modelStructure({});
 
-  // Re-apply dark background (clear() resets it)
+  if (colorMode === 'domain') {
+    // Per-domain coloring: build non-overlapping ranges with explicit colors
+    const assigned = new Set();
+    for (const key of DOMAIN_ORDER) {
+      const dom = DOMAINS[key];
+      let rs = null;
+      for (let r = dom.range[0]; r <= dom.range[1]; r++) {
+        if (!assigned.has(r)) {
+          if (rs === null) rs = r;
+          assigned.add(r);
+        } else if (rs !== null) {
+          struct.component({ selector: { beg_label_seq_id: rs, end_label_seq_id: r - 1 } })
+            .representation({ type: repr }).color({ color: dom.color });
+          rs = null;
+        }
+      }
+      if (rs !== null) {
+        struct.component({ selector: { beg_label_seq_id: rs, end_label_seq_id: dom.range[1] } })
+          .representation({ type: repr }).color({ color: dom.color });
+      }
+    }
+  } else {
+    // Non-domain mode: whole polymer, no explicit color (Mol* default)
+    struct.component({ selector: 'polymer' }).representation({ type: repr });
+  }
+
+  // DNA always cartoon (unless surface mode)
+  struct.component({ selector: 'nucleic' })
+    .representation({ type: repr === 'surface' ? 'surface' : 'cartoon' })
+    .color({ color: '#888888' });
+
+  // Ligands and ions always ball-and-stick
+  struct.component({ selector: 'ligand' }).representation({ type: 'ball_and_stick' });
+  struct.component({ selector: 'ion' }).representation({ type: 'ball_and_stick' });
+
+  const mvsData = builder.getState();
+  await loadMVS(viewer.plugin, mvsData, {
+    sourceUrl: undefined, sanityChecks: true, replaceExisting: true,
+  });
+
+  // For non-domain color modes, update Mol*'s color theme on the loaded representations
+  if (colorMode !== 'domain') {
+    await tryApplyColorTheme(colorMode);
+  }
+
+  // Re-apply dark background (replaceExisting resets it)
   try {
     viewer.plugin.canvas3d?.setProps({ renderer: { backgroundColor: 0x0E141E } });
   } catch (e) { /* ignore */ }
@@ -547,18 +542,71 @@ async function loadStructure(pdbId, repr, colorMode) {
   zoomToFit();
 }
 
+// Best-effort color theme application via the Mol* state tree.
+// MVS only supports explicit hex colors; Mol* built-in themes
+// (chain-id, element-symbol, etc.) must be applied post-load.
+async function tryApplyColorTheme(mode) {
+  const themeMap = {
+    bfactor:   'uncertainty',
+    chain:     'chain-id',
+    element:   'element-symbol',
+    secondary: 'secondary-structure-type',
+  };
+  const themeName = themeMap[mode];
+  if (!themeName) return;
+
+  try {
+    const plugin = viewer.plugin;
+    const structures = plugin.managers.structure.hierarchy.current.structures;
+    if (!structures?.length) return;
+
+    for (const s of structures) {
+      for (const comp of s.components) {
+        for (const repr of comp.representations) {
+          await plugin.state.data.build()
+            .to(repr.cell)
+            .update(old => ({ ...old, colorTheme: { name: themeName, params: {} } }))
+            .commit();
+        }
+      }
+    }
+  } catch (e) {
+    console.warn('Color theme fallback — could not apply:', mode, e);
+  }
+}
+
 // Zoom out so the full complex is visible with generous padding.
+// requestCameraReset is async (queues work for the next animation frame),
+// so we must wait for it to render before reading/modifying the camera state.
 function zoomToFit() {
-  const doReset = () => {
+  const ZOOM_OUT_FACTOR = 1.5; // 50% more radius → notably more padding
+
+  const resetThenZoom = () => {
     try {
       viewer.handleResize();
       viewer.plugin.canvas3d?.requestCameraReset({ durationMs: 0 });
-    } catch (e) { /* ignore */ }
+    } catch (e) { return; }
+
+    // Wait 2 animation frames for the reset to actually apply,
+    // then read the new camera state and zoom out.
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        try {
+          const cam = viewer.plugin.canvas3d?.camera;
+          if (!cam) return;
+          const s = cam.getSnapshot();
+          if (s && typeof s.radius === 'number') {
+            s.radius *= ZOOM_OUT_FACTOR;
+            cam.setState(s, 0);
+          }
+        } catch (e) { /* camera API may differ between Mol* versions */ }
+      });
+    });
   };
-  // Let Mol* finish loading, then trigger a proper resize + camera reset.
-  setTimeout(doReset, 300);
-  setTimeout(doReset, 1000);
-  setTimeout(doReset, 2500);
+
+  // Run after initial load settles, then again for late-rendering structures
+  setTimeout(resetThenZoom, 300);
+  setTimeout(resetThenZoom, 1500);
 }
 
 function updateLabels(pdbId) {
@@ -577,7 +625,7 @@ function setAutoRotate(on) {
     viewer?.plugin?.canvas3d?.setProps({
       trackball: {
         animate: on
-          ? { name: 'spin', params: { speed: 0.3 } }
+          ? { name: 'spin', params: { speed: 0.2 } }
           : { name: 'off', params: {} },
       },
     });
@@ -609,7 +657,14 @@ function focusMutation(mutId) {
 
 initViewer().catch(err => {
   console.error('Mol* init failed:', err);
-  document.getElementById('loading-text').textContent = 'Failed to load Mol*. Check console.';
+  const el = document.getElementById('loading-text');
+  el.textContent = 'Failed to load Mol*. Check console.';
+  el.classList.add('loading-error');
+});
+
+// Keep Mol* canvas in sync when the browser / layout resizes
+window.addEventListener('resize', () => {
+  try { viewer?.handleResize(); } catch (e) { /* ignore */ }
 });
 
 // ==================== UI WIRING ====================
@@ -667,6 +722,22 @@ document.querySelectorAll('#color-mode button').forEach(btn => {
   });
 });
 
+// Bottom-right pills: click to cycle representation / color mode
+const REPR_ORDER = ['cartoon', 'ball_and_stick', 'surface'];
+const COLOR_ORDER = ['domain', 'bfactor', 'chain', 'element', 'secondary'];
+
+document.getElementById('repr-label').addEventListener('click', () => {
+  const next = REPR_ORDER[(REPR_ORDER.indexOf(currentRepr) + 1) % REPR_ORDER.length];
+  const btn = document.querySelector(`#repr-selector button[data-repr="${next}"]`);
+  if (btn) btn.click();
+});
+
+document.getElementById('color-label').addEventListener('click', () => {
+  const next = COLOR_ORDER[(COLOR_ORDER.indexOf(currentColorMode) + 1) % COLOR_ORDER.length];
+  const btn = document.querySelector(`#color-mode button[data-mode="${next}"]`);
+  if (btn) btn.click();
+});
+
 // Domain legend — focus on click
 const domainKeys = ['ntd','exo','palm','pdomain','fingers','thumb','inactpol','ctd'];
 const domainEls = document.querySelectorAll('.domain');
@@ -698,6 +769,7 @@ document.querySelectorAll('.toggle').forEach(t => {
     t.classList.toggle('on', on);
     const toggle = t.dataset.toggle;
     if (toggle === 'rotate') setAutoRotate(on);
+    if (toggle === 'labels') showLabels = on;  // updateLabels() handles visibility each frame
   });
 });
 
@@ -724,11 +796,20 @@ document.getElementById('btn-measure').addEventListener('click', () => {
   } catch (e) { /* measurement API may vary by Mol* version */ }
 });
 
+let molstarUIOpen = false;
 document.getElementById('btn-molstar-ui').addEventListener('click', () => {
-  // Toggle Mol* built-in controls
   if (!viewer) return;
-  const isExpanded = viewer.plugin.layout.state.isExpanded;
-  viewer.plugin.layout.setProps({ isExpanded: !isExpanded });
+  molstarUIOpen = !molstarUIOpen;
+  viewer.plugin.layout.setProps({ isExpanded: molstarUIOpen });
+
+  // Hide ALL our custom overlays + zoom slider when Mol* controls are open
+  const els = document.querySelectorAll(
+    '.overlay, #zoom-slider-wrap'
+  );
+  els.forEach(el => {
+    el.style.visibility = molstarUIOpen ? 'hidden' : '';
+    el.style.pointerEvents = molstarUIOpen ? 'none' : '';
+  });
 });
 
 // Sidebar toggle (mobile)
@@ -789,6 +870,280 @@ document.addEventListener('keydown', e => {
       break;
   }
 });
+
+// ==================== ZOOM SLIDER ====================
+
+const zoomSlider = document.getElementById('zoom-slider');
+const zoomInBtn  = document.getElementById('zoom-in-btn');
+const zoomOutBtn = document.getElementById('zoom-out-btn');
+
+// baseDist = camera-to-target distance after the initial fit.
+// Slider maps 0 (closest, 10% of baseDist) to 100 (farthest, 600%).
+let baseDist = null;
+const ZOOM_CLOSE = 0.10;
+const ZOOM_FAR   = 6.0;
+
+function getCamDist() {
+  try {
+    const s = viewer?.plugin?.canvas3d?.camera?.state;
+    if (!s) return null;
+    const dx = s.position[0] - s.target[0];
+    const dy = s.position[1] - s.target[1];
+    const dz = s.position[2] - s.target[2];
+    return Math.sqrt(dx*dx + dy*dy + dz*dz);
+  } catch (e) { return null; }
+}
+
+function captureBaseDist() {
+  const d = getCamDist();
+  if (d && d > 0) { baseDist = d; syncSliderFromCamera(); }
+}
+
+function distFromSlider(val) {
+  const t = val / 100;
+  return baseDist * ZOOM_CLOSE * Math.pow(ZOOM_FAR / ZOOM_CLOSE, t);
+}
+
+function sliderFromDist(dist) {
+  if (!baseDist || baseDist <= 0) return 50;
+  const t = Math.log(dist / (baseDist * ZOOM_CLOSE)) /
+            Math.log(ZOOM_FAR / ZOOM_CLOSE);
+  return Math.max(0, Math.min(100, t * 100));
+}
+
+function applyZoom(sliderVal) {
+  if (!baseDist) captureBaseDist();
+  if (!baseDist) return;
+  try {
+    const cam = viewer.plugin.canvas3d.camera;
+    const s = cam.getSnapshot();
+    // Direction from target → position
+    const dx = s.position[0] - s.target[0];
+    const dy = s.position[1] - s.target[1];
+    const dz = s.position[2] - s.target[2];
+    const curDist = Math.sqrt(dx*dx + dy*dy + dz*dz);
+    if (curDist === 0) return;
+    const newDist = distFromSlider(sliderVal);
+    const scale = newDist / curDist;
+    s.position[0] = s.target[0] + dx * scale;
+    s.position[1] = s.target[1] + dy * scale;
+    s.position[2] = s.target[2] + dz * scale;
+    s.radius = newDist;
+    cam.setState(s, 0);
+  } catch (e) { console.warn('Zoom failed:', e); }
+}
+
+function syncSliderFromCamera() {
+  const d = getCamDist();
+  if (d && baseDist) zoomSlider.value = sliderFromDist(d);
+}
+
+zoomSlider.addEventListener('input', () => applyZoom(Number(zoomSlider.value)));
+
+zoomInBtn.addEventListener('click',  () => {
+  zoomSlider.value = Math.max(0,   Number(zoomSlider.value) - 8);
+  applyZoom(Number(zoomSlider.value));
+});
+zoomOutBtn.addEventListener('click', () => {
+  zoomSlider.value = Math.min(100, Number(zoomSlider.value) + 8);
+  applyZoom(Number(zoomSlider.value));
+});
+
+// ==================== 3D DOMAIN LABELS ====================
+
+const labelContainer = document.getElementById('domain-labels');
+const labelSvg = document.getElementById('label-lines');
+let domainCentroids = {};   // { key: [x,y,z] }
+let labelEls = {};          // { key: HTMLElement }
+let lineEls = {};           // { key: SVGLineElement }
+
+// Radial offset direction per domain so labels don't pile up
+// Radial push: labels are pushed outward from the structure center toward the canvas edge
+const LABEL_PUSH = 180; // px distance from anchor point (increase to push further out)
+
+function createLabelElements() {
+  labelContainer.innerHTML = '';
+  labelSvg.innerHTML = '';
+  labelEls = {};
+  lineEls = {};
+
+  for (const key of DOMAIN_ORDER) {
+    const dom = DOMAINS[key];
+
+    // HTML label
+    const el = document.createElement('div');
+    el.className = 'domain-label';
+    el.style.borderLeftColor = dom.color;
+    el.innerHTML = `${dom.abbrev}<span class="dl-range">${dom.range[0]}–${dom.range[1]}</span>`;
+    el.style.opacity = '0';
+    labelContainer.appendChild(el);
+    labelEls[key] = el;
+
+    // SVG leader line
+    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    line.setAttribute('stroke', dom.color);
+    line.setAttribute('stroke-width', '1');
+    line.setAttribute('stroke-dasharray', '4 3');
+    line.setAttribute('stroke-opacity', '0.6');
+    labelSvg.appendChild(line);
+    lineEls[key] = line;
+  }
+}
+
+// Compute domain centroids from the loaded Mol* structure data
+function computeDomainCentroids() {
+  domainCentroids = {};
+  try {
+    const structures = viewer.plugin.managers.structure.hierarchy.current.structures;
+    if (!structures.length) return;
+    const structure = structures[0].cell.obj.data;
+
+    for (const key of DOMAIN_ORDER) {
+      const dom = DOMAINS[key];
+      let sx = 0, sy = 0, sz = 0, n = 0;
+
+      for (const unit of structure.units) {
+        if (unit.kind !== 0) continue; // atomic units only
+        const els = unit.elements;
+        const h = unit.model.atomicHierarchy;
+        const conf = unit.conformation;
+
+        for (let j = 0, jl = els.length; j < jl; j++) {
+          const eI = els[j];
+          const rI = h.residueAtomSegments.index[eI];
+          const seqId = h.residues.label_seq_id.value(rI);
+          if (seqId < dom.range[0] || seqId > dom.range[1]) continue;
+
+          // Use only CA atoms for speed
+          const atomId = h.atoms.label_atom_id.value(eI);
+          if (atomId !== 'CA') continue;
+
+          sx += conf.x(eI); sy += conf.y(eI); sz += conf.z(eI);
+          n++;
+        }
+      }
+
+      if (n > 0) domainCentroids[key] = [sx / n, sy / n, sz / n];
+    }
+  } catch (e) {
+    console.warn('Centroid computation failed:', e);
+  }
+}
+
+// Project a 3D world position → 2D screen position using Mol* camera
+function project(pos) {
+  try {
+    const cam = viewer.plugin.canvas3d.camera;
+    const v = cam.view;       // Mat4 column-major
+    const p = cam.projection; // Mat4 column-major
+    const vp = cam.viewport;  // { x, y, width, height }
+    const x = pos[0], y = pos[1], z = pos[2];
+
+    // View transform
+    const vx = v[0]*x + v[4]*y + v[8]*z  + v[12];
+    const vy = v[1]*x + v[5]*y + v[9]*z  + v[13];
+    const vz = v[2]*x + v[6]*y + v[10]*z + v[14];
+    const vw = v[3]*x + v[7]*y + v[11]*z + v[15];
+
+    // Projection transform
+    const cx = p[0]*vx + p[4]*vy + p[8]*vz  + p[12]*vw;
+    const cy = p[1]*vx + p[5]*vy + p[9]*vz  + p[13]*vw;
+    const cw = p[3]*vx + p[7]*vy + p[11]*vz + p[15]*vw;
+    if (Math.abs(cw) < 1e-6) return null;
+
+    // NDC → screen (viewport reports WebGL pixels; divide by DPR for CSS pixels)
+    const dpr = window.devicePixelRatio || 1;
+    const sx = ((cx / cw + 1) / 2 * vp.width  + vp.x) / dpr;
+    const sy = ((1 - cy / cw) / 2 * vp.height + vp.y) / dpr;
+    return { x: sx, y: sy };
+  } catch (e) { return null; }
+}
+
+// Position labels each frame
+function updateLabels() {
+  if (!showLabels || !Object.keys(domainCentroids).length) {
+    // Hide all
+    for (const key of DOMAIN_ORDER) {
+      if (labelEls[key]) labelEls[key].style.opacity = '0';
+      if (lineEls[key]) lineEls[key].setAttribute('stroke-opacity', '0');
+    }
+    return;
+  }
+
+  // Get the container rect to clamp positions
+  const main = labelContainer.parentElement;
+  if (!main) return;
+  const rect = main.getBoundingClientRect();
+  const w = rect.width, h = rect.height;
+  const cx = w / 2, cy = h / 2;
+
+  // Project all centroids to find the structure's 2D center
+  const projectedPts = {};
+  let sumX = 0, sumY = 0, nPts = 0;
+  for (const key of DOMAIN_ORDER) {
+    const c = domainCentroids[key];
+    if (!c) continue;
+    const pt = project(c);
+    if (pt) { projectedPts[key] = pt; sumX += pt.x; sumY += pt.y; nPts++; }
+  }
+  if (nPts === 0) return;
+  const centerX = sumX / nPts, centerY = sumY / nPts;
+
+  for (const key of DOMAIN_ORDER) {
+    const el = labelEls[key];
+    const line = lineEls[key];
+    const pt = projectedPts[key];
+    if (!el || !line) continue;
+    if (!pt) { el.style.opacity = '0'; line.setAttribute('stroke-opacity', '0'); continue; }
+
+    // Push label outward from the structure's projected center
+    let dx = pt.x - centerX;
+    let dy = pt.y - centerY;
+    const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+    dx /= dist; dy /= dist;
+
+    const lx = Math.max(60, Math.min(w - 80, pt.x + dx * LABEL_PUSH));
+    const ly = Math.max(20, Math.min(h - 20, pt.y + dy * LABEL_PUSH));
+
+    el.style.left = lx + 'px';
+    el.style.top = ly + 'px';
+    el.style.opacity = '1';
+
+    // Leader line from label to anchor point on structure
+    line.setAttribute('x1', lx);
+    line.setAttribute('y1', ly + 4);
+    line.setAttribute('x2', pt.x);
+    line.setAttribute('y2', pt.y);
+    line.setAttribute('stroke-opacity', '0.5');
+  }
+}
+
+// Create label elements on startup
+createLabelElements();
+
+// Re-compute centroids after each structure load
+const _origLoadStructure = loadStructure;
+loadStructure = async function(...args) {
+  await _origLoadStructure(...args);
+  setTimeout(() => { computeDomainCentroids(); }, 500);
+  setTimeout(() => { computeDomainCentroids(); }, 2000);
+};
+
+// Also capture centroids from the initial load
+setTimeout(() => { computeDomainCentroids(); }, 2000);
+setTimeout(() => { computeDomainCentroids(); }, 4000);
+
+// Sync slider + labels on every frame
+(function syncLoop() {
+  syncSliderFromCamera();
+  updateLabels();
+  requestAnimationFrame(syncLoop);
+})();
+
+// Capture baseDist after viewer initialises (initViewer already ran)
+setTimeout(captureBaseDist, 1500);
+setTimeout(captureBaseDist, 3000);
+setTimeout(captureBaseDist, 5000);
 </script>
 <script type="module">
   import { loadPoleData, provenanceFooter } from './js/data/poleData.js';

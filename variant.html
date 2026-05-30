@@ -14,95 +14,8 @@
 <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/molstar@4.5.0/build/viewer/molstar.css" />
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/molstar@4.5.0/build/viewer/molstar.js"></script>
 
-<style>
-  /* Constrain Mol* expanded layout to the canvas container, not the viewport */
-  #canvas-container {
-    position: absolute !important;
-    inset: 0 !important;
-    overflow: hidden;
-  }
-  #canvas-container .msp-layout-expanded {
-    position: absolute !important;
-    z-index: auto !important;
-  }
-  /* Override global canvas sizing from style.css that conflicts with Mol* */
-  #canvas-container canvas {
-    width: unset !important;
-    height: unset !important;
-    max-width: none !important;
-    max-height: none !important;
-  }
-
-  /* Variant marker overlay */
-  #variant-marker {
-    position: absolute;
-    pointer-events: none;
-    z-index: 10;
-    transform: translate(-50%, -50%);
-    display: none;
-  }
-  #variant-marker .marker-ring {
-    width: 28px; height: 28px;
-    border: 2.5px solid #e74c3c;
-    border-radius: 50%;
-    animation: pulse-ring 1.8s ease-in-out infinite;
-    box-shadow: 0 0 8px rgba(231,76,60,0.5);
-  }
-  #variant-marker .marker-dot {
-    position: absolute;
-    top: 50%; left: 50%;
-    transform: translate(-50%, -50%);
-    width: 8px; height: 8px;
-    background: #e74c3c;
-    border-radius: 50%;
-    box-shadow: 0 0 4px rgba(231,76,60,0.8);
-  }
-  #variant-marker .marker-label {
-    position: absolute;
-    top: -20px; left: 50%;
-    transform: translateX(-50%);
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10px; font-weight: 600;
-    color: #e74c3c;
-    white-space: nowrap;
-    text-shadow: 0 0 4px rgba(14,20,30,0.9), 0 1px 2px rgba(0,0,0,0.8);
-  }
-  @keyframes pulse-ring {
-    0%, 100% { transform: scale(1); opacity: 1; }
-    50% { transform: scale(1.4); opacity: 0.4; }
-  }
-
-  /* Signature bar chart */
-  .sig-chart { margin: 12px 0; }
-  .sig-bar-row { display: flex; align-items: center; margin: 4px 0; gap: 8px; }
-  .sig-bar-label {
-    font-family: 'JetBrains Mono', monospace; font-size: 10px;
-    color: var(--ink-dim); width: 60px; text-align: right;
-  }
-  .sig-bar-track {
-    flex: 1; height: 12px; background: rgba(14,20,30,0.5);
-    border: 1px solid var(--line); border-radius: 2px; overflow: hidden;
-  }
-  .sig-bar-fill { height: 100%; border-radius: 1px; transition: width 0.5s ease; }
-  .sig-bar-val {
-    font-family: 'JetBrains Mono', monospace; font-size: 9px;
-    color: var(--ink-faint); width: 35px;
-  }
-
-  /* Evidence table */
-  .evidence-table { width: 100%; border-collapse: collapse; margin: 8px 0; }
-  .evidence-table th, .evidence-table td {
-    font-family: 'JetBrains Mono', monospace; font-size: 9.5px;
-    padding: 4px 6px; text-align: left; border-bottom: 1px solid var(--line);
-    color: var(--ink-dim);
-  }
-  .evidence-table th { color: var(--ink-faint); font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; }
-  .evidence-table .code { color: var(--accent); font-weight: 600; }
-  .evidence-table .lr { color: var(--ink); font-weight: 500; }
-  .evidence-table .citation { font-size: 8.5px; color: var(--ink-faint); line-height: 1.4; }
-</style>
 </head>
-<body>
+<body class="variant-page">
 
 <div id="loading">
   <div class="helix"></div>
@@ -162,7 +75,7 @@
   </aside>
 
   <main>
-    <div id="canvas-container"></div>
+    <div id="canvas-container" role="img" aria-label="3D protein structure viewer"></div>
 
     <div class="overlay corner-tl">
       <div class="live" id="variant-badge">variant &middot; analysis</div>
@@ -267,7 +180,7 @@ const VARIANTS = [
   {
     id: 'P286R', residue: 286, ref: 'P', alt: 'R', domain: 'EXO',
     label: 'Pro286→Arg', type: 'Somatic',
-    detail: 'Most frequent cancer-associated POLE mutation. Pro→Arg substitution in ExoII motif disrupts the proofreading active site, causing an ultra-mutation phenotype (TMB >100 mut/Mb) in colorectal and endometrial carcinoma.',
+    detail: 'Most frequent cancer-associated POLE mutation. Pro→Arg substitution adjacent to ExoI disrupts the proofreading active site, causing an ultra-mutation phenotype (TMB >100 mut/Mb) in colorectal and endometrial carcinoma.',
     am_score: 0.99, am_class: 'pathogenic', revel_score: 0.96, cadd_score: 33,
     signatures: { SBS10a: 0.55, SBS10b: 0.30, SBS28: 0.05, SBS14: 0.10 },
     classification: {
@@ -276,7 +189,7 @@ const VARIANTS = [
       evidence: [
         { code: 'PS3', lr: 18.7, citation: 'Functional: yeast Pol2-P301R abolishes proofreading (Barbari & Shcherbakova, DNA Repair 2017). Human P286R 3600-fold mutator (Shinbrot et al., PNAS 2014).' },
         { code: 'PS4', lr: 18.7, citation: 'Prevalence: most recurrent POLE mutation in CRC (12%) and endometrial (7%) (TCGA 2013; Church et al., Hum Mol Genet 2013).' },
-        { code: 'PM1', lr: 4.3, citation: 'Located in ExoII motif (residues 283-289), a critical functional domain.' },
+        { code: 'PM1', lr: 4.3, citation: 'Adjacent to ExoI motif (D275/E277), a critical functional domain.' },
         { code: 'PM2', lr: 4.3, citation: 'Absent from gnomAD v4.1 (0/1,614,532 alleles).' },
         { code: 'PP3', lr: 2.08, citation: 'REVEL 0.96; CADD 33; AlphaMissense 0.99 (pathogenic).' },
       ],
@@ -621,10 +534,6 @@ function showPredictors(v) {
     rows.push(`<div style="display:flex;justify-content:space-between"><span style="color:var(--ink-dim)">CADD</span><span style="color:${caddColor};font-weight:600">${v.cadd_score}</span></div>`);
   }
 
-  // pLDDT at mutation site (from pipeline data or synthetic fallback)
-  const plddt = 90; // EXO domain residues typically have high AlphaFold confidence
-  rows.push(`<div style="display:flex;justify-content:space-between"><span style="color:var(--ink-dim)">pLDDT (res. ${v.residue})</span><span style="color:var(--plddt-very-high,#0053D6);font-weight:600">${plddt}</span></div>`);
-
   content.innerHTML = rows.join('');
 }
 
@@ -905,7 +814,9 @@ initViewer().then(() => {
   }
 }).catch(err => {
   console.error('Init failed:', err);
-  document.getElementById('loading-text').textContent = 'Failed to load. Check console.';
+  const el = document.getElementById('loading-text');
+  el.textContent = 'Failed to load. Check console.';
+  el.classList.add('loading-error');
 });
 
 // ==================== UI WIRING ====================

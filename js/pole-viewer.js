@@ -25,321 +25,54 @@
 
 import * as THREE from 'three';
 import { buildSSElement, segmentBySSType } from './ribbon.js';
+import { DOMAINS as BASE_DOMAINS, DOMAIN_ORDER, MUTATIONS as BASE_MUTATIONS } from './data/domainConfig.js';
+import { PAL, COLOR_SCHEMES } from './pole-palette.js';
+import { SCALE, generateDomainBackbone, generateLinker } from './pole-geometry.js';
 
-
-// ==================== PALETTE (muted, publication-quality) ====================
-
-const PAL = {
-  ntd:      new THREE.Color(0xc4a47a),
-  exo:      new THREE.Color(0xb85c5c),
-  palm:     new THREE.Color(0x6b8e6b),
-  pdomain:  new THREE.Color(0x4a8a7a),
-  fingers:  new THREE.Color(0x5b7f99),
-  thumb:    new THREE.Color(0x8b7ba8),
-  inactpol: new THREE.Color(0x7a6a8a),
-  ctd:      new THREE.Color(0xb8a04a),
-  linker:   new THREE.Color(0x464040),
-
-  dnaTemplate: new THREE.Color(0x8c9aa8),
-  dnaPrimer:   new THREE.Color(0x6a9e96),
-  dnaBase:     new THREE.Color(0x5a6a78),
-
-  carbon:   new THREE.Color(0x707070),
-  nitrogen: new THREE.Color(0x3050c0),
-  oxygen:   new THREE.Color(0xc03030),
-  phosphorus: new THREE.Color(0xd07020),
-  magnesium:  new THREE.Color(0x60a830),
-
-  mutMarker: 0xc45c5c,
-  accent:    0x7abba8,
-  bg:        0x080b11,
-  annotate:  new THREE.Color(0x506070),
-};
-
-// ==================== COLOR SCHEMES ====================
-
-const COLOR_SCHEMES = {
-  default:    { ntd:0xc4a47a, exo:0xb85c5c, palm:0x6b8e6b, pdomain:0x4a8a7a, fingers:0x5b7f99, thumb:0x8b7ba8, inactpol:0x7a6a8a, ctd:0xb8a04a },
-  pymol:      { ntd:0x33cc33, exo:0xff4444, palm:0x3366ff, pdomain:0x00aa88, fingers:0xff66cc, thumb:0x00cccc, inactpol:0xaa66ff, ctd:0xffcc00 },
-  colorblind: { ntd:0xe69f00, exo:0x0072b2, palm:0x009e73, pdomain:0x44aa99, fingers:0xcc79a7, thumb:0x56b4e9, inactpol:0xaa4499, ctd:0xf0e442 },
-};
-
-// ==================== PIPELINE DATA (defaults, overridden by JSON) ====================
-
-// B-factor pseudo-values by SS type (0=rigid, 1=flexible)
-let BFACTOR_MAP = { H: 0.2, E: 0.5, L: 0.9 };
-
-// Conservation pseudo-scores by domain (0=variable, 1=conserved)
-let CONSERVATION = { ntd:0.3, exo:0.85, palm:0.95, pdomain:0.8, fingers:0.7, thumb:0.6, inactpol:0.35, ctd:0.4 };
-
-// Variant density pseudo-scores by domain (COSMIC/ClinVar)
-let VARIANT_DENSITY = { ntd:0.1, exo:0.95, palm:0.3, pdomain:0.15, fingers:0.15, thumb:0.1, inactpol:0.05, ctd:0.05 };
-
-// Per-residue scoring arrays (populated from pipeline JSON when available)
-let PER_RESIDUE_SCORES = null;  // { bfactor:[], conservation:[], variant_density:[], pathogenicity:[], electrostatic_charge:[] }
-
-// Mutation data with pipeline annotations (populated from JSON when available)
-let PIPELINE_MUTATIONS = null;  // Full mutation data with signatures, classification, DDG
-
-// Pathogenicity spectrum per-domain: residue-range → score (0=benign, 1=pathogenic)
-let PATHOGENICITY = {
-  ntd: [ { start:1, end:280, score:0.15 } ],
-  exo: [
-    { start:268, end:280, score:0.3 },
-    { start:281, end:285, score:0.6 },
-    { start:286, end:286, score:1.0 },   // P286R hotspot
-    { start:287, end:296, score:0.5 },
-    { start:297, end:297, score:0.9 },   // S297F hotspot
-    { start:298, end:367, score:0.4 },
-    { start:368, end:370, score:0.75 },  // EXO catalytic D368/D370
-    { start:371, end:410, score:0.35 },
-    { start:411, end:411, score:0.95 },  // V411L hotspot
-    { start:412, end:471, score:0.3 },
-  ],
-  palm: [
-    { start:600, end:639, score:0.2 },
-    { start:640, end:642, score:0.85 },  // catalytic D640/D642
-    { start:643, end:859, score:0.25 },
-    { start:860, end:860, score:0.8 },   // catalytic D860
-    { start:861, end:870, score:0.2 },
-  ],
-  pdomain: [ { start:700, end:760, score:0.2 } ],
-  fingers: [ { start:870, end:1020, score:0.15 } ],
-  thumb:   [ { start:1020, end:1190, score:0.1 } ],
-  inactpol:[ { start:1198, end:1900, score:0.05 } ],
-  ctd:     [ { start:1900, end:2286, score:0.05 } ],
-};
-
-function getPathogenicityScore(domain, residueIdx, totalResidues) {
-  const dom = DOMAINS[domain];
-  if (!dom) return 0;
-  const residue = dom.range[0] + Math.round((residueIdx / Math.max(1, totalResidues - 1)) * (dom.range[1] - dom.range[0]));
-  const ranges = PATHOGENICITY[domain];
-  if (!ranges) return 0;
-  for (const r of ranges) {
-    if (residue >= r.start && residue <= r.end) return r.score;
-  }
-  return 0;
-}
-
-// ==================== UTILITIES ====================
-
-function makeRng(seed) {
-  let s = seed;
-  return () => { s = (s * 16807) % 2147483647; return (s & 0x7fffffff) / 2147483647; };
-}
 
 // ==================== DOMAIN ARCHITECTURE ====================
 
-const SCALE = 0.5;
-
-const DOMAINS = {
-  ntd: { center:[-18,8,-5], range:[1,280], name:'N-terminal domain', abbrev:'NTD', color:'ntd',
+// Schematic-specific domain extensions (center, ss, header are viewer-only)
+const SCHEMATIC_EXTENSIONS = {
+  ntd: { center:[-18,8,-5], color:'ntd',
     header:'// NTD (1-280) // Structural scaffold',
     ss:[ {t:'H',n:14},{t:'L',n:6},{t:'E',n:7},{t:'L',n:4},{t:'E',n:6},{t:'L',n:5},{t:'H',n:18},{t:'L',n:5},{t:'E',n:8},{t:'L',n:4},{t:'E',n:7},{t:'L',n:6},{t:'H',n:12},{t:'L',n:8},{t:'H',n:10},{t:'L',n:5},{t:'E',n:6},{t:'L',n:4},{t:'H',n:16},{t:'L',n:7},{t:'H',n:10},{t:'L',n:8},{t:'E',n:5},{t:'L',n:6},{t:'H',n:8},{t:'L',n:9} ] },
-  exo: { center:[-10,2,7], range:[268,471], name:"3\u2032\u21925\u2032 Exonuclease", abbrev:'EXO', color:'exo',
+  exo: { center:[-10,2,7], color:'exo',
     header:"// EXO (268-471) // 3'\u21925' proofreading / D275/E277/D368/D370",
     ss:[ {t:'E',n:6},{t:'L',n:4},{t:'H',n:14},{t:'L',n:5},{t:'E',n:7},{t:'L',n:3},{t:'E',n:6},{t:'H',n:12},{t:'L',n:6},{t:'H',n:16},{t:'L',n:4},{t:'E',n:8},{t:'L',n:5},{t:'H',n:10},{t:'L',n:6},{t:'E',n:7},{t:'L',n:3},{t:'H',n:14},{t:'L',n:5},{t:'H',n:8},{t:'L',n:6},{t:'E',n:6},{t:'L',n:4},{t:'H',n:10},{t:'L',n:4} ] },
-  palm: { center:[0,-1,0], range:[600,870], name:'Palm subdomain', abbrev:'PALM', color:'palm',
+  palm: { center:[0,-1,0], color:'palm',
     header:'// PALM (600-870) // Catalytic core / motifs A(D640xD642) C(D860)',
     ss:[ {t:'E',n:8},{t:'L',n:3},{t:'E',n:7},{t:'L',n:5},{t:'H',n:12},{t:'L',n:4},{t:'E',n:9},{t:'L',n:3},{t:'E',n:7},{t:'L',n:6},{t:'H',n:10},{t:'L',n:4},{t:'E',n:8},{t:'L',n:5},{t:'E',n:6},{t:'L',n:3},{t:'H',n:14},{t:'L',n:5},{t:'E',n:7},{t:'L',n:4},{t:'H',n:8},{t:'L',n:6},{t:'E',n:9},{t:'L',n:3},{t:'E',n:7},{t:'L',n:5},{t:'H',n:12},{t:'L',n:4} ] },
-  pdomain: { center:[4,1,-3], range:[700,760], name:'Processivity (P) domain', abbrev:'P-DOM', color:'pdomain',
+  pdomain: { center:[4,1,-3], color:'pdomain',
     header:'// P-DOM (700-760) // [4Fe-4S] cluster / PCNA contact',
     ss:[ {t:'H',n:12},{t:'L',n:4},{t:'H',n:10},{t:'L',n:5},{t:'E',n:6},{t:'L',n:3},{t:'H',n:8},{t:'L',n:4} ] },
-  fingers: { center:[7,5,4], range:[870,1020], name:'Fingers subdomain', abbrev:'FNG', color:'fingers',
+  fingers: { center:[7,5,4], color:'fingers',
     header:'// FNG (870-1020) // O-helix / Watson-Crick fidelity gate',
     ss:[ {t:'H',n:20},{t:'L',n:4},{t:'H',n:16},{t:'L',n:6},{t:'H',n:22},{t:'L',n:5},{t:'H',n:14},{t:'L',n:4},{t:'H',n:12},{t:'L',n:5},{t:'H',n:10},{t:'L',n:6},{t:'H',n:8},{t:'L',n:4} ] },
-  thumb: { center:[3,-9,7], range:[1020,1190], name:'Thumb subdomain', abbrev:'THM', color:'thumb',
+  thumb: { center:[3,-9,7], color:'thumb',
     header:'// THM (1020-1190) // Helical bundle / grips duplex DNA',
     ss:[ {t:'H',n:18},{t:'L',n:4},{t:'H',n:22},{t:'L',n:5},{t:'H',n:16},{t:'L',n:6},{t:'H',n:20},{t:'L',n:4},{t:'H',n:14},{t:'L',n:5},{t:'H',n:12},{t:'L',n:6},{t:'H',n:10},{t:'L',n:4} ] },
-  inactpol: { center:[10,-4,1], range:[1198,1900], name:'Inactive Pol module', abbrev:'INACT', color:'inactpol',
+  inactpol: { center:[10,-4,1], color:'inactpol',
     header:'// INACT (1198-1900) // Non-catalytic Pol fold / subunit scaffold',
     ss:[ {t:'H',n:14},{t:'L',n:6},{t:'E',n:7},{t:'L',n:4},{t:'H',n:10},{t:'L',n:5},{t:'E',n:6},{t:'L',n:4},{t:'H',n:12},{t:'L',n:6},{t:'E',n:8},{t:'L',n:3},{t:'H',n:8},{t:'L',n:5},{t:'E',n:7},{t:'L',n:4},{t:'H',n:10},{t:'L',n:6},{t:'E',n:6},{t:'L',n:4},{t:'H',n:14},{t:'L',n:5},{t:'E',n:5},{t:'L',n:4},{t:'H',n:8},{t:'L',n:6} ] },
-  ctd: { center:[16,1,-5], range:[1900,2286], name:'C-terminal domain', abbrev:'CTD', color:'ctd',
+  ctd: { center:[16,1,-5], color:'ctd',
     header:'// CTD (1900-2286) // CysA/CysB Zn-finger / POLE2/3/4 anchor',
     ss:[ {t:'H',n:10},{t:'L',n:6},{t:'E',n:5},{t:'L',n:4},{t:'E',n:6},{t:'L',n:3},{t:'H',n:14},{t:'L',n:5},{t:'E',n:7},{t:'L',n:4},{t:'E',n:5},{t:'L',n:6},{t:'H',n:12},{t:'L',n:4},{t:'E',n:6},{t:'L',n:5},{t:'H',n:10},{t:'L',n:8},{t:'E',n:5},{t:'L',n:4},{t:'H',n:8},{t:'L',n:6},{t:'E',n:7},{t:'L',n:3},{t:'H',n:12},{t:'L',n:5},{t:'E',n:6},{t:'L',n:4},{t:'H',n:10},{t:'L',n:7},{t:'E',n:5},{t:'L',n:5},{t:'H',n:14},{t:'L',n:6} ] },
 };
 
-const DOMAIN_ORDER = ['ntd','exo','palm','pdomain','fingers','thumb','inactpol','ctd'];
-
-let MUTATIONS = [
-  { id:'P286R', residue:286, domain:'exo', offset:[2.5,1.2,2.0],
-    label:'Pro286\u2192Arg', detail:'Somatic ultra-mutator / adjacent to ExoI / CRC & endometrial / SBS10a/b' },
-  { id:'V411L', residue:411, domain:'exo', offset:[-2.8,-0.5,1.8],
-    label:'Val411\u2192Leu', detail:'Somatic proofreading-deficient / TMB >100 mut/Mb / SBS10a' },
-  { id:'S297F', residue:297, domain:'exo', offset:[0.5,2.8,-1.2],
-    label:'Ser297\u2192Phe', detail:'Germline ExoI / PPAP predisposition / SBS28' },
-  { id:'L424V', residue:424, domain:'exo', offset:[-1.5,2.0,2.5],
-    label:'Leu424\u2192Val', detail:'Germline ExoIII / PPAP-associated / Mur 2023' },
-  { id:'D287E', residue:287, domain:'exo', offset:[3.0,-1.0,1.0],
-    label:'Asp287\u2192Glu', detail:'Somatic ExoII adjacent / CRC / SBS10b' },
-  { id:'P436R', residue:436, domain:'exo', offset:[-2.0,1.5,-1.5],
-    label:'Pro436\u2192Arg', detail:'Somatic ExoIII / endometrial / SBS10a' },
-  { id:'M444K', residue:444, domain:'exo', offset:[1.0,-2.0,2.5],
-    label:'Met444\u2192Lys', detail:'Somatic / ExoIII motif / CRC / SBS10b' },
-  { id:'S459F', residue:459, domain:'exo', offset:[-3.0,0.5,-0.5],
-    label:'Ser459\u2192Phe', detail:'Germline / PPAP-associated / Valle 2023' },
-  { id:'F367S', residue:367, domain:'exo', offset:[2.0,0.8,-2.0],
-    label:'Phe367\u2192Ser', detail:'Germline PPAP / adjacent to ExoIII catalytic triad' },
-];
-
-// ==================== PIPELINE DATA LOADER ====================
-
-/**
- * Load pipeline-generated JSON data. Falls back to hardcoded defaults on failure.
- * Call before instantiating POLEViewer for pipeline-enhanced data.
- */
-export async function loadPipelineData(basePath = './data') {
-  try {
-    const [structure, scores, mutations] = await Promise.all([
-      fetch(`${basePath}/pole_structure.json`).then(r => { if (!r.ok) throw new Error(r.status); return r.json(); }),
-      fetch(`${basePath}/pole_scores.json`).then(r => { if (!r.ok) throw new Error(r.status); return r.json(); }),
-      fetch(`${basePath}/pole_mutations.json`).then(r => { if (!r.ok) throw new Error(r.status); return r.json(); }),
-    ]);
-
-    // Apply structure data
-    if (structure?.domains) {
-      for (const [key, data] of Object.entries(structure.domains)) {
-        if (DOMAINS[key]) {
-          if (data.center) DOMAINS[key].center = data.center;
-          if (data.range) DOMAINS[key].range = data.range;
-          if (data.ss && data.ss.length > 0) DOMAINS[key].ss = data.ss;
-        }
-      }
-    }
-    if (structure?.bfactor_map) {
-      BFACTOR_MAP = { ...BFACTOR_MAP, ...structure.bfactor_map };
-    }
-
-    // Apply per-residue scores
-    if (scores?.per_residue) {
-      PER_RESIDUE_SCORES = scores.per_residue;
-    }
-    if (scores?.per_domain) {
-      if (scores.per_domain.conservation) {
-        CONSERVATION = { ...CONSERVATION, ...scores.per_domain.conservation };
-      }
-      if (scores.per_domain.variant_density) {
-        VARIANT_DENSITY = { ...VARIANT_DENSITY, ...scores.per_domain.variant_density };
-      }
-      if (scores.per_domain.electrostatic_charge) {
-        // Store for electrostatic mode
-        CONSERVATION._charge = scores.per_domain.electrostatic_charge;
-      }
-    }
-
-    // Apply mutation data
-    if (mutations?.mutations) {
-      PIPELINE_MUTATIONS = mutations.mutations;
-      // Enrich existing MUTATIONS array with pipeline data
-      for (const pm of mutations.mutations) {
-        const existing = MUTATIONS.find(m => m.id === pm.id);
-        if (existing) {
-          existing.pathogenicity_score = pm.pathogenicity_score;
-          existing.ddg = pm.ddg_kcal_mol;
-          existing.signature = pm.signature_attribution;
-          existing.classification = pm.classification;
-        }
-      }
-    }
-
-    console.info('[POLEPipeline] Loaded pipeline data successfully');
-    return { structure, scores, mutations };
-  } catch (e) {
-    console.warn('[POLEPipeline] Pipeline data not available, using defaults:', e.message);
-    return null;
-  }
+// Merge shared domain definitions with schematic-specific extensions
+const DOMAINS = {};
+for (const key of DOMAIN_ORDER) {
+  DOMAINS[key] = { ...BASE_DOMAINS[key], ...SCHEMATIC_EXTENSIONS[key] };
 }
 
-
-// ==================== BACKBONE GENERATION ====================
-
-function generateDomainBackbone(key) {
-  const dom = DOMAINS[key];
-  const center = new THREE.Vector3(...dom.center);
-  const rng = makeRng(key.charCodeAt(0) * 137 + key.charCodeAt(1) * 31);
-  const points = [];
-  let cur = center.clone().add(new THREE.Vector3((rng()-0.5)*5,(rng()-0.5)*5,(rng()-0.5)*5));
-  let dir = new THREE.Vector3(rng()-0.5,rng()-0.5,rng()-0.5).normalize();
-
-  for (const el of dom.ss) {
-    if (el.t === 'H') {
-      const axis = dir.clone();
-      let pA = new THREE.Vector3(1,0,0);
-      if (Math.abs(axis.dot(pA)) > 0.85) pA.set(0,1,0);
-      const pB = new THREE.Vector3().crossVectors(axis,pA).normalize();
-      pA.crossVectors(pB,axis).normalize();
-      // Handedness check: ensure right-handed winding
-      const check = new THREE.Vector3().crossVectors(pA, pB);
-      if (check.dot(axis) < 0) pB.negate();
-      for (let i = 0; i < el.n; i++) {
-        const ang = i * (2*Math.PI/3.6);
-        const p = cur.clone()
-          .add(axis.clone().multiplyScalar(i * 1.5 * SCALE))
-          .add(pA.clone().multiplyScalar(Math.cos(ang) * 2.3 * SCALE))
-          .add(pB.clone().multiplyScalar(Math.sin(ang) * 2.3 * SCALE));
-        points.push({ pos:p, ss:'H' });
-      }
-    } else if (el.t === 'E') {
-      // Proper 120° pleated-sheet rotation using perpendicular frame
-      const sDir = dir.clone().normalize();
-      let sA = new THREE.Vector3(1,0,0);
-      if (Math.abs(sDir.dot(sA)) > 0.85) sA.set(0,1,0);
-      const sB = new THREE.Vector3().crossVectors(sDir, sA).normalize();
-      sA.crossVectors(sB, sDir).normalize();
-      for (let i = 0; i < el.n; i++) {
-        const ang = i * (2 * Math.PI / 3);
-        const p = cur.clone()
-          .add(sDir.clone().multiplyScalar(i * 3.3 * SCALE))
-          .add(sA.clone().multiplyScalar(Math.cos(ang) * 0.7 * SCALE))
-          .add(sB.clone().multiplyScalar(Math.sin(ang) * 0.7 * SCALE));
-        points.push({ pos:p, ss:'E' });
-      }
-    } else {
-      // 3.8 Å step chain with dihedral-inspired angular deflection
-      const target = center.clone().add(new THREE.Vector3((rng()-0.5)*7,(rng()-0.5)*7,(rng()-0.5)*7));
-      let loopCur = cur.clone();
-      let loopDir = target.clone().sub(cur);
-      if (loopDir.length() < 0.01) loopDir.set(rng()-0.5, rng()-0.5, rng()-0.5);
-      loopDir.normalize();
-      for (let i = 0; i < el.n; i++) {
-        const toTarget = target.clone().sub(loopCur);
-        if (toTarget.length() > 0.01) loopDir.lerp(toTarget.normalize(), 0.3).normalize();
-        const phi = (rng() - 0.5) * Math.PI * 0.6;
-        const psi = (rng() - 0.5) * Math.PI * 0.4;
-        let perpSeed = new THREE.Vector3(1,0,0);
-        if (Math.abs(loopDir.dot(perpSeed)) > 0.85) perpSeed.set(0,1,0);
-        const perp1 = new THREE.Vector3().crossVectors(loopDir, perpSeed).normalize();
-        const perp2 = new THREE.Vector3().crossVectors(loopDir, perp1).normalize();
-        const step = loopDir.clone()
-          .add(perp1.clone().multiplyScalar(Math.sin(phi) * 0.5))
-          .add(perp2.clone().multiplyScalar(Math.sin(psi) * 0.3))
-          .normalize().multiplyScalar(3.8 * SCALE);
-        loopCur = loopCur.clone().add(step);
-        points.push({ pos: loopCur.clone(), ss:'L' });
-        loopDir = step.clone().normalize();
-      }
-    }
-    cur = points[points.length-1].pos.clone();
-    const toC = center.clone().sub(cur).normalize();
-    dir = dir.clone().lerp(toC, 0.35+rng()*0.3).normalize();
-    dir.add(new THREE.Vector3((rng()-0.5)*0.5,(rng()-0.5)*0.5,(rng()-0.5)*0.5)).normalize();
-  }
-  return points;
-}
-
-function generateLinker(fromPos, toPos, n) {
-  const pts = [];
-  const rng = makeRng(Math.floor(fromPos.x*100+toPos.y*100));
-  for (let i = 0; i <= n; i++) {
-    const t = i/n;
-    const p = fromPos.clone().lerp(toPos,t);
-    const w = 3*Math.sin(t*Math.PI);
-    p.add(new THREE.Vector3((rng()-0.5)*w*2,(rng()-0.5)*w*2,(rng()-0.5)*w*1.5));
-    pts.push({ pos:p, ss:'L' });
-  }
-  return pts;
-}
+// Extend shared mutations with schematic-specific offsets
+const MUTATION_OFFSETS = {
+  P286R: [2.5,1.2,2.0], V411L: [-2.8,-0.5,1.8], S297F: [0.5,2.8,-1.2],
+  L424V: [-1.5,2.0,2.5], D287E: [3.0,-1.0,1.0], P436R: [-2.0,1.5,-1.5],
+  M444K: [1.0,-2.0,2.5], S459F: [-3.0,0.5,-0.5], F367S: [2.0,0.8,-2.0],
+};
+let MUTATIONS = BASE_MUTATIONS.map(m => ({ ...m, offset: MUTATION_OFFSETS[m.id] || [0,0,0] }));
 
 
 // ==================== VIEWER CLASS ====================
@@ -409,6 +142,8 @@ export class POLEViewer {
     this.renderer.outputColorSpace = THREE.SRGBColorSpace;
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
     this.renderer.toneMappingExposure = 1.4;
+    this.renderer.domElement.setAttribute('role', 'img');
+    this.renderer.domElement.setAttribute('aria-label', '3D protein structure schematic');
     this.container.appendChild(this.renderer.domElement);
     const resize = () => {
       const w = this.container.clientWidth, h = this.container.clientHeight;
@@ -449,7 +184,7 @@ export class POLEViewer {
 
     for (const key of DOMAIN_ORDER) {
       const dom = DOMAINS[key];
-      const bb = generateDomainBackbone(key);
+      const bb = generateDomainBackbone(key, DOMAINS);
       backbones[key] = bb;
       this.backboneCache[key] = bb;
       const domColor = PAL[dom.color];
@@ -612,8 +347,8 @@ export class POLEViewer {
     this.scene.add(this.groups.dntp);
 
     const asp = this.activeSitePos;
-    const mgApos = asp.clone().add(new THREE.Vector3(-0.5,0.25,0.1));
-    const mgBpos = asp.clone().add(new THREE.Vector3(0.7,-0.15,0.35));
+    const mgApos = asp.clone().add(new THREE.Vector3(-0.6, 0.30, 0.10));
+    const mgBpos = asp.clone().add(new THREE.Vector3(1.30,-0.25, 0.50));
 
     for (const [pos, label] of [[mgApos,'A'],[mgBpos,'B']]) {
       const core = new THREE.Mesh(
@@ -710,7 +445,7 @@ export class POLEViewer {
     this.groups.dntp.add(this._dash(pG,mgBpos,0x60a830));
 
     // Template nucleotide opposite the dNTP (Watson-Crick base pairing)
-    const templateBase = baseC.clone().add(new THREE.Vector3(0, 1.4, 0));
+    const templateBase = baseC.clone().add(new THREE.Vector3(0, 1.7, 0));
     const templateAtom = this._atom(0x3050c0, 0.1);
     templateAtom.position.copy(templateBase);
     this.groups.dntp.add(templateAtom);
@@ -723,7 +458,7 @@ export class POLEViewer {
     // 3 Watson-Crick H-bond dashed lines
     const hbondColor = 0x88aacc;
     const hbondOffsets = [
-      [0, 0, 0], [0.15, 0.05, 0.1], [-0.15, 0.05, -0.1]
+      [0, 0, 0], [0.18, 0.06, 0.12], [-0.18, 0.06, -0.12]
     ];
     for (const off of hbondOffsets) {
       const from = baseC.clone().add(new THREE.Vector3(off[0], 0.1 + off[1], off[2]));
@@ -853,7 +588,7 @@ export class POLEViewer {
     const clusterPos = pCenter.clone().add(new THREE.Vector3(0.5, 0.8, -0.5));
 
     // Cubane [4Fe-4S] core: alternating Fe and S at cube vertices
-    const cubeR = 0.55 * SCALE;
+    const cubeR = 1.8 * SCALE;
     const fePositions = [
       clusterPos.clone().add(new THREE.Vector3( cubeR,  cubeR,  cubeR)),
       clusterPos.clone().add(new THREE.Vector3(-cubeR, -cubeR,  cubeR)),
@@ -907,7 +642,7 @@ export class POLEViewer {
     const cysDirs = [[1.2,0.5,0],[-0.3,1.2,0.8],[0.5,-0.3,1.2],[-1.0,-0.8,-0.3]];
     for (let i = 0; i < 4; i++) {
       const cysS = fePositions[i].clone().add(
-        new THREE.Vector3(cysDirs[i][0], cysDirs[i][1], cysDirs[i][2]).normalize().multiplyScalar(1.2 * SCALE)
+        new THREE.Vector3(cysDirs[i][0], cysDirs[i][1], cysDirs[i][2]).normalize().multiplyScalar(2.3 * SCALE)
       );
       const atom = this._atom(0xcccc33, 0.12);
       atom.position.copy(cysS);
@@ -1698,21 +1433,7 @@ export class POLEViewer {
             const ssLabel = bb[closestIdx].ss === 'H' ? 'helix' : bb[closestIdx].ss === 'E' ? 'strand' : 'loop';
             name = `${dom.abbrev} · res ${approxResidue} · ${ssLabel}`;
 
-            // Add pipeline scores if available
-            const parts = [];
-            const idx = approxResidue - 1;
-            if (PER_RESIDUE_SCORES) {
-              if (PER_RESIDUE_SCORES.bfactor?.[idx] !== undefined)
-                parts.push(`B:${PER_RESIDUE_SCORES.bfactor[idx].toFixed(2)}`);
-              if (PER_RESIDUE_SCORES.conservation?.[idx] !== undefined)
-                parts.push(`Cons:${PER_RESIDUE_SCORES.conservation[idx].toFixed(2)}`);
-              if (PER_RESIDUE_SCORES.plddt?.[idx] !== undefined)
-                parts.push(`pLDDT:${(PER_RESIDUE_SCORES.plddt[idx]*100).toFixed(0)}`);
-              if (PER_RESIDUE_SCORES.pathogenicity?.[idx] !== undefined)
-                parts.push(`Path:${PER_RESIDUE_SCORES.pathogenicity[idx].toFixed(2)}`);
-            }
-            if (parts.length > 0) detail = parts.join(' · ');
-            else detail = dom.name;
+            detail = dom.name;
           }
         }
 
@@ -2008,164 +1729,11 @@ export class POLEViewer {
       if (!dm?.ribbons) continue;
 
       for (const mesh of dm.ribbons) {
-        const ssType = mesh.userData.ssType;
-        let color;
-
-        switch (mode) {
-          case 'bfactor': {
-            // Use per-residue B-factor from pipeline if available
-            let bval;
-            if (PER_RESIDUE_SCORES?.bfactor && mesh.userData.startIdx !== undefined) {
-              const dom = DOMAINS[key];
-              const bb = this.backboneCache[key];
-              const totalRes = bb ? bb.length : 1;
-              const midIdx = Math.floor((mesh.userData.startIdx + mesh.userData.endIdx) / 2);
-              const residue = dom.range[0] + Math.round((midIdx / Math.max(1, totalRes - 1)) * (dom.range[1] - dom.range[0]));
-              bval = PER_RESIDUE_SCORES.bfactor[residue - 1] ?? BFACTOR_MAP[ssType] ?? 0.5;
-            } else {
-              bval = BFACTOR_MAP[ssType] || 0.5;
-            }
-            color = new THREE.Color().setHSL(0.66 - bval * 0.66, 0.8, 0.5);
-            break;
-          }
-          case 'conservation': {
-            // Use per-residue conservation from pipeline if available
-            let score;
-            if (PER_RESIDUE_SCORES?.conservation && mesh.userData.startIdx !== undefined) {
-              const dom = DOMAINS[key];
-              const bb = this.backboneCache[key];
-              const totalRes = bb ? bb.length : 1;
-              const midIdx = Math.floor((mesh.userData.startIdx + mesh.userData.endIdx) / 2);
-              const residue = dom.range[0] + Math.round((midIdx / Math.max(1, totalRes - 1)) * (dom.range[1] - dom.range[0]));
-              score = PER_RESIDUE_SCORES.conservation[residue - 1] ?? CONSERVATION[key] ?? 0.5;
-            } else {
-              score = CONSERVATION[key] || 0.5;
-            }
-            color = new THREE.Color().lerpColors(
-              new THREE.Color(0x2288cc), new THREE.Color(0x8822aa), score);
-            break;
-          }
-          case 'heatmap': {
-            // Use per-residue variant density from pipeline if available
-            let density;
-            if (PER_RESIDUE_SCORES?.variant_density && mesh.userData.startIdx !== undefined) {
-              const dom = DOMAINS[key];
-              const bb = this.backboneCache[key];
-              const totalRes = bb ? bb.length : 1;
-              const midIdx = Math.floor((mesh.userData.startIdx + mesh.userData.endIdx) / 2);
-              const residue = dom.range[0] + Math.round((midIdx / Math.max(1, totalRes - 1)) * (dom.range[1] - dom.range[0]));
-              density = PER_RESIDUE_SCORES.variant_density[residue - 1] ?? VARIANT_DENSITY[key] ?? 0.1;
-            } else {
-              density = VARIANT_DENSITY[key] || 0.1;
-            }
-            color = new THREE.Color().lerpColors(
-              new THREE.Color(0x2244aa), new THREE.Color(0xff2200), density);
-            break;
-          }
-          case 'electrostatic': {
-            // Use per-residue charge from pipeline if available
-            let charge;
-            if (PER_RESIDUE_SCORES?.electrostatic_charge && mesh.userData.startIdx !== undefined) {
-              const dom = DOMAINS[key];
-              const bb = this.backboneCache[key];
-              const totalRes = bb ? bb.length : 1;
-              const midIdx = Math.floor((mesh.userData.startIdx + mesh.userData.endIdx) / 2);
-              const residue = dom.range[0] + Math.round((midIdx / Math.max(1, totalRes - 1)) * (dom.range[1] - dom.range[0]));
-              charge = PER_RESIDUE_SCORES.electrostatic_charge[residue - 1] ?? 0;
-            } else {
-              const charges = { ntd:0, exo:-0.3, palm:-0.8, pdomain:-0.2, fingers:0.5, thumb:0.6, inactpol:0.1, ctd:0.2 };
-              charge = charges[key] || 0;
-            }
-            if (charge >= 0) color = new THREE.Color().lerpColors(
-              new THREE.Color(0xffffff), new THREE.Color(0x2244ff), charge);
-            else color = new THREE.Color().lerpColors(
-              new THREE.Color(0xffffff), new THREE.Color(0xff2222), -charge);
-            break;
-          }
-          case 'pathogenicity': {
-            const bb = this.backboneCache[key];
-            const totalRes = bb ? bb.length : 1;
-            const midIdx = mesh.userData.startIdx !== undefined
-              ? Math.floor((mesh.userData.startIdx + mesh.userData.endIdx) / 2) : 0;
-            // Use per-residue pathogenicity from pipeline if available
-            let score;
-            if (PER_RESIDUE_SCORES?.pathogenicity) {
-              const dom = DOMAINS[key];
-              const residue = dom.range[0] + Math.round((midIdx / Math.max(1, totalRes - 1)) * (dom.range[1] - dom.range[0]));
-              score = PER_RESIDUE_SCORES.pathogenicity[residue - 1] ?? getPathogenicityScore(key, midIdx, totalRes);
-            } else {
-              score = getPathogenicityScore(key, midIdx, totalRes);
-            }
-            if (score <= 0.5) {
-              const t = score / 0.5;
-              color = new THREE.Color().lerpColors(
-                new THREE.Color(0x228888), new THREE.Color(0xeeeeee), t);
-            } else {
-              const t = (score - 0.5) / 0.5;
-              color = new THREE.Color().lerpColors(
-                new THREE.Color(0xeeeeee), new THREE.Color(0xcc2222), t);
-            }
-            break;
-          }
-          case 'plddt': {
-            // AlphaFold pLDDT confidence coloring
-            let plddt;
-            if (PER_RESIDUE_SCORES?.plddt && mesh.userData.startIdx !== undefined) {
-              const dom = DOMAINS[key];
-              const bb = this.backboneCache[key];
-              const totalRes = bb ? bb.length : 1;
-              const midIdx = Math.floor((mesh.userData.startIdx + mesh.userData.endIdx) / 2);
-              const residue = dom.range[0] + Math.round((midIdx / Math.max(1, totalRes - 1)) * (dom.range[1] - dom.range[0]));
-              plddt = (PER_RESIDUE_SCORES.plddt[residue - 1] ?? 0.5) * 100;
-            } else {
-              // Synthetic fallback: structured domains ~85, linkers ~50, catalytic sites ~95
-              const syntheticPlddt = {
-                ntd: 70, exo: 90, palm: 92, pdomain: 85,
-                fingers: 88, thumb: 85, inactpol: 65, ctd: 60,
-              };
-              plddt = syntheticPlddt[key] ?? 70;
-              if (ssType === 'L') plddt -= 15;
-              if (ssType === 'H' || ssType === 'E') plddt += 5;
-            }
-            // Standard AlphaFold 4-band palette
-            if (plddt > 90) color = new THREE.Color(0x0053D6);      // very high
-            else if (plddt > 70) color = new THREE.Color(0x65CBF3);  // confident
-            else if (plddt > 50) color = new THREE.Color(0xFFDB13);  // low
-            else color = new THREE.Color(0xFF7D45);                   // very low
-            break;
-          }
-          default:
-            color = PAL[DOMAINS[key].color];
-        }
-
+        const color = PAL[DOMAINS[key].color];
         mesh.material.color.copy(color);
         mesh.material.emissive.copy(color);
-        mesh.material.emissiveIntensity = mode === 'default' ? 0.10 : 0.12;
+        mesh.material.emissiveIntensity = 0.10;
       }
-    }
-
-    // Update surface envelope for electrostatic mode
-    if (this.groups.surface) {
-      this.groups.surface.children.forEach(mesh => {
-        const dk = mesh.userData.surfaceDomain;
-        if (!dk) return;
-        if (mode === 'electrostatic') {
-          // Use per-domain charge from pipeline or fallback
-          const chargesFallback = { ntd:0, exo:-0.3, palm:-0.8, pdomain:-0.2, fingers:0.5, thumb:0.6, inactpol:0.1, ctd:0.2 };
-          const domCharges = (PER_RESIDUE_SCORES && CONSERVATION._charge) || chargesFallback;
-          const charge = domCharges[dk] ?? chargesFallback[dk] ?? 0;
-          let col;
-          if (charge >= 0) col = new THREE.Color().lerpColors(
-            new THREE.Color(0xffffff), new THREE.Color(0x2244ff), charge);
-          else col = new THREE.Color().lerpColors(
-            new THREE.Color(0xffffff), new THREE.Color(0xff2222), -charge);
-          mesh.material.color.copy(col);
-          mesh.material.opacity = 0.08;
-        } else {
-          mesh.material.color.copy(PAL[DOMAINS[dk].color]);
-          mesh.material.opacity = 0.09;
-        }
-      });
     }
   }
 

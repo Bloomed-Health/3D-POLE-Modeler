@@ -7,48 +7,16 @@
 //
 // This replaces the procedural Three.js cartoon viewer with real
 // coordinate-derived visualization including DSSP secondary structure,
-// crystallographic B-factors, real metal coordination, and Connolly surfaces.
+// B-factors (note: for cryo-EM entries like 9F6D, the B-factor column
+// represents per-residue ADP, not crystallographic temperature factors),
+// real metal coordination, and Connolly surfaces.
 //
 // References:
 //   PDB: 9F6D (Roske & Yeeles 2024, open), 9F6E (ajar), 9F6F (closed),
 //        9B8S (He et al. 2024), 4M8O (Hogg et al. 2014)
 // ==========================================================================
 
-// Domain definitions: residue ranges and colors
-const DOMAINS = {
-  ntd:      { range: [1, 280],    color: '#c4a47a', name: 'N-terminal domain',     abbrev: 'NTD' },
-  exo:      { range: [268, 471],  color: '#b85c5c', name: "3'→5' Exonuclease",    abbrev: 'EXO' },
-  palm:     { range: [472, 699],  color: '#6b8e6b', name: 'Palm subdomain',        abbrev: 'PALM' },
-  pdomain:  { range: [700, 760],  color: '#4a8a7a', name: 'Processivity domain',   abbrev: 'P-DOM' },
-  fingers:  { range: [761, 1020], color: '#5b7f99', name: 'Fingers subdomain',     abbrev: 'FNG' },
-  thumb:    { range: [1021,1190], color: '#8b7ba8', name: 'Thumb subdomain',       abbrev: 'THM' },
-  inactpol: { range: [1191,1900], color: '#7a6a8a', name: 'Inactive Pol module',   abbrev: 'INACT' },
-  ctd:      { range: [1901,2286], color: '#b8a04a', name: 'C-terminal domain',     abbrev: 'CTD' },
-};
-
-const DOMAIN_ORDER = ['ntd','exo','palm','pdomain','fingers','thumb','inactpol','ctd'];
-
-// Mutation markers
-const MUTATIONS = [
-  { id:'P286R', residue:286, domain:'exo', label:'Pro286→Arg',
-    detail:'Somatic ultra-mutator / ExoII motif / CRC & endometrial / SBS10a/b' },
-  { id:'V411L', residue:411, domain:'exo', label:'Val411→Leu',
-    detail:'Somatic proofreading-deficient / TMB >100 mut/Mb / SBS10a' },
-  { id:'S297F', residue:297, domain:'exo', label:'Ser297→Phe',
-    detail:'Germline ExoI / PPAP predisposition / SBS28' },
-  { id:'L424V', residue:424, domain:'exo', label:'Leu424→Val',
-    detail:'Germline ExoIII / PPAP-associated / Mur 2023' },
-  { id:'D287E', residue:287, domain:'exo', label:'Asp287→Glu',
-    detail:'Somatic ExoII adjacent / CRC / SBS10b' },
-  { id:'P436R', residue:436, domain:'exo', label:'Pro436→Arg',
-    detail:'Somatic ExoIII / endometrial / SBS10a' },
-  { id:'M444K', residue:444, domain:'exo', label:'Met444→Lys',
-    detail:'Somatic / ExoIII motif / CRC / SBS10b' },
-  { id:'S459F', residue:459, domain:'exo', label:'Ser459→Phe',
-    detail:'Germline / PPAP-associated / Valle 2023' },
-  { id:'F367S', residue:367, domain:'exo', label:'Phe367→Ser',
-    detail:'Germline PPAP / adjacent to ExoIII catalytic triad' },
-];
+import { DOMAINS, DOMAIN_ORDER, MUTATIONS } from './data/domainConfig.js';
 
 // Available PDB structures
 const PDB_STRUCTURES = {
@@ -58,17 +26,6 @@ const PDB_STRUCTURES = {
   '9B8S': { label: 'He 2024 (9B8S)', desc: 'He et al. 2024 — Pol ε–PCNA cryo-EM' },
   '4M8O': { label: 'Yeast (4M8O)', desc: 'Hogg et al. 2014 — S. cerevisiae Pol2 NTD' },
   'AF-Q07864': { label: 'AlphaFold (full-length)', desc: 'AlphaFold v4 — full 2286-residue predicted structure' },
-};
-
-// Color modes and their Mol* theme mappings
-const COLOR_MODES = {
-  default:       'domain',      // Domain-based coloring
-  bfactor:       'bfactor',     // Crystallographic B-factors
-  conservation:  'conservation', // Per-residue conservation (requires data)
-  heatmap:       'variant',     // Variant density
-  electrostatic: 'charge',      // Per-residue charge
-  pathogenicity: 'pathogenicity', // Clinical significance
-  plddt:         'plddt',       // AlphaFold pLDDT confidence
 };
 
 // AlphaFold pLDDT color palette (standard AlphaFold scheme)
@@ -98,9 +55,6 @@ class POLEMolstarViewer {
     this.fpsCallback = null;
     this._representations = {};
     this._structureRef = null;
-    this._pipelineScores = null;
-    this._loadPipelineScores();
-    this._pipelineMutations = null;
     this._tooltipEl = tooltip;
     this._initPromise = this._init();
   }
@@ -261,39 +215,7 @@ class POLEMolstarViewer {
         const detailEl = this._tooltipEl.querySelector('.t-detail');
         if (nameEl) nameEl.textContent = typeof label === 'string' ? label : '';
 
-        // Cross-reference with pipeline data for enriched tooltip
-        let detail = '';
-        if (this._pipelineScores && typeof label === 'string') {
-          const resMatch = label.match(/(\d+)/);
-          if (resMatch) {
-            const resNum = parseInt(resMatch[1]);
-            const scores = this._pipelineScores;
-            const parts = [];
-
-            // Find domain
-            for (const [key, dom] of Object.entries(DOMAINS)) {
-              if (resNum >= dom.range[0] && resNum <= dom.range[1]) {
-                parts.push(dom.name);
-                break;
-              }
-            }
-
-            if (scores.per_residue) {
-              const idx = resNum - 1;
-              if (scores.per_residue.bfactor?.[idx] !== undefined)
-                parts.push(`B: ${scores.per_residue.bfactor[idx].toFixed(2)}`);
-              if (scores.per_residue.conservation?.[idx] !== undefined)
-                parts.push(`Cons: ${scores.per_residue.conservation[idx].toFixed(2)}`);
-              if (scores.per_residue.plddt?.[idx] !== undefined)
-                parts.push(`pLDDT: ${(scores.per_residue.plddt[idx] * 100).toFixed(0)}`);
-              if (scores.per_residue.pathogenicity?.[idx] !== undefined)
-                parts.push(`Path: ${scores.per_residue.pathogenicity[idx].toFixed(2)}`);
-            }
-
-            detail = parts.join(' · ');
-          }
-        }
-        if (detailEl) detailEl.textContent = detail;
+        if (detailEl) detailEl.textContent = '';
         this._tooltipEl.style.display = 'block';
 
         // Position tooltip near mouse
@@ -337,7 +259,7 @@ class POLEMolstarViewer {
     // the structure data already includes metals, ligands, etc.
     switch (name) {
       case 'surface':
-        this._toggleSurface(on);
+        // Surface toggle not yet implemented in Mol* wrapper
         break;
       case 'dna':
       case 'metals':
@@ -359,30 +281,15 @@ class POLEMolstarViewer {
         // H-bonds come from DSSP in Mol* — no separate toggle needed
         break;
       case 'accessory':
-        // Toggle accessory subunit chains visibility
-        this._toggleChains(on, ['B', 'C', 'D']); // POLE2/3/4 chains
+        // Chain visibility not yet implemented in Mol* wrapper
         break;
       case 'pcna':
-        // Toggle PCNA chain visibility
-        this._toggleChains(on, ['E', 'F', 'G']); // PCNA trimer chains
+        // Chain visibility not yet implemented in Mol* wrapper
         break;
       case 'exoPolPath':
         // Exo-Pol shuttling animation — not available in coordinate viewer
         break;
     }
-  }
-
-  async _toggleSurface(on) {
-    // Add or remove surface representation
-    if (!this.plugin) return;
-    // This will be handled through Mol* state tree manipulation
-    // For now, using the viewer's built-in surface toggle
-  }
-
-  async _toggleChains(on, chainIds) {
-    // Show/hide specific chains by their auth_asym_id
-    if (!this.plugin) return;
-    // Chain visibility requires state tree manipulation
   }
 
   highlightDomain(key, active) {
@@ -627,16 +534,6 @@ class POLEMolstarViewer {
 
   // ==================== PDB STRUCTURE SWITCHING ====================
 
-  async _loadPipelineScores() {
-    try {
-      const resp = await fetch('./data/pole_scores.json');
-      if (!resp.ok) return;
-      this._pipelineScores = await resp.json();
-    } catch (e) {
-      // Pipeline data not available
-    }
-  }
-
   async loadPdb(pdbId) {
     if (!PDB_STRUCTURES[pdbId] && !pdbId.startsWith('AF-')) {
       console.warn(`Unknown PDB: ${pdbId}`);
@@ -646,22 +543,5 @@ class POLEMolstarViewer {
   }
 }
 
-/**
- * Load pipeline-generated JSON data. Falls back gracefully on failure.
- */
-async function loadPipelineData(basePath = './data') {
-  try {
-    const [scores, mutations] = await Promise.all([
-      fetch(`${basePath}/pole_scores.json`).then(r => { if (!r.ok) throw new Error(r.status); return r.json(); }),
-      fetch(`${basePath}/pole_mutations.json`).then(r => { if (!r.ok) throw new Error(r.status); return r.json(); }),
-    ]);
-    return { scores, mutations };
-  } catch (e) {
-    console.info('Pipeline data not available, using PDB defaults:', e.message);
-    return null;
-  }
-}
-
 // Export for use in HTML
 window.POLEMolstarViewer = POLEMolstarViewer;
-window.loadMolstarPipelineData = loadPipelineData;
