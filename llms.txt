@@ -1,0 +1,58 @@
+# 3D POLE Modeler
+
+> Interactive 3D structural viewer for the human DNA Polymerase epsilon (POLE) catalytic subunit (p261, 2,286 AA, UniProt Q07864). Browser-based, built with Three.js and Mol*, combining a procedural schematic viewer, real-coordinate PDB viewer, variant analysis, and frameshift mutation visualization. Apache 2.0 licensed.
+
+The project provides four interconnected viewers for exploring POLE domain architecture, catalytic mechanisms, and cancer-associated mutations:
+
+- **Schematic Viewer** (`index.html`): Procedural cartoon-ribbon model with 8 functional domains, two-metal-ion active sites, DNA duplex, PCNA sliding clamp, [4Fe-4S] cluster, Zn-finger motifs, and 9 mutation hotspot markers. Interactive controls for toggles, color schemes (Default/PyMOL/Accessible), keyboard shortcuts, and distance measurement.
+- **Mol* Coordinate Viewer** (`molstar.html`): Real atomic coordinates from PDB 9F6D/9F6E/9F6F (Roske & Yeeles 2024) and 9B8S (He et al. 2024). Supports cartoon/ball-and-stick/spacefill/surface representations with domain, B-factor, chain-id, and secondary-structure coloring.
+- **Variant Analysis** (`variant.html`): ACMG classification with auditable Bayesian evidence codes, mutational signature attribution (SBS10a/b/28/14), computational predictors (AlphaMissense, REVEL, CADD), and DDG stability estimates for 9 characterized pathogenic variants.
+- **Mutation Viewer** (`mutation.html`): Side-by-side wild-type vs. truncated visualization of the c.138del germline frameshift (p.Leu46Phefs*8) with reading frame analysis and domain retention chart.
+
+Key technologies: Three.js (WebGL), Mol* (molecular viewer), ES modules, Vitest, ESLint, Julia pipeline for data processing.
+
+## Docs
+
+- [README](README.md): Project overview, features, viewer descriptions, keyboard shortcuts, development setup, limitations, and scientific references
+- [Integration Guide](INTEGRATION.md): Data layer contract between canonical JSON and JS consumers; schema, loader API, and migration notes
+- [Contributing](CONTRIBUTING.md): How to contribute, coding standards, PR process
+- [Security Policy](SECURITY.md): Vulnerability reporting
+
+## Core JS Modules
+
+- [pole-viewer.js](js/pole-viewer.js): Main 3D schematic viewer engine (~1,750 lines); POLEViewer class with ribbon rendering, domain architecture, active sites, DNA, PCNA, mutation markers, controls, and render loop
+- [molstar-viewer.js](js/molstar-viewer.js): Mol* wrapper class; PDB loading, MVS-based domain coloring, representation switching, label projection, and zoom control
+- [mutation-viewer.js](js/mutation-viewer.js): Frameshift mutation viewer; side-by-side wild-type/mutant rendering, domain retention chart, reading frame visualization
+- [ribbon.js](js/ribbon.js): Geometry primitives for cartoon ribbon (helix tubes, strand arrows, loop tubes, secondary-structure segmentation)
+- [pole-geometry.js](js/pole-geometry.js): Pure utility functions for procedural backbone generation (PRNG, domain backbone, inter-domain linkers)
+- [pole-palette.js](js/pole-palette.js): Shared THREE.Color palette and color scheme definitions (Default, PyMOL, Accessible)
+
+## Data Layer
+
+- [domainConfig.js](js/data/domainConfig.js): Shared domain definitions (DOMAINS, DOMAIN_ORDER, MUTATIONS, DOMAIN_COLORS) consumed by all viewers
+- [poleData.js](js/data/poleData.js): Async loader and accessor for canonical JSON; schema validation, reference resolution, provenance footer
+- [Canonical Data JSON](data/pole_canonical_data.json): Single source of truth for domain boundaries, active site residues, metal sites, ClinVar-anchored variants, signatures, and references
+- [Data Schema](data/pole_canonical_data.schema.json): JSON Schema for validating canonical data
+
+## Pages
+
+- [Schematic Viewer](index.html): Main procedural ribbon viewer
+- [Mol* Coordinate Viewer](molstar.html): PDB coordinate viewer
+- [Variant Analysis](variant.html): ACMG classification and signature analysis
+- [Mutation Viewer](mutation.html): c.138del frameshift visualization
+- [AlphaFold Viewer](alphafold.html): AlphaFold predicted structure
+
+## Pipeline
+
+- [Pipeline README](pipeline/README.md): Julia data processing pipeline documentation
+- [Pipeline Entry Point](pipeline/run.jl): Orchestrates PDB parsing, DSSP, conservation, variant scoring, ACMG classification, and JSON output
+
+## Optional
+
+- [Governance](GOVERNANCE.md): Project governance model
+- [License](LICENSE): Apache 2.0
+- [ESLint Config](eslint.config.js): Linting configuration
+- [Vitest Config](vitest.config.js): Test framework configuration
+- [CI Workflow](.github/workflows/validate-data.yml): GitHub Action for JSON Schema validation
+- [Data Validation Script](scripts/validate-pole-data.mjs): Offline integrity checks for canonical JSON
+- [TDD Workflow](docs/TDD-WORKFLOW.md): Test-driven development guidance
