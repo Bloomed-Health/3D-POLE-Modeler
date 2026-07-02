@@ -1,9 +1,12 @@
 // ==========================================================================
-// Shared POLE Domain Configuration
+// DEPRECATED: migrate to poleData.js (js/data/poleData.js)
 //
-// Single source of truth for domain boundaries, colors, ordering, and
-// canonical mutation hotspots. Consumed by pole-viewer.js, molstar-viewer.js,
-// mutation-viewer.js, and the molstar.html inline script.
+// This file is retained for backward compatibility with existing consumers
+// (pole-viewer.js, molstar-viewer.js, pole-palette.js, molstar.html).
+// New code should import from poleData.js which reads from the canonical
+// data/pole_canonical_data.json.
+//
+// Shared POLE Domain Configuration
 //
 // DOMAIN BOUNDARY NOTE: These ranges are approximate and have not been
 // derived from DSSP analysis of deposited coordinates.

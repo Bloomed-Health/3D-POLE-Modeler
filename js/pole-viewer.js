@@ -13,7 +13,7 @@
 //   Roske & Yeeles, Nat Struct Mol Biol 31:1921 (2024) — human Pol ε structures
 //   He, Wang, Yao, O'Donnell & Li, Nat Commun 15:7847 (2024) — human Pol ε–PCNA
 //   Mur et al., Genome Med 15:85 (2023) — POLE/POLD1 ACMG classification
-//   Yuan, Georgescu, Schauer, O'Donnell & Li, Nat Commun 11:3156 (2020) — yeast Pol ε
+//   Yuan, Georgescu, Schauer, O'Donnell & Li, Nat Commun 11:3165 (2020) — yeast Pol ε
 //   Robinson, Coorens et al., Nat Genet 53:1434 (2021) — normal-tissue mutation rates
 //   Hogg et al., Nat Struct Mol Biol 21:49 (2014) — S. cerevisiae Pol2 NTD (4M8O)
 //
@@ -38,7 +38,7 @@ const SCHEMATIC_EXTENSIONS = {
     header:'// NTD (1-280) // Structural scaffold',
     ss:[ {t:'H',n:14},{t:'L',n:6},{t:'E',n:7},{t:'L',n:4},{t:'E',n:6},{t:'L',n:5},{t:'H',n:18},{t:'L',n:5},{t:'E',n:8},{t:'L',n:4},{t:'E',n:7},{t:'L',n:6},{t:'H',n:12},{t:'L',n:8},{t:'H',n:10},{t:'L',n:5},{t:'E',n:6},{t:'L',n:4},{t:'H',n:16},{t:'L',n:7},{t:'H',n:10},{t:'L',n:8},{t:'E',n:5},{t:'L',n:6},{t:'H',n:8},{t:'L',n:9} ] },
   exo: { center:[-10,2,7], color:'exo',
-    header:"// EXO (268-471) // 3'\u21925' proofreading / D275/E277/D368/D370",
+    header:"// EXO (268-471) // 3'\u21925' proofreading / D275/E277/D368",
     ss:[ {t:'E',n:6},{t:'L',n:4},{t:'H',n:14},{t:'L',n:5},{t:'E',n:7},{t:'L',n:3},{t:'E',n:6},{t:'H',n:12},{t:'L',n:6},{t:'H',n:16},{t:'L',n:4},{t:'E',n:8},{t:'L',n:5},{t:'H',n:10},{t:'L',n:6},{t:'E',n:7},{t:'L',n:3},{t:'H',n:14},{t:'L',n:5},{t:'H',n:8},{t:'L',n:6},{t:'E',n:6},{t:'L',n:4},{t:'H',n:10},{t:'L',n:4} ] },
   palm: { center:[0,-1,0], color:'palm',
     header:'// PALM (600-870) // Catalytic core / motifs A(D640xD642) C(D860)',
@@ -701,12 +701,12 @@ export class POLEViewer {
     // Mg-Mg bridging dash
     this.groups.exoSite.add(this._dash(mgPositions[0], mgPositions[1], 0x60a830));
 
-    // Catalytic residues: D275, E277, D368, D370
+    // Catalytic residues: D275, E277, D368, D462 (estimated)
     const catRes = [
       { l: 'D275', offset: [-1.5, 0.8, 0.5] },
       { l: 'E277', offset: [-1.2, -0.6, 1.8] },
       { l: 'D368', offset: [0.8, 0.5, 2.0] },
-      { l: 'D370', offset: [1.2, -0.8, 0.8] },
+      { l: 'D462*', offset: [1.2, -0.8, 0.8] },
     ];
     for (const res of catRes) {
       const resPos = exoCenter.clone().add(new THREE.Vector3(...res.offset));

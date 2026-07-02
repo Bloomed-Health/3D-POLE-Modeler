@@ -170,6 +170,7 @@
     </div>
     <div>POLE &middot; VARIANT VIEWER</div>
     <small data-pole-provenance style="display:block;margin-top:4px;opacity:0.6;font-size:0.6rem"></small>
+    <small style="display:block;margin-top:4px;opacity:0.5;font-size:0.55rem">Research and educational use only. Not for clinical decision-making. Variant classifications shown reflect cited sources and may differ from current clinical laboratory assessments.</small>
   </footer>
 </div>
 
@@ -180,7 +181,7 @@ const VARIANTS = [
   {
     id: 'P286R', residue: 286, ref: 'P', alt: 'R', domain: 'EXO',
     label: 'Pro286→Arg', type: 'Somatic',
-    detail: 'Most frequent cancer-associated POLE mutation. Pro→Arg substitution adjacent to ExoI disrupts the proofreading active site, causing an ultra-mutation phenotype (TMB >100 mut/Mb) in colorectal and endometrial carcinoma.',
+    detail: 'Most frequent cancer-associated POLE mutation. ~50× more mutagenic than exonuclease-null (Xing 2019); the arginine blocks nascent-strand access to the exo site — a fidelity defect distinct from simple proofreading loss. Ultra-mutation phenotype (TMB >100 mut/Mb) in colorectal and endometrial carcinoma.',
     am_score: 0.99, am_class: 'pathogenic', revel_score: 0.96, cadd_score: 33,
     signatures: { SBS10a: 0.55, SBS10b: 0.30, SBS28: 0.05, SBS14: 0.10 },
     classification: {
@@ -218,7 +219,7 @@ const VARIANTS = [
   {
     id: 'S297F', residue: 297, ref: 'S', alt: 'F', domain: 'EXO',
     label: 'Ser297→Phe', type: 'Germline',
-    detail: 'Germline variant in ExoI motif; predisposes to PPAP. Autosomal dominant with variable penetrance.',
+    detail: 'ExoI-region variant; originally reported as somatic endometrial variant (Church et al. 2013). Proofreading-impairing; germline PPAP association requires further pedigree evidence.',
     am_score: 0.97, am_class: 'pathogenic', revel_score: 0.91, cadd_score: 30,
     signatures: { SBS10a: 0.10, SBS10b: 0.05, SBS28: 0.75, SBS14: 0.10 },
     classification: {

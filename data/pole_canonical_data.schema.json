@@ -1,0 +1,206 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://bloomed-health.github.io/3D-POLE-Modeler/data/pole_canonical_data.schema.json",
+  "title": "POLE canonical data layer",
+  "description": "Schema for the 3D-POLE-Modeler canonical data file (domains, residues, metal sites, ClinVar-anchored variants). Underscore-prefixed keys (_README, _note, _DISPUTED_LOCATION, ...) are curatorial annotations and are intentionally permitted everywhere (additionalProperties is left open).",
+  "type": "object",
+  "required": ["meta", "references", "domains", "residues", "metal_sites", "variants"],
+  "properties": {
+    "_README": { "type": "string" },
+
+    "meta": {
+      "type": "object",
+      "required": [
+        "schema_version",
+        "gene",
+        "uniprot",
+        "sequence_length_aa",
+        "refseq_transcript_canonical",
+        "genome_build"
+      ],
+      "properties": {
+        "schema_version": { "type": "string" },
+        "generated": { "type": "string" },
+        "gene": { "type": "string" },
+        "uniprot": { "type": "string", "pattern": "^[A-Z0-9]{6,10}$" },
+        "sequence_length_aa": { "type": "integer", "minimum": 1 },
+        "refseq_transcript_canonical": { "type": "string", "pattern": "^NM_[0-9]+\\.[0-9]+$" },
+        "genome_build": { "type": "string", "enum": ["GRCh38", "GRCh37"] },
+        "ensembl_gene": { "type": "string" },
+        "ensembl_transcript": { "type": "string" },
+        "cytogenetic_location": { "type": "string" }
+      }
+    },
+
+    "references": {
+      "type": "object",
+      "description": "Map of reference key -> reference object. Keys are referenced by `sources` arrays elsewhere.",
+      "minProperties": 1,
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "type": { "type": "string" },
+          "title": { "type": "string" },
+          "citation": { "type": "string" },
+          "url": { "type": "string", "format": "uri" },
+          "pdb": { "type": "array", "items": { "type": "string" } },
+          "pmid": { "type": "string" },
+          "pmc": { "type": "string" },
+          "species": { "type": "string" },
+          "accessed": { "type": "string" },
+          "note": { "type": "string" }
+        }
+      }
+    },
+
+    "domains": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/definitions/domain" }
+    },
+
+    "residues": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/residue" }
+    },
+
+    "metal_sites": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/metalSite" }
+    },
+
+    "variants": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/variant" }
+    },
+
+    "interpretive_notes": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+
+    "verification_todo": {
+      "type": "array",
+      "items": { "type": "string" }
+    }
+  },
+
+  "definitions": {
+    "verificationStatus": {
+      "type": "string",
+      "enum": [
+        "verified",
+        "verified_as_disputed",
+        "estimated",
+        "schematic",
+        "todo",
+        "verified_hgvs_pending_vcv",
+        "hgvs_c_pending_verification",
+        "hgvs_pending_verification"
+      ]
+    },
+
+    "sources": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+
+    "domain": {
+      "type": "object",
+      "required": ["id", "label", "short_code", "start", "end", "verification_status"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z0-9_]+$" },
+        "label": { "type": "string" },
+        "short_code": { "type": "string" },
+        "start": { "type": ["integer", "null"], "minimum": 1 },
+        "end": { "type": ["integer", "null"], "minimum": 1 },
+        "description": { "type": "string" },
+        "numbering_basis": { "type": "string" },
+        "is_insertion_within": { "type": ["string", "null"] },
+        "sources": { "$ref": "#/definitions/sources" },
+        "verification_status": { "$ref": "#/definitions/verificationStatus" }
+      }
+    },
+
+    "residue": {
+      "type": "object",
+      "required": ["id", "position", "aa", "role", "verification_status"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^[A-Za-z0-9_]+$" },
+        "position": { "type": "integer", "minimum": 1 },
+        "aa": { "type": "string", "pattern": "^[ACDEFGHIKLMNPQRSTVWY]$" },
+        "role": { "type": "string" },
+        "motif": { "type": ["string", "null"] },
+        "domain_id": { "type": ["string", "null"] },
+        "yeast_equivalent": { "type": ["string", "null"] },
+        "sources": { "$ref": "#/definitions/sources" },
+        "verification_status": { "$ref": "#/definitions/verificationStatus" }
+      }
+    },
+
+    "metalSite": {
+      "type": "object",
+      "required": ["id", "label", "verification_status"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^[A-Za-z0-9_]+$" },
+        "label": { "type": "string" },
+        "metal": { "type": "string" },
+        "metals": { "type": "array", "items": { "type": "string" } },
+        "coordinating_residues": { "type": "array", "items": { "type": "string" } },
+        "domain_id": { "type": ["string", "null"] },
+        "function": { "type": "string" },
+        "mechanism": { "type": "string" },
+        "annotations": { "type": "array", "items": { "type": "object" } },
+        "_DISPUTED_LOCATION": { "type": "boolean" },
+        "sources": { "$ref": "#/definitions/sources" },
+        "verification_status": { "$ref": "#/definitions/verificationStatus" }
+      }
+    },
+
+    "variant": {
+      "type": "object",
+      "required": ["id", "hgvs_p", "legacy", "codon", "domain_id", "verification_status"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z0-9_]+$" },
+        "hgvs_c": {
+          "type": ["string", "null"],
+          "description": "HGVS at cDNA level, ideally prefixed with the canonical transcript (NM_006231.4:c....)."
+        },
+        "hgvs_p": { "type": "string" },
+        "legacy": { "type": "string" },
+        "codon": { "type": "integer", "minimum": 1 },
+        "domain_id": { "type": "string" },
+        "clinvar_variation_id": { "type": ["integer", "null"], "minimum": 1 },
+        "clinvar_germline_classification": { "type": ["string", "null"] },
+        "clinvar_review_status": { "type": ["string", "null"] },
+        "somatic_role": { "type": ["string", "null"] },
+        "mechanism": { "type": ["string", "null"] },
+        "variant_type": {
+          "type": ["string", "null"],
+          "enum": ["missense", "frameshift", "nonsense", "splice", null]
+        },
+        "investigation_status": {
+          "type": ["string", "null"],
+          "enum": ["active_hypothesis", "confirmed", "refuted", null]
+        },
+        "candidate_mechanisms": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": { "type": "string" },
+              "label": { "type": "string" },
+              "likelihood": { "type": "string" },
+              "impact": { "type": "string" }
+            }
+          }
+        },
+        "clinical_observation": { "type": ["string", "null"] },
+        "clinical_lab_classification": { "type": ["string", "null"] },
+        "conditions": { "type": "array", "items": { "type": "string" } },
+        "sources": { "$ref": "#/definitions/sources" },
+        "verification_status": { "$ref": "#/definitions/verificationStatus" }
+      }
+    }
+  }
+}

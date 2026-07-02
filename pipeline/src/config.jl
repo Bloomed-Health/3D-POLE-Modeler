@@ -88,7 +88,7 @@ const ENGINEERED_MUTANTS = [
 const FRAMESHIFT_VARIANT = (
     hgvs_c = "c.138del",
     hgvs_p = "p.Leu46Phefs*8",
-    truncation_site = 54,
+    truncation_site = 53,
     wt_codons = [
         (codon="GAG", aa="Glu", pos=43),
         (codon="AGC", aa="Ser", pos=44),
@@ -101,7 +101,6 @@ const FRAMESHIFT_VARIANT = (
         (codon="GCT", aa="Ala", pos=51),
         (codon="TTA", aa="Leu", pos=52),
         (codon="CCT", aa="Pro", pos=53),
-        (codon="TAG", aa="*",   pos=54),
     ],
     mut_codons = [
         (codon="GAG", aa="Glu", pos=43, status="normal"),
@@ -114,14 +113,13 @@ const FRAMESHIFT_VARIANT = (
         (codon="GGC", aa="Gly", pos=50, status="frameshift"),
         (codon="AGC", aa="Ser", pos=51, status="frameshift"),
         (codon="TTT", aa="Phe", pos=52, status="frameshift"),
-        (codon="ACC", aa="Thr", pos=53, status="frameshift"),
-        (codon="TAG", aa="*",   pos=54, status="stop"),
+        (codon="TAG", aa="*",   pos=53, status="stop"),
     ],
 )
 
 # Catalytic residues
 const CATALYTIC_RESIDUES = Dict(
-    :exo_site => [275, 277, 368, 370],      # D275, E277, D368, D370 — NOTE: D370 is disputed; canonical JSON estimates D462 from yeast D477 homology. Verify against UniProt before changing.
+    :exo_site => [275, 277, 368, 462],      # D275, E277, D368, D462 (estimated from yeast D477 homology; D370 was incorrect)
     :pol_motif_a => [640, 642],              # D640, D642
     :pol_motif_c => [860],                   # D860
 )

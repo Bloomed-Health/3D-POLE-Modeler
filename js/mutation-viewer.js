@@ -5,9 +5,9 @@
 // Biological context:
 //   c.138del: single nucleotide deletion at CDS position 138
 //   Codon 46 (CTG → Leu) shifts to TGn → Phe (first altered residue)
-//   Premature stop at position 54 → only 2.4% of protein translated
+//   Premature stop at position 53 → only 2.3% of protein translated
 //   All catalytic domains absent → complete loss of function
-//   Likely NMD substrate (PTC in exon 3, >50 nt upstream of final EJC)
+//   PTC in exon 2; NMD prediction uncertain (AUG-proximity effect possible)
 //
 // Visualization modes:
 //   1. Comparison: full-length wild-type (ghost ribbons) vs truncated mutant
@@ -43,7 +43,7 @@ let WT_CODONS = [
   { codon: 'GAG', aa: 'Glu', pos: 47 }, { codon: 'TTG', aa: 'Leu', pos: 48 },
   { codon: 'AGG', aa: 'Arg', pos: 49 }, { codon: 'GCA', aa: 'Ala', pos: 50 },
   { codon: 'GCT', aa: 'Ala', pos: 51 }, { codon: 'TTA', aa: 'Leu', pos: 52 },
-  { codon: 'CCT', aa: 'Pro', pos: 53 }, { codon: 'TAG', aa: '*',   pos: 54 },
+  { codon: 'CCT', aa: 'Pro', pos: 53 },
 ];
 
 let MUT_CODONS = [
@@ -57,8 +57,7 @@ let MUT_CODONS = [
   { codon: 'GGC', aa: 'Gly', pos: 50, status: 'frameshift' },
   { codon: 'AGC', aa: 'Ser', pos: 51, status: 'frameshift' },
   { codon: 'TTT', aa: 'Phe', pos: 52, status: 'frameshift' },
-  { codon: 'ACC', aa: 'Thr', pos: 53, status: 'frameshift' },
-  { codon: 'TAG', aa: '*',   pos: 54, status: 'stop' },
+  { codon: 'TAG', aa: '*',   pos: 53, status: 'stop' },
 ];
 
 let DOMAINS = [
@@ -71,7 +70,7 @@ let DOMAINS = [
 ];
 
 let TOTAL_RESIDUES = 2286;
-let TRUNCATION_SITE = 54;
+let TRUNCATION_SITE = 53;
 
 // ==================== PIPELINE DATA LOADER ====================
 
@@ -398,7 +397,7 @@ export class MutationViewer {
     const traceCenter = cur.clone();
 
     for (const el of elements) {
-      const n = Math.min(el.n, 54 - tracePoints.length);
+      const n = Math.min(el.n, 53 - tracePoints.length);
       if (n <= 0) break;
       let pts;
       if (el.type === 'H') pts = generateHelixPoints(cur, dir, n);
@@ -406,7 +405,7 @@ export class MutationViewer {
       else pts = generateLoopPoints(cur, dir, traceCenter, n, rng);
 
       for (const pt of pts) {
-        if (tracePoints.length >= 54) break;
+        if (tracePoints.length >= 53) break;
         pt.pos.add(offset).sub(traceCenter).add(traceCenter);
         tracePoints.push(pt);
       }
@@ -416,11 +415,11 @@ export class MutationViewer {
         (rng() - 0.5) * 0.5, (rng() - 0.5) * 0.5, (rng() - 0.5) * 0.3)).normalize();
     }
 
-    // Color zones: 0-44 intact (teal), 45-52 frameshift (gold), 53 stop (red)
+    // Color zones: 0-44 intact (teal), 45-51 frameshift (gold), 52 stop (red)
     const colorBounds = [
       { end: 44, color: PAL.intact },
-      { end: 52, color: PAL.frameshift },
-      { end: 53, color: PAL.stop },
+      { end: 51, color: PAL.frameshift },
+      { end: 52, color: PAL.stop },
     ];
 
     const ssSegs = segmentBySSType(tracePoints);
@@ -466,7 +465,7 @@ export class MutationViewer {
 
       this.truncLight.position.copy(terminus);
 
-      const tLabel = this._label('PTC @ res 54 / 2,286', '#c45c5c', '#c45c5c');
+      const tLabel = this._label('PTC @ res 53 / 2,286', '#c45c5c', '#c45c5c');
       tLabel.scale.set(12, 2.5, 1);
       tLabel.position.copy(terminus.clone().add(new THREE.Vector3(0, 3.5, 0)));
       this.groups.mutant.add(tLabel);
@@ -588,7 +587,7 @@ export class MutationViewer {
     title.position.set(0, 8, 0);
     this.groups.domainLoss.add(title);
 
-    const sub = this._label('54 / 2,286 residues translated (2.4%)', '#c45c5c', '#c45c5c');
+    const sub = this._label('53 / 2,286 residues translated (2.3%)', '#c45c5c', '#c45c5c');
     sub.scale.set(18, 2.5, 1);
     sub.position.set(0, 5.5, 0);
     this.groups.domainLoss.add(sub);
