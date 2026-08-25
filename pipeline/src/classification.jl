@@ -9,6 +9,13 @@ prior odds by the product of likelihood ratios for each evidence category.
 # Prior probability of pathogenicity for missense variants in POLE exonuclease domain
 const PRIOR_PATHOGENICITY = 0.10  # ~10% of missense variants are pathogenic
 
+# FRAMEWORK SCOPE NOTE (Mur et al. 2023):
+# This framework applies ONLY to germline variants in the POLE/POLD1 exonuclease domain.
+# Excluded evidence codes: PVS1, PM3, PM4, PP2, PP5, BP1, BP3, BP6
+# PVS1 in particular is excluded because LOF is NOT the PPAP mechanism.
+# Variants outside the exonuclease domain and LOF variants fall outside this framework.
+# No ClinGen VCEP for POLE/POLD1 exists as of August 2026.
+
 # Likelihood ratios for ACMG evidence categories (Tavtigian et al. 2018 / Mur 2023)
 const EVIDENCE_LR = Dict{Symbol, Float64}(
     # Pathogenic evidence (LR > 1)
@@ -166,7 +173,7 @@ function get_pole_evidence_citations(mutation_id::AbstractString)
         "P286R" => Dict(
             :PS3 => "Functional: yeast Pol2-P301R abolishes proofreading (Barbari & Shcherbakova, DNA Repair 2017). Human P286R 3600-fold mutator (Shinbrot et al., PNAS 2014).",
             :PS4 => "Prevalence: most recurrent POLE mutation in CRC (12%) and endometrial (7%) carcinoma (TCGA 2013; Church et al., Hum Mol Genet 2013).",
-            :PM1 => "Located in ExoII motif (residues 283-289), a critical functional domain for proofreading.",
+            :PM1 => "Adjacent to ExoI motif (D275/E277), a critical functional domain for proofreading.",
             :PM2 => "Absent from gnomAD v4.1 (0/1,614,532 alleles).",
             :PP3 => "REVEL 0.96; CADD 33; AlphaMissense 0.99 (pathogenic).",
         ),
@@ -192,7 +199,7 @@ function get_pole_evidence_citations(mutation_id::AbstractString)
         ),
         "D287E" => Dict(
             :PS3 => "Functional: conservative substitution at ExoII-adjacent position; somatic recurrence in TCGA CRC cohort.",
-            :PM1 => "Adjacent to ExoII motif P286 position; functionally constrained region.",
+            :PM1 => "Adjacent to ExoI motif (D275/E277) and P286 position; functionally constrained region.",
             :PM2 => "Absent from gnomAD v4.1.",
             :PP3 => "REVEL 0.78; AlphaMissense 0.88 (pathogenic).",
         ),

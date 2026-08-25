@@ -312,45 +312,6 @@ function decompose_signatures(
 end
 
 """
-    attribute_per_variant(variants, sig_weights) -> Vector{Dict{Symbol, Float64}}
-
-Assign signature weights to each variant based on its context match to signature profiles.
-"""
-function attribute_per_variant(
-    variants::Vector{Variant},
-    sig_weights::Dict{Symbol, Float64},
-    refs::Vector{SignatureProfile},
-)
-    attributions = Dict{Symbol, Float64}[]
-
-    for v in variants
-        channel = context_to_channel(v.context, v.ref_aa, v.alt_aa)
-        attr = Dict{Symbol, Float64}()
-
-        # Weight by how much each signature explains this specific channel
-        total_explanation = 0.0
-        for sp in refs
-            if 1 <= channel <= 96
-                explanation = sp.channels[channel] * get(sig_weights, sp.name, 0.0)
-                attr[sp.name] = explanation
-                total_explanation += explanation
-            end
-        end
-
-        # Normalize per-variant attributions
-        if total_explanation > 0
-            for k in keys(attr)
-                attr[k] = round(attr[k] / total_explanation, digits=4)
-            end
-        end
-
-        push!(attributions, attr)
-    end
-
-    return attributions
-end
-
-"""
     get_pole_mutation_signatures() -> Vector{Dict{Symbol, Float64}}
 
 Get pre-computed signature attributions for known POLE mutations.

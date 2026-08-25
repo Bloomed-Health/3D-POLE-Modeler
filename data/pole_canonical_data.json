@@ -31,9 +31,9 @@
     "uniprot_q07864": { "type": "database", "id": "Q07864", "title": "UniProtKB: DNA polymerase epsilon catalytic subunit A (POLE), Homo sapiens", "url": "https://www.uniprot.org/uniprotkb/Q07864/entry", "accessed": "2026-05-29", "note": "Release NOT pinned in this draft. Pin the UniProt release (e.g. 2026_xx) at build and re-pull active-site / binding-site feature coordinates from the machine-readable record (REST .txt/.json or EBI Proteins API)." },
     "clinvar": { "type": "database", "title": "NCBI ClinVar", "url": "https://www.ncbi.nlm.nih.gov/clinvar/", "accessed": "2026-05-29", "note": "Classifications are LIVE and change. Snapshot the ClinVar release date at build and store it in meta. Both axes (germline classification AND oncogenicity/somatic classification) should be captured where present." },
     "atlas_pole": { "type": "review", "title": "Atlas of Genetics and Cytogenetics in Oncology and Haematology - POLE", "url": "https://atlasgeneticsoncology.org/gene/41773/", "accessed": "2026-05-29" },
-    "roske_yeeles_2024": { "type": "structure_article", "citation": "Roske JJ, Yeeles JTP. Nat Struct Mol Biol 31:1921 (2024).", "pdb": ["9F6D", "9F6E", "9F6F"], "species": "Homo sapiens", "note": "PRIMARY HUMAN structural source. Pol epsilon catalytic core with DNA; captures fingers-domain open / ajar / closed states. Use 9F6D coordinates + DSSP to derive all sub-domain boundaries and active-site geometry." },
-    "hogg_2014": { "type": "structure_article", "citation": "Hogg M, Osterman P, Bylund GO, et al. Nat Struct Mol Biol 21:49 (2014).", "pdb": ["4M8O"], "species": "Saccharomyces cerevisiae", "note": "Yeast Pol2 catalytic core; original palm/fingers/thumb/exo/NTD + P-domain description. YEAST numbering." },
-    "yuan_2020": { "type": "structure_article", "citation": "Yuan Z, Georgescu R, Schauer GD, et al. Nat Commun 11:3165 (2020).", "species": "Saccharomyces cerevisiae", "note": "Holoenzyme architecture; defines the non-catalytic 'Pol2 module' (inactive B-family fold) C-terminal to the active core." },
+    "roske_yeeles_2024": { "type": "structure_article", "citation": "Roske JJ, Yeeles JTP. Nat Struct Mol Biol 31:1921-1931 (2024).", "pdb": ["9F6D", "9F6E", "9F6F", "9F6I", "9F6J", "9F6K", "9F6L"], "emdb": ["EMD-50222", "EMD-50223", "EMD-50224", "EMD-50225", "EMD-50226", "EMD-50227", "EMD-50228"], "species": "Homo sapiens", "note": "PRIMARY HUMAN structural source. Pol epsilon catalytic core with DNA; matched-DNA states: open (9F6D), ajar (9F6E), closed (9F6F) Finger conformations. Mismatch proofreading intermediates: post-insertion (9F6I), arrest (9F6J), frayed substrate (9F6K), mismatch excision (9F6L). Use 9F6D coordinates + DSSP to derive all sub-domain boundaries and active-site geometry." },
+    "hogg_2014": { "type": "structure_article", "citation": "Hogg M, Osterman P, Bylund GO, Ganai RA, Lundstrom E-B, Sauer-Eriksson AE, Johansson E. Nat Struct Mol Biol 21:49-55 (2014).", "pdb": ["4M8O"], "species": "Saccharomyces cerevisiae", "note": "Yeast Pol2 catalytic core; original palm/fingers/thumb/exo/NTD + P-domain description. YEAST numbering." },
+    "yuan_2020": { "type": "structure_article", "citation": "Yuan Z, Georgescu R, Schauer GD, et al. Structure of the polymerase epsilon holoenzyme and atomic model of the leading strand replisome. Nat Commun 11:3156 (2020).", "species": "Saccharomyces cerevisiae", "note": "Holoenzyme architecture; defines the non-catalytic 'Pol2 module' (inactive B-family fold) C-terminal to the active core." },
     "terbeek_2019": { "type": "structure_article", "citation": "Ter Beek J, Parkash V, Bylund GO, et al. Nucleic Acids Res 47:5712 (2019).", "pdb": ["6QIB"], "species": "Saccharomyces cerevisiae", "note": "Structural evidence for [4Fe-4S] in the CysX motif within the catalytic core; ternary complex with DNA + dATP." },
     "jain_2014": { "type": "article", "pmid": "24144619", "citation": "Jain R, et al. An iron-sulfur cluster in the polymerase domain of yeast DNA polymerase epsilon (2014).", "note": "Discovery of CysX motif coordinating [4Fe-4S] in the polymerase domain of Pol2." },
     "hertzog_2022": { "type": "article", "pmid": "36261579", "citation": "Hertzog M, et al. The iron-sulfur cluster is essential for DNA binding by human DNA polymerase epsilon. Sci Rep 12 (2022).", "note": "Human PolεCD contains the [4Fe-4S] cluster at the base of the P-domain (CysX); cluster-coordinating Cys mutations abolish DNA binding, polymerase and exonuclease activity." },
@@ -52,6 +52,13 @@
     "n363k_2014": { "type": "article", "pmc": "PMC4079162", "citation": "A mutation in POLE predisposing to a multi-tumour phenotype (2014).", "note": "Germline N363K (c.1089C>A); multi-tumour PPAP (CRC + endometrial/ovarian/brain); residue directly involved in DNA binding." },
     "lindsay_v411l_2017": { "type": "article", "pmc": "PMC5243902", "citation": "Novel germline POLE p.(Val411Leu) causing early-onset cancer-prone syndrome (2017).", "note": "Germline V411L; severe, early-onset PPAP; CMMRD-mimicking skin features." },
     "han_ec_2022": { "type": "article", "pmc": "PMC9596989", "citation": "Characterization of hotspot exonuclease domain mutations in POLE in endometrial cancer (2022).", "note": "Somatic EC hotspots: P286R and V411L most common, then S297F, A456P, S459F; R375Q and P452L characterised as additional deleterious hotspots." },
+    "leon_castillo_2020": { "type": "article", "pmid": "31820843", "citation": "Leon-Castillo A, et al. Interpretation of somatic POLE mutations in endometrial carcinoma. J Pathol 250:323-335 (2020).", "note": "Defines the POLE-score and 11 pathogenic somatic EDMs (P286R, V411L, S297F, A456P, S459F, F367S, L424I, M295R, P436R, M444K, D368Y) meeting score >=4 for causing tumour ultramutation. Operative definition of POLEmut in endometrial carcinoma molecular classification." },
+    "rayner_2016": { "type": "review", "pmid": "26711359", "citation": "Rayner E, et al. A panoply of errors: polymerase proofreading domain mutations in cancer. Nat Rev Cancer 16:71-81 (2016).", "note": "Comprehensive review of POLE/POLD1 proofreading domain mutations in cancer." },
+    "ganai_2015": { "type": "article", "pmid": "25452429", "citation": "Ganai RA, Bylund GO, Johansson E. Switching between polymerase and exonuclease sites in DNA polymerase epsilon. Nucleic Acids Res 43:932-942 (2015).", "note": "Biochemical basis of the pol<->exo shuttling the viewer animates." },
+    "logan_2018": { "type": "article", "pmid": "30503524", "citation": "Logan CV, et al. DNA polymerase epsilon deficiency causes IMAGe syndrome with variable immunodeficiency. Am J Hum Genet 103:1038-1044 (2018).", "note": "Biallelic POLE LOF causes IMAGe-I syndrome: IUGR, metaphyseal dysplasia, adrenal hypoplasia congenita, genital anomalies, immunodeficiency." },
+    "fils_syndrome": { "type": "article", "citation": "FILS syndrome (MIM 615139). Facial dysmorphism, immunodeficiency, livedo, short stature; biallelic POLE variants outside the exonuclease domain.", "note": "Recessive POLE phenotype from loss-of-function variants." },
+    "pursell_2007": { "type": "article", "pmid": "17615360", "citation": "Pursell ZF, et al. Yeast DNA polymerase epsilon participates in leading-strand DNA replication. Science 317:127-130 (2007).", "note": "Established that Pol epsilon synthesizes the leading strand; yeast M644 fidelity residue." },
+    "alexandrov_2020": { "type": "article", "pmid": "32025018", "citation": "Alexandrov LB, et al. The repertoire of mutational signatures in human cancer. Nature 578:94-101 (2020).", "note": "Source for SBS10a/10b/14/28. COSMIC v3.4 also added SBS10c and SBS10d (POLD1-associated)." },
     "project_schematic": { "type": "internal", "title": "3D-POLE-Modeler current procedural-schematic values", "note": "Illustrative sub-domain boundaries from the existing viewer. Retained as placeholders ONLY; replace with 9F6D-derived (DSSP) boundaries." }
   },
 
@@ -98,7 +105,7 @@
       "short_code": "P-DOM",
       "start": 640,
       "end": 760,
-      "description": "Pol epsilon-specific insertion within the polymerase core that distinguishes Pol epsilon from other B-family polymerases; its base coordinates the [4Fe-4S] cluster via the CysX motif (see metal_sites). Encompasses the C654/C663 coordinating cysteines.",
+      "description": "Pol epsilon-specific insertion within the polymerase core that distinguishes Pol epsilon from other B-family polymerases; its base coordinates the [4Fe-4S] cluster via the CysX motif (coordinating cysteines C651, C654, C663, C747 in human POLE1). Pol epsilon lacks the extended beta-hairpin loop that most B-family polymerases use to stabilise the nascent strand in the exo site — a distinguishing structural feature.",
       "numbering_basis": "schematic_pending_9F6D",
       "is_insertion_within": "palm",
       "sources": ["project_schematic", "hogg_2014", "terbeek_2019", "baranovskiy_2022"],
@@ -234,7 +241,7 @@
       "sources": ["hogg_2014"],
       "yeast_equivalent": "Sc D477",
       "verification_status": "estimated",
-      "_note": "ESTIMATE ONLY (yeast D477 minus the ~15-residue offset). The current viewer's 'D370' for the third exonuclease catalytic residue appears inconsistent with the yeast Asp477 position (expected ~D462 in human). VERIFY the full DEDDy set (ExoI D/E, ExoII D, ExoIII D + the conserved Tyr) against the UniProt Q07864 active-site annotation before display."
+      "_note": "ESTIMATE ONLY (yeast D477 minus the ~15-residue offset). The current viewer's 'D370' for the third exonuclease catalytic residue appears inconsistent with the yeast Asp477 position (expected ~D462 in human). VERIFY the full DEDDy set (ExoI D/E, ExoII D, ExoIII D + the conserved Tyr) against the UniProt Q07864 active-site annotation before display. UPDATE: The Mismatch Excision structure (PDB 9F6L, Roske & Yeeles 2024) explicitly models the ExoIII catalytic residues with bivalent metals in place. Read ExoIII directly from 9F6L human coordinates rather than using this yeast-homology estimate."
     },
     {
       "id": "pol_motifA_Asp_unverified",
@@ -258,6 +265,27 @@
       "yeast_equivalent": "Sc D877",
       "verification_status": "todo",
       "_note": "Human number not independently verified in this draft. Confirm the DTD aspartates against UniProt / 9F6D. The DTD motif contains two aspartates (D860 and the second D in the motif); verify whether D860 should list both DxD residues."
+    },
+    {
+      "id": "palm_E858",
+      "position": 858,
+      "aa": "E",
+      "role": "Palm-domain carboxylate; forms salt-bridge network with Thumb K954 (fidelity switch). Release on mismatch destabilises the Palm-Thumb interface and triggers proofreading.",
+      "motif": "Palm-Thumb fidelity switch",
+      "domain_id": "palm",
+      "sources": ["roske_yeeles_2024"],
+      "verification_status": "verified",
+      "_note": "Roske & Yeeles 2024 identify E858-D860 as Palm carboxylates that salt-bridge with Thumb K954. This is NOT the two-metal-ion catalytic site; it is the mechanistic trigger for the proofreading cascade."
+    },
+    {
+      "id": "thumb_K954",
+      "position": 954,
+      "aa": "K",
+      "role": "Thumb-domain lysine; salt-bridge partner for E858/D860 in the Palm-Thumb fidelity switch. Release triggers proofreading.",
+      "motif": "Palm-Thumb fidelity switch",
+      "domain_id": "thumb",
+      "sources": ["roske_yeeles_2024"],
+      "verification_status": "verified"
     }
   ],
 
@@ -290,7 +318,7 @@
           "location": "CysX motif at the base of the processivity (P) domain, within the catalytic core",
           "status": "current_structural_consensus",
           "yeast_coordinating_cys": ["C665", "C667", "C668", "C763"],
-          "human_coordinating_cys": ["C654", "C663"],
+          "human_coordinating_cys": ["C651", "C654", "C663", "C747"],
           "function": "Required for template:primer DNA binding; cluster-coordinating Cys mutations abolish DNA binding, polymerase and exonuclease activity.",
           "sources": ["jain_2014", "terbeek_2019", "hertzog_2022", "baranovskiy_2022"]
         },
@@ -596,7 +624,7 @@
         { "id": "H5", "label": "Phenocopy from another locus", "likelihood": "moderate", "impact": "moderate" }
       ],
       "mechanism": "Truncating frameshift; first-order prediction is LOF/null. However, observed PPAP phenotype in carrier creates a genotype-phenotype anomaly under active investigation (see candidate_mechanisms).",
-      "conditions": ["PPAP (observed phenotype, mechanism under investigation)", "FILS/IMAGEI (recessive, theoretical)"],
+      "conditions": ["PPAP (observed phenotype, mechanism under investigation)", "FILS syndrome (MIM 615139, recessive — biallelic POLE LOF)", "IMAGe-I syndrome (MIM 618336, recessive — biallelic POLE LOF, Logan et al. AJHG 2018)"],
       "sources": ["mur_2023", "zhang_maquat_1997"],
       "verification_status": "verified",
       "_note": "Clinical lab classification is Pathogenic. The mechanistic question is not whether the variant is pathogenic, but by which mechanism it contributes to the observed PPAP phenotype."
@@ -609,7 +637,9 @@
     "c.138del (p.Leu46Phefs*8) is now included with Pathogenic classification per the carrier's clinical lab report. The carrier presents with a PPAP-consistent phenotype (polyposis, multiple cancers). The mechanistic route to the observed PPAP phenotype is under active investigation (see candidate_mechanisms on the variant record). The PVS1 caveat still applies in general: truncating POLE variants do not produce the ultra-mutator phenotype characteristic of PPAP missense EDMs.",
     "TWO CLASSIFICATION AXES: ClinVar now carries a germline classification AND an oncogenicity/somatic classification. P286R is the clearest case where these diverge (germline VUS vs somatic oncogenic hotspot). The viewer should show both and never collapse them.",
     "P286R mechanism: model it as a gain-of-function-like ultramutator (fidelity defect, ~50x exonuclease-null), distinct from a clean proofreading knockout. (kane_shcherbakova_2014, parkash_2019)",
-    "Species/numbering: yeast Pol2 residue numbers must be converted before use in human-labelled fields (see meta._numbering_warning)."
+    "Species/numbering: yeast Pol2 residue numbers must be converted before use in human-labelled fields (see meta._numbering_warning).",
+    "MUR FRAMEWORK SCOPE: The Mur et al. 2023 gene-specific ACMG/AMP framework covers germline variants in the EXONUCLEASE DOMAIN of POLE/POLD1 only. PVS1, PM3, PM4, PP2, PP5, BP1, BP3 and BP6 are excluded. Variants outside the exonuclease domain (including c.138del at codon 46) and LOF variants fall outside the framework's scope. No ClinGen VCEP for POLE/POLD1 exists as of August 2026.",
+    "RECESSIVE POLE PHENOTYPES: Biallelic hypomorphic/LOF POLE variants cause FILS syndrome (MIM 615139) and IMAGe-I syndrome (MIM 618336), which are distinct from PPAP. These must appear on the differential for any truncating POLE variant. No reported FILS/IMAGe-I patient shows complete absence of POLE expression."
   ],
 
   "verification_todo": [

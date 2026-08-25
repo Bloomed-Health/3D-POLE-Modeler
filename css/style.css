@@ -990,6 +990,63 @@ footer .ax b { color: var(--ink); font-weight: 500; }
   .color-mode-selector button { padding: 6px 10px; }
 }
 
+/* ---- Navigation link cards ---- */
+
+.nav-card {
+  display: block;
+  padding: 9px 10px;
+  background: rgba(122, 187, 168, 0.08);
+  border: 1px solid rgba(122, 187, 168, 0.2);
+  border-left: 2px solid var(--accent);
+  border-radius: 2px;
+  text-decoration: none;
+  color: var(--ink);
+  font-size: 11px;
+  transition: background 0.2s;
+}
+
+.nav-card + .nav-card { margin-top: 6px; }
+
+.nav-card:hover { background: rgba(122, 187, 168, 0.12); }
+
+.nav-card-title {
+  font-family: 'Fraunces', serif;
+  font-size: 13px;
+  color: var(--accent);
+  font-weight: 500;
+  margin-bottom: 3px;
+}
+
+.nav-card-desc {
+  font-size: 10px;
+  color: var(--ink-dim);
+}
+
+/* Color variants */
+.nav-card.alphafold { background: rgba(101, 203, 243, 0.08); border-color: rgba(101, 203, 243, 0.2); border-left-color: #65CBF3; }
+.nav-card.alphafold:hover { background: rgba(101, 203, 243, 0.12); }
+.nav-card.alphafold .nav-card-title { color: #65CBF3; }
+
+.nav-card.variant { background: rgba(155, 89, 182, 0.08); border-color: rgba(155, 89, 182, 0.2); border-left-color: #9b59b6; }
+.nav-card.variant:hover { background: rgba(155, 89, 182, 0.12); }
+.nav-card.variant .nav-card-title { color: #9b59b6; }
+
+.nav-card.mutation { background: rgba(196, 92, 92, 0.08); border-color: rgba(196, 92, 92, 0.2); border-left-color: var(--warn); }
+.nav-card.mutation:hover { background: rgba(196, 92, 92, 0.12); }
+.nav-card.mutation .nav-card-title { color: var(--warn); }
+
+.nav-card.muted { background: var(--bg-2); border-color: var(--line); border-left-color: var(--accent); }
+.nav-card.muted:hover { background: rgba(255, 255, 255, 0.04); }
+
+/* Prominent Mol* hero card (index.html) */
+.nav-card.molstar-hero {
+  padding: 12px 12px;
+  border-left-width: 3px;
+  border-color: var(--accent);
+  background: rgba(122, 187, 168, 0.10);
+  animation: molstar-pulse 2s ease-in-out infinite;
+}
+
 /* ==================================================================
    Page-specific styles (extracted from inline <style> blocks)
    ================================================================== */

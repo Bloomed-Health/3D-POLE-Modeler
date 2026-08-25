@@ -1,6 +1,28 @@
 node_modules/
 coverage/
-.DS_Store
-.env
 dist/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Environment / secrets
+.env
+.env.*
+
+# Editor files
 *.swp
+*.swo
+*~
+.idea/
+.vscode/
+
+# Claude Code local settings (user-specific, not project config)
+.claude/settings.local.json
+
+# Logs
+*.log
+npm-debug.log*
+
+# Downloaded PDB/mmCIF structures (large, regenerable)
+data/pdb/

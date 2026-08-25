@@ -214,21 +214,21 @@
 
     <div class="panel">
       <h3>Navigation</h3>
-      <a href="index.html" style="display:block;padding:9px 10px;background:rgba(122,187,168,0.08);border:1px solid rgba(122,187,168,0.2);border-left:2px solid var(--accent);border-radius:2px;text-decoration:none;color:var(--ink);font-size:11px;transition:background .2s;margin-bottom:6px">
-        <div style="font-family:'Fraunces',serif;font-size:13px;color:var(--accent);font-weight:500;margin-bottom:3px">Schematic Ribbon Viewer</div>
-        <div style="font-size:10px;color:var(--ink-dim)">Procedural domain topology model</div>
+      <a href="index.html" class="nav-card">
+        <div class="nav-card-title">Schematic Ribbon Viewer</div>
+        <div class="nav-card-desc">Procedural domain topology model</div>
       </a>
-      <a href="molstar.html" style="display:block;padding:9px 10px;background:rgba(122,187,168,0.08);border:1px solid rgba(122,187,168,0.2);border-left:2px solid var(--accent);border-radius:2px;text-decoration:none;color:var(--ink);font-size:11px;transition:background .2s;margin-bottom:6px">
-        <div style="font-family:'Fraunces',serif;font-size:13px;color:var(--accent);font-weight:500;margin-bottom:3px">Mol* Coordinate Viewer</div>
-        <div style="font-size:10px;color:var(--ink-dim)">PDB 9F6D &middot; real atomic coordinates</div>
+      <a href="molstar.html" class="nav-card">
+        <div class="nav-card-title">Mol* Coordinate Viewer</div>
+        <div class="nav-card-desc">PDB 9F6D &middot; real atomic coordinates</div>
       </a>
-      <a href="variant.html" style="display:block;padding:9px 10px;background:rgba(155,89,182,0.08);border:1px solid rgba(155,89,182,0.2);border-left:2px solid #9b59b6;border-radius:2px;text-decoration:none;color:var(--ink);font-size:11px;transition:background .2s;margin-bottom:6px">
-        <div style="font-family:'Fraunces',serif;font-size:13px;color:#9b59b6;font-weight:500;margin-bottom:3px">Variant Catalogue</div>
-        <div style="font-size:10px;color:var(--ink-dim)">ACMG classification &middot; SBS signatures</div>
+      <a href="variant.html" class="nav-card variant">
+        <div class="nav-card-title">Variant Catalogue</div>
+        <div class="nav-card-desc">ACMG classification &middot; SBS signatures</div>
       </a>
-      <a href="mutation.html" style="display:block;padding:9px 10px;background:rgba(196,92,92,0.08);border:1px solid rgba(196,92,92,0.2);border-left:2px solid var(--warn);border-radius:2px;text-decoration:none;color:var(--ink);font-size:11px;transition:background .2s">
-        <div style="font-family:'Fraunces',serif;font-size:13px;color:var(--warn);font-weight:500;margin-bottom:3px">c.138del Frameshift</div>
-        <div style="font-size:10px;color:var(--ink-dim)">Truncation analysis</div>
+      <a href="mutation.html" class="nav-card mutation">
+        <div class="nav-card-title">c.138del Frameshift</div>
+        <div class="nav-card-desc">Truncation analysis</div>
       </a>
     </div>
   </aside>
@@ -582,35 +582,7 @@ document.getElementById('btn-molstar-ui').addEventListener('click', () => {
 });
 
 // Sidebar toggle (mobile)
-const sidebarToggle = document.getElementById('sidebar-toggle');
-const sidebarLeft = document.getElementById('sidebar-left');
-const sidebarRight = document.getElementById('sidebar-right');
-const sidebarBackdrop = document.getElementById('sidebar-backdrop');
-
-function openSidebar(which) {
-  sidebarLeft.classList.toggle('open', which === 'left');
-  sidebarRight.classList.toggle('open', which === 'right');
-  sidebarBackdrop.classList.add('open');
-  document.querySelectorAll('.mobile-sidebar-tabs button').forEach(btn => {
-    btn.classList.toggle('active', btn.dataset.sidebar === which);
-  });
-}
-function closeSidebars() {
-  sidebarLeft.classList.remove('open');
-  sidebarRight.classList.remove('open');
-  sidebarBackdrop.classList.remove('open');
-}
-
-sidebarToggle.addEventListener('click', () => {
-  if (sidebarLeft.classList.contains('open') || sidebarRight.classList.contains('open')) closeSidebars();
-  else openSidebar('left');
-});
-document.getElementById('sidebar-close-left').addEventListener('click', closeSidebars);
-document.getElementById('sidebar-close-right').addEventListener('click', closeSidebars);
-sidebarBackdrop.addEventListener('click', closeSidebars);
-document.querySelectorAll('.mobile-sidebar-tabs button').forEach(btn => {
-  btn.addEventListener('click', () => openSidebar(btn.dataset.sidebar));
-});
+import('./js/shared-ui.js').then(({ initSidebarToggle }) => initSidebarToggle());
 
 // Keyboard shortcuts
 document.addEventListener('keydown', e => {
@@ -641,12 +613,8 @@ document.addEventListener('keydown', e => {
 });
 </script>
 <script type="module">
-  import { loadPoleData, provenanceFooter } from './js/data/poleData.js';
-  try {
-    const data = await loadPoleData();
-    const el = document.querySelector('[data-pole-provenance]');
-    if (el) el.textContent = provenanceFooter(data);
-  } catch (e) { /* degrade silently if canonical JSON unavailable */ }
+  import { initProvenanceFooter } from './js/shared-ui.js';
+  initProvenanceFooter();
 </script>
 
 </body>

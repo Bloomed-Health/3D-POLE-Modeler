@@ -55,21 +55,21 @@
 
     <div class="panel">
       <h3>Navigation</h3>
-      <a href="index.html" style="display:block;padding:9px 10px;background:var(--bg-2);border:1px solid var(--line);border-left:2px solid var(--accent);border-radius:2px;text-decoration:none;color:var(--ink);font-size:11px;transition:background .2s;margin-bottom:6px">
-        <div style="font-family:'Fraunces',serif;font-size:13px;color:var(--accent);font-weight:500;margin-bottom:3px">&larr; Schematic Viewer</div>
-        <div style="font-size:10px;color:var(--ink-dim)">Domain topology model</div>
+      <a href="index.html" class="nav-card muted">
+        <div class="nav-card-title">&larr; Schematic Viewer</div>
+        <div class="nav-card-desc">Domain topology model</div>
       </a>
-      <a href="molstar.html" style="display:block;padding:9px 10px;background:rgba(122,187,168,0.08);border:1px solid rgba(122,187,168,0.2);border-left:2px solid var(--accent);border-radius:2px;text-decoration:none;color:var(--ink);font-size:11px;transition:background .2s;margin-bottom:6px">
-        <div style="font-family:'Fraunces',serif;font-size:13px;color:var(--accent);font-weight:500;margin-bottom:3px">Mol* Coordinate Viewer</div>
-        <div style="font-size:10px;color:var(--ink-dim)">PDB 9F6D</div>
+      <a href="molstar.html" class="nav-card">
+        <div class="nav-card-title">Mol* Coordinate Viewer</div>
+        <div class="nav-card-desc">PDB 9F6D</div>
       </a>
-      <a href="alphafold.html" style="display:block;padding:9px 10px;background:rgba(101,203,243,0.08);border:1px solid rgba(101,203,243,0.2);border-left:2px solid #65CBF3;border-radius:2px;text-decoration:none;color:var(--ink);font-size:11px;transition:background .2s;margin-bottom:6px">
-        <div style="font-family:'Fraunces',serif;font-size:13px;color:#65CBF3;font-weight:500;margin-bottom:3px">AlphaFold Predicted Structure</div>
-        <div style="font-size:10px;color:var(--ink-dim)">Full-length 2,286 AA &middot; pLDDT confidence</div>
+      <a href="alphafold.html" class="nav-card alphafold">
+        <div class="nav-card-title">AlphaFold Predicted Structure</div>
+        <div class="nav-card-desc">Full-length 2,286 AA &middot; pLDDT confidence</div>
       </a>
-      <a href="mutation.html" style="display:block;padding:9px 10px;background:rgba(196,92,92,0.08);border:1px solid rgba(196,92,92,0.2);border-left:2px solid var(--warn);border-radius:2px;text-decoration:none;color:var(--ink);font-size:11px;transition:background .2s">
-        <div style="font-family:'Fraunces',serif;font-size:13px;color:var(--warn);font-weight:500;margin-bottom:3px">c.138del Frameshift</div>
-        <div style="font-size:10px;color:var(--ink-dim)">Truncation analysis</div>
+      <a href="mutation.html" class="nav-card mutation">
+        <div class="nav-card-title">c.138del Frameshift</div>
+        <div class="nav-card-desc">Truncation analysis</div>
       </a>
     </div>
   </aside>
@@ -157,8 +157,10 @@
       <h3 style="font-size:10px;color:var(--ink-faint);letter-spacing:0.08em">References</h3>
       <div style="font-family:'JetBrains Mono',monospace;font-size:9px;line-height:1.65;color:var(--ink-faint)">
         Mur et al., <em>Genome Med</em> 15:85 (2023)<br>
-        Roske &amp; Yeeles, <em>NSMB</em> 31:1921 (2024)<br>
-        Alexandrov et al., <em>Nature</em> 578:94 (2020)
+        Roske &amp; Yeeles, <em>NSMB</em> 31:1921&ndash;1931 (2024)<br>
+        Alexandrov et al., <em>Nature</em> 578:94 (2020)<br>
+        Palles et al., <em>Nat Genet</em> 45:136 (2013)<br>
+        Le&oacute;n-Castillo et al., <em>J Pathol</em> 250:323 (2020)
       </div>
     </div>
   </aside>
@@ -199,8 +201,8 @@ const VARIANTS = [
   },
   {
     id: 'V411L', residue: 411, ref: 'V', alt: 'L', domain: 'EXO',
-    label: 'Val411→Leu', type: 'Somatic',
-    detail: 'Recurrent exonuclease-domain mutation that abolishes editing capacity. Associated with microsatellite-stable tumours with very high mutational burden.',
+    label: 'Val411→Leu', type: 'Somatic / Germline',
+    detail: 'Recurrent exonuclease-domain mutation that abolishes editing capacity. Second most common somatic POLE hotspot (Leon-Castillo 2020 EDM set). Also reported as germline PPAP variant causing severe, early-onset cancer-prone syndrome (Lindsay et al. 2017).',
     am_score: 0.95, am_class: 'pathogenic', revel_score: 0.89, cadd_score: 28,
     signatures: { SBS10a: 0.70, SBS10b: 0.15, SBS28: 0.05, SBS14: 0.10 },
     classification: {
@@ -237,8 +239,8 @@ const VARIANTS = [
   },
   {
     id: 'L424V', residue: 424, ref: 'L', alt: 'V', domain: 'EXO',
-    label: 'Leu424→Val', type: 'Somatic',
-    detail: 'Moderate mutator phenotype. Located adjacent to ExoIII motif.',
+    label: 'Leu424→Val', type: 'Germline',
+    detail: 'PPAP founder variant (Palles et al. 2013); most recurrent germline PPAP variant (~50% of PPAP families). Moderate mutator phenotype. Note: somatic L424I (Leu→Ile) is a distinct variant in the Leon-Castillo somatic pathogenic set.',
     am_score: 0.82, am_class: 'likely_pathogenic', revel_score: 0.72, cadd_score: 24,
     signatures: { SBS10a: 0.45, SBS10b: 0.25, SBS28: 0.15, SBS14: 0.15 },
     classification: {
@@ -275,7 +277,7 @@ const VARIANTS = [
   {
     id: 'D287E', residue: 287, ref: 'D', alt: 'E', domain: 'EXO',
     label: 'Asp287→Glu', type: 'Somatic',
-    detail: 'ExoII-adjacent somatic variant. Recurrent in CRC. SBS10b-enriched.',
+    detail: 'ExoII-adjacent somatic variant. Recurrent in CRC. SBS10b-enriched. Note: not in the Leon-Castillo 2020 POLE-score pathogenic EDM set (11 variants scoring >=4).',
     am_score: 0.88, am_class: 'likely_pathogenic', revel_score: 0.78, cadd_score: 27,
     signatures: { SBS10a: 0.25, SBS10b: 0.50, SBS28: 0.10, SBS14: 0.15 },
     classification: {
@@ -820,46 +822,12 @@ initViewer().then(() => {
   el.classList.add('loading-error');
 });
 
-// ==================== UI WIRING ====================
 
-// Sidebar toggle
-const sidebarToggle = document.getElementById('sidebar-toggle');
-const sidebarLeft = document.getElementById('sidebar-left');
-const sidebarRight = document.getElementById('sidebar-right');
-const sidebarBackdrop = document.getElementById('sidebar-backdrop');
-
-function openSidebar(which) {
-  sidebarLeft.classList.toggle('open', which === 'left');
-  sidebarRight.classList.toggle('open', which === 'right');
-  sidebarBackdrop.classList.add('open');
-  document.querySelectorAll('.mobile-sidebar-tabs button').forEach(btn => {
-    btn.classList.toggle('active', btn.dataset.sidebar === which);
-  });
-}
-function closeSidebars() {
-  sidebarLeft.classList.remove('open');
-  sidebarRight.classList.remove('open');
-  sidebarBackdrop.classList.remove('open');
-}
-
-sidebarToggle.addEventListener('click', () => {
-  if (sidebarLeft.classList.contains('open') || sidebarRight.classList.contains('open')) closeSidebars();
-  else openSidebar('left');
-});
-document.getElementById('sidebar-close-left').addEventListener('click', closeSidebars);
-document.getElementById('sidebar-close-right').addEventListener('click', closeSidebars);
-sidebarBackdrop.addEventListener('click', closeSidebars);
-document.querySelectorAll('.mobile-sidebar-tabs button').forEach(btn => {
-  btn.addEventListener('click', () => openSidebar(btn.dataset.sidebar));
-});
 </script>
 <script type="module">
-  import { loadPoleData, provenanceFooter } from './js/data/poleData.js';
-  try {
-    const data = await loadPoleData();
-    const el = document.querySelector('[data-pole-provenance]');
-    if (el) el.textContent = provenanceFooter(data);
-  } catch (e) { /* degrade silently if canonical JSON unavailable */ }
+  import { initSidebarToggle, initProvenanceFooter } from './js/shared-ui.js';
+  initSidebarToggle();
+  initProvenanceFooter();
 </script>
 </body>
 </html>

@@ -7,17 +7,17 @@ using OrderedCollections: OrderedDict
     @testset "Config" begin
         config = PipelineConfig()
         @test config.total_residues == 2286
-        @test config.primary_pdb == "4M8O"
+        @test config.primary_pdb == "9F6D"
         @test length(config.domain_ranges) == 8
-        @test config.domain_ranges[:exo] == (268, 471)
-        @test config.domain_ranges[:palm] == (600, 870)
+        @test config.domain_ranges[:exo] == (223, 517)
+        @test config.domain_ranges[:palm] == (518, 870)
     end
 
     @testset "Domain Ranges" begin
         # All domains should be non-overlapping major regions
         @test POLEPipeline.DOMAIN_RANGES[:ntd][1] == 1
         @test POLEPipeline.DOMAIN_RANGES[:ctd][2] == 2286
-        @test length(POLEPipeline.POLE_MUTATIONS) == 8
+        @test length(POLEPipeline.POLE_MUTATIONS) == 9
     end
 
     @testset "Conservation" begin
@@ -104,7 +104,7 @@ using OrderedCollections: OrderedDict
 
         # Pre-computed attributions
         sigs = POLEPipeline.get_pole_mutation_signatures()
-        @test length(sigs) == 8
+        @test length(sigs) == 9
         # P286R should be dominated by SBS10a/b
         @test sigs[1][:SBS10a] + sigs[1][:SBS10b] > 0.7
         # S297F should be dominated by SBS28
@@ -132,7 +132,7 @@ using OrderedCollections: OrderedDict
 
         # Classify all POLE mutations
         classifs = POLEPipeline.classify_pole_mutations(POLEPipeline.POLE_MUTATIONS)
-        @test length(classifs) == 8
+        @test length(classifs) == 9
         # P286R should be pathogenic
         @test classifs[1].acmg_class in ["Pathogenic", "Likely_pathogenic"]
     end

@@ -4,13 +4,13 @@ Pipeline configuration: PDB IDs, domain ranges, output paths.
 
 # Domain boundary residue ranges (UniProt Q07864 / POLE catalytic subunit)
 const DOMAIN_RANGES = OrderedDict(
-    :ntd      => (1, 280),
-    :exo      => (268, 471),
-    :palm     => (600, 870),
-    :pdomain  => (700, 760),
+    :ntd      => (1, 222),
+    :exo      => (223, 517),
+    :palm     => (518, 870),
+    :pdomain  => (640, 760),
     :fingers  => (870, 1020),
-    :thumb    => (1020, 1190),
-    :inactpol => (1198, 1900),
+    :thumb    => (1020, 1189),
+    :inactpol => (1190, 1900),
     :ctd      => (1900, 2286),
 )
 
@@ -56,7 +56,7 @@ const POLE_MUTATIONS = [
      detail="Germline ExoI / PPAP predisposition / SBS28"),
     (id="L424V",  residue=424,  ref_aa='L', alt_aa='V', domain=:exo,
      label="Leu424→Val",
-     detail="Germline ExoIII / PPAP-associated / Mur 2023"),
+     detail="Germline PPAP founder variant (Palles 2013) / ~50% PPAP families / Note: somatic L424I is a distinct variant"),
     (id="D287E",  residue=287,  ref_aa='D', alt_aa='E', domain=:exo,
      label="Asp287→Glu",
      detail="Somatic ExoII adjacent / CRC / SBS10b"),
@@ -74,21 +74,11 @@ const POLE_MUTATIONS = [
      detail="Germline PPAP / adjacent to catalytic triad"),
 ]
 
-# Engineered catalytic-dead mutants (for active site annotation, not viewer markers)
-const ENGINEERED_MUTANTS = [
-    (id="D275A",  residue=275,  ref_aa='D', alt_aa='A', domain=:exo,
-     label="Asp275→Ala",
-     detail="ExoI catalytic / engineered / abolishes proofreading"),
-    (id="D368A",  residue=368,  ref_aa='D', alt_aa='A', domain=:exo,
-     label="Asp368→Ala",
-     detail="ExoIII catalytic / engineered / Mg²⁺ coordination"),
-]
-
 # Frameshift variant data (c.138del)
 const FRAMESHIFT_VARIANT = (
     hgvs_c = "c.138del",
     hgvs_p = "p.Leu46Phefs*8",
-    truncation_site = 53,
+    truncation_site = 53,  # stop codon at position 53; 52 residues translated
     wt_codons = [
         (codon="GAG", aa="Glu", pos=43),
         (codon="AGC", aa="Ser", pos=44),

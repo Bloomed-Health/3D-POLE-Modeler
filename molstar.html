@@ -178,17 +178,17 @@
 
     <div class="panel">
       <h3>Navigation</h3>
-      <a href="index.html" style="display:block;padding:9px 10px;background:rgba(122,187,168,0.08);border:1px solid rgba(122,187,168,0.2);border-left:2px solid var(--accent);border-radius:2px;text-decoration:none;color:var(--ink);font-size:11px;transition:background .2s">
-        <div style="font-family:'Fraunces',serif;font-size:13px;color:var(--accent);font-weight:500;margin-bottom:3px">Schematic Ribbon Viewer</div>
-        <div style="font-size:10px;color:var(--ink-dim)">Procedural domain topology model</div>
+      <a href="index.html" class="nav-card">
+        <div class="nav-card-title">Schematic Ribbon Viewer</div>
+        <div class="nav-card-desc">Procedural domain topology model</div>
       </a>
-      <a href="alphafold.html" style="display:block;padding:9px 10px;margin-top:6px;background:rgba(101,203,243,0.08);border:1px solid rgba(101,203,243,0.2);border-left:2px solid #65CBF3;border-radius:2px;text-decoration:none;color:var(--ink);font-size:11px;transition:background .2s">
-        <div style="font-family:'Fraunces',serif;font-size:13px;color:#65CBF3;font-weight:500;margin-bottom:3px">AlphaFold Predicted Structure</div>
-        <div style="font-size:10px;color:var(--ink-dim)">Full-length 2,286 AA &middot; pLDDT confidence</div>
+      <a href="alphafold.html" class="nav-card alphafold">
+        <div class="nav-card-title">AlphaFold Predicted Structure</div>
+        <div class="nav-card-desc">Full-length 2,286 AA &middot; pLDDT confidence</div>
       </a>
-      <a href="mutation.html" style="display:block;padding:9px 10px;margin-top:6px;background:rgba(196,92,92,0.08);border:1px solid rgba(196,92,92,0.2);border-left:2px solid var(--warn);border-radius:2px;text-decoration:none;color:var(--ink);font-size:11px;transition:background .2s">
-        <div style="font-family:'Fraunces',serif;font-size:13px;color:var(--warn);font-weight:500;margin-bottom:3px">c.138del Mutation Viewer</div>
-        <div style="font-size:10px;color:var(--ink-dim)">p.Leu46Phefs*8 &middot; germline frameshift</div>
+      <a href="mutation.html" class="nav-card mutation">
+        <div class="nav-card-title">c.138del Mutation Viewer</div>
+        <div class="nav-card-desc">p.Leu46Phefs*8 &middot; germline frameshift</div>
       </a>
     </div>
   </aside>
@@ -388,6 +388,7 @@
 
 <script type="module">
 import { DOMAINS, DOMAIN_ORDER, MUTATIONS } from './js/data/domainConfig.js';
+import { initProgress, initSidebarToggle } from './js/shared-ui.js';
 
 const PDB_INFO = {
   '9F6D': { citation: 'Roske & Yeeles 2024', detail: 'Open Finger conformation', resolution: '3.0 Å cryo-EM' },
@@ -407,12 +408,7 @@ let showLabels = true;
 
 // ==================== LOADING ====================
 
-const progressFill = document.getElementById('progress-fill');
-const loadingText = document.getElementById('loading-text');
-function setProgress(pct, text) {
-  progressFill.style.width = pct + '%';
-  if (text) loadingText.textContent = text;
-}
+const setProgress = initProgress();
 
 setProgress(10, 'Initializing Mol* viewer…');
 
@@ -813,35 +809,7 @@ document.getElementById('btn-molstar-ui').addEventListener('click', () => {
 });
 
 // Sidebar toggle (mobile)
-const sidebarToggle = document.getElementById('sidebar-toggle');
-const sidebarLeft = document.getElementById('sidebar-left');
-const sidebarRight = document.getElementById('sidebar-right');
-const sidebarBackdrop = document.getElementById('sidebar-backdrop');
-
-function openSidebar(which) {
-  sidebarLeft.classList.toggle('open', which === 'left');
-  sidebarRight.classList.toggle('open', which === 'right');
-  sidebarBackdrop.classList.add('open');
-  document.querySelectorAll('.mobile-sidebar-tabs button').forEach(btn => {
-    btn.classList.toggle('active', btn.dataset.sidebar === which);
-  });
-}
-function closeSidebars() {
-  sidebarLeft.classList.remove('open');
-  sidebarRight.classList.remove('open');
-  sidebarBackdrop.classList.remove('open');
-}
-
-sidebarToggle.addEventListener('click', () => {
-  if (sidebarLeft.classList.contains('open') || sidebarRight.classList.contains('open')) closeSidebars();
-  else openSidebar('left');
-});
-document.getElementById('sidebar-close-left').addEventListener('click', closeSidebars);
-document.getElementById('sidebar-close-right').addEventListener('click', closeSidebars);
-sidebarBackdrop.addEventListener('click', closeSidebars);
-document.querySelectorAll('.mobile-sidebar-tabs button').forEach(btn => {
-  btn.addEventListener('click', () => openSidebar(btn.dataset.sidebar));
-});
+initSidebarToggle();
 
 // Keyboard shortcuts
 document.addEventListener('keydown', e => {
@@ -1146,12 +1114,8 @@ setTimeout(captureBaseDist, 3000);
 setTimeout(captureBaseDist, 5000);
 </script>
 <script type="module">
-  import { loadPoleData, provenanceFooter } from './js/data/poleData.js';
-  try {
-    const data = await loadPoleData();
-    const el = document.querySelector('[data-pole-provenance]');
-    if (el) el.textContent = provenanceFooter(data);
-  } catch (e) { /* degrade silently if canonical JSON unavailable */ }
+  import { initProvenanceFooter } from './js/shared-ui.js';
+  initProvenanceFooter();
 </script>
 
 </body>

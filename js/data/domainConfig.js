@@ -45,7 +45,7 @@ export const MUTATIONS = [
   { id: 'S297F', residue: 297, domain: 'exo', label: 'Ser297\u2192Phe',
     detail: 'Germline ExoI / PPAP predisposition / SBS28' },
   { id: 'L424V', residue: 424, domain: 'exo', label: 'Leu424\u2192Val',
-    detail: 'Germline ExoIII / PPAP-associated / Mur 2023' },
+    detail: 'Germline PPAP founder variant (Palles 2013) / ~50% PPAP families / Note: somatic L424I is a distinct variant' },
   { id: 'D287E', residue: 287, domain: 'exo', label: 'Asp287\u2192Glu',
     detail: 'Somatic ExoII adjacent / CRC / SBS10b' },
   { id: 'P436R', residue: 436, domain: 'exo', label: 'Pro436\u2192Arg',
