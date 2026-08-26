@@ -153,7 +153,8 @@ function get_pole_evidence(mutation_id::AbstractString)
         "P436R" => [:PS3, :PM1, :PM2, :PP3],           # Somatic ExoIII
         "M444K" => [:PM1, :PM2, :PP3, :PP4],           # PPAP, computational
         "S459F" => [:PM1, :PM2, :PP3, :PP4],           # Germline PPAP
-        "F367S" => [:PM1, :PM2, :PM5, :PP3, :PP4],   # Adjacent to catalytic, PPAP
+        "F367S" => [:PM1, :PM2, :PM5, :PP3, :PP4],   # Adjacent to ExoII structural D368, PPAP
+        "A456P" => [:PS3, :PM1, :PM2, :PP3],           # Somatic EDM (Leon-Castillo 2020)
         # Engineered mutants (for reference)
         "D275A" => [:PS3, :PM1, :PM2, :PP3],           # Functional (engineered)
         "D368A" => [:PS3, :PM1, :PM2, :PP3],           # Functional (engineered)
@@ -175,58 +176,64 @@ function get_pole_evidence_citations(mutation_id::AbstractString)
             :PS4 => "Prevalence: most recurrent POLE mutation in CRC (12%) and endometrial (7%) carcinoma (TCGA 2013; Church et al., Hum Mol Genet 2013).",
             :PM1 => "Adjacent to ExoI motif (D275/E277), a critical functional domain for proofreading.",
             :PM2 => "Absent from gnomAD v4.1 (0/1,614,532 alleles).",
-            :PP3 => "REVEL 0.96; CADD 33; AlphaMissense 0.99 (pathogenic).",
+            :PP3 => "REVEL 0.96 (calibrated evidence). AlphaMissense and CADD shown separately as correlated annotations.",
         ),
         "V411L" => Dict(
             :PS3 => "Functional: V411L causes proofreading deficiency and ultra-mutator phenotype in human cell lines (Barbari et al., NAR 2018).",
             :PS4 => "Prevalence: second most recurrent POLE mutation in endometrial (5%) and CRC (3%) (TCGA 2013).",
             :PM1 => "Located in the exonuclease domain between ExoII and ExoIII motifs.",
             :PM2 => "Absent from gnomAD v4.1.",
-            :PP3 => "REVEL 0.89; CADD 28; AlphaMissense 0.95 (pathogenic).",
+            :PP3 => "REVEL 0.89 (calibrated evidence). AlphaMissense and CADD shown separately as correlated annotations.",
         ),
         "S297F" => Dict(
             :PS3 => "Functional: yeast Pol2-S312F (equivalent) causes mutator phenotype (Barbari & Shcherbakova, DNA Repair 2017).",
             :PM1 => "Located in ExoI motif (residues 292-299), one of three conserved exonuclease motifs.",
             :PM2 => "Absent from gnomAD v4.1.",
-            :PP3 => "REVEL 0.91; CADD 30; AlphaMissense 0.97 (pathogenic).",
+            :PP3 => "REVEL 0.91 (calibrated evidence). AlphaMissense and CADD shown separately as correlated annotations.",
             :PP4 => "Identified in families with polymerase proofreading-associated polyposis (PPAP) (Palles et al., Nat Genet 2013).",
         ),
         "L424V" => Dict(
             :PS3 => "Functional: moderate mutator phenotype in yeast equivalent (Kane & Shcherbakova, Genetics 2014).",
             :PM1 => "Located in exonuclease domain adjacent to ExoIII motif.",
             :PM2 => "Absent from gnomAD v4.1.",
-            :PP3 => "REVEL 0.72; CADD 24; AlphaMissense 0.82 (ambiguous/pathogenic).",
+            :PP3 => "REVEL 0.72 (calibrated evidence). AlphaMissense and CADD shown separately as correlated annotations.",
         ),
         "D287E" => Dict(
             :PS3 => "Functional: conservative substitution at ExoII-adjacent position; somatic recurrence in TCGA CRC cohort.",
             :PM1 => "Adjacent to ExoI motif (D275/E277) and P286 position; functionally constrained region.",
             :PM2 => "Absent from gnomAD v4.1.",
-            :PP3 => "REVEL 0.78; AlphaMissense 0.88 (pathogenic).",
+            :PP3 => "REVEL 0.78 (calibrated evidence). AlphaMissense and CADD shown separately as correlated annotations.",
         ),
         "P436R" => Dict(
             :PS3 => "Functional: recurrent somatic mutation in endometrial carcinoma; located near ExoIII motif.",
             :PM1 => "Located in ExoIII region of the exonuclease domain.",
             :PM2 => "Absent from gnomAD v4.1.",
-            :PP3 => "REVEL 0.81; AlphaMissense 0.90 (pathogenic).",
+            :PP3 => "REVEL 0.81 (calibrated evidence). AlphaMissense and CADD shown separately as correlated annotations.",
         ),
         "M444K" => Dict(
             :PM1 => "Located in exonuclease domain, ExoIII motif region.",
             :PM2 => "Absent from gnomAD v4.1.",
-            :PP3 => "REVEL 0.65; AlphaMissense 0.75 (ambiguous).",
+            :PP3 => "REVEL 0.65 (calibrated evidence). AlphaMissense and CADD shown separately as correlated annotations.",
             :PP4 => "Identified in PPAP families (Bellido et al., Genet Med 2016).",
         ),
         "S459F" => Dict(
             :PM1 => "Located in exonuclease domain.",
             :PM2 => "Absent from gnomAD v4.1.",
-            :PP3 => "REVEL 0.70; AlphaMissense 0.78 (ambiguous/pathogenic).",
+            :PP3 => "REVEL 0.70 (calibrated evidence). AlphaMissense and CADD shown separately as correlated annotations.",
             :PP4 => "Germline PPAP-associated (Valle et al., J Med Genet 2023).",
         ),
         "F367S" => Dict(
-            :PM1 => "Adjacent to ExoIII catalytic residue D368, within the proofreading active site.",
+            :PM1 => "Adjacent to ExoII structural/DNA-binding residue D368 in the exonuclease domain.",
             :PM2 => "Absent from gnomAD v4.1.",
             :PM5 => "Same position (F367) as other pathogenic variants; novel amino acid change at a known pathogenic position.",
-            :PP3 => "REVEL 0.74; AlphaMissense 0.85 (pathogenic).",
+            :PP3 => "REVEL 0.74 (calibrated evidence). AlphaMissense and CADD shown separately as correlated annotations.",
             :PP4 => "Germline PPAP phenotype (Mur et al., Genome Med 2023).",
+        ),
+        "A456P" => Dict(
+            :PS3 => "Recurrent somatic mutation in endometrial carcinoma; part of Leon-Castillo et al. 2020 pathogenic EDM set (POLE-score ≥4).",
+            :PM1 => "Located in exonuclease domain, adjacent to ExoIII motif.",
+            :PM2 => "Absent from gnomAD v4.1.",
+            :PP3 => "REVEL 0.82 (calibrated evidence). AlphaMissense and CADD shown separately as correlated annotations.",
         ),
     )
     return get(citations, mutation_id, Dict{Symbol, String}())

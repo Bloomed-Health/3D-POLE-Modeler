@@ -39,7 +39,7 @@ const DOMAIN_ABBREVS = OrderedDict(
 const TOTAL_RESIDUES = 2286
 
 # PDB entries for POLE structures
-const PDB_IDS = ["4M8O", "8D32", "9F6D", "9F6E", "9F6F", "9B8S"]
+const PDB_IDS = ["4M8O", "9F6D", "9F6E", "9F6F", "9B8S"]
 const PRIMARY_PDB = "9F6D"  # Human Pol epsilon (Roske & Yeeles 2024)
 
 # Known POLE pathogenic mutations
@@ -71,7 +71,10 @@ const POLE_MUTATIONS = [
      detail="Germline / PPAP-associated / Valle 2023"),
     (id="F367S",  residue=367,  ref_aa='F', alt_aa='S', domain=:exo,
      label="Phe367→Ser",
-     detail="Germline PPAP / adjacent to catalytic triad"),
+     detail="Germline PPAP / adjacent to ExoII structural residue D368"),
+    (id="A456P",  residue=456,  ref_aa='A', alt_aa='P', domain=:exo,
+     label="Ala456→Pro",
+     detail="Somatic EDM / Leon-Castillo 2020 pathogenic set / endometrial"),
 ]
 
 # Frameshift variant data (c.138del)

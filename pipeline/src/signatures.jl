@@ -337,5 +337,7 @@ function get_pole_mutation_signatures()
         Dict(:SBS10a => 0.15, :SBS10b => 0.10, :SBS28 => 0.60, :SBS14 => 0.15),
         # F367S - germline PPAP
         Dict(:SBS10a => 0.15, :SBS10b => 0.10, :SBS28 => 0.60, :SBS14 => 0.15),
+        # A456P - somatic EDM, Leon-Castillo 2020 pathogenic set
+        Dict(:SBS10a => 0.45, :SBS10b => 0.25, :SBS28 => 0.15, :SBS14 => 0.15),
     ]
 end

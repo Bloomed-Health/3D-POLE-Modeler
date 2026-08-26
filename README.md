@@ -18,11 +18,11 @@ This tool renders a **procedural cartoon-ribbon schematic** of the POLE holoenzy
 - **Cartoon ribbon representation** - helices, beta-strands (with arrowheads), and loops rendered per secondary structure element across all eight functional domains (NTD, EXO, Palm, P, Fingers, Thumb, Inactive-Pol, CTD)
 - **Two-metal-ion catalysis** - ball-and-stick active site with octahedral Mg2+ coordination, conserved aspartate residues (D640, D642 [Motif A], D860 [Motif C]; human POLE1 numbering, UniProt Q07864 — **verify against 9F6D coordinates before use**; see note below), and distance annotations
 - **Incoming dNTP + Watson-Crick base pairing** - template nucleotide with hydrogen bond visualization
-- **3'-to-5' exonuclease site** - two-metal proofreading active site with catalytic residues D275, E277, D368 (human POLE1, verified); D462 (ExoIII, estimated from *S. cerevisiae* D477 homology — can now be read directly from PDB [9F6L](https://www.rcsb.org/structure/9F6L) mismatch excision structure)
+- **3'-to-5' exonuclease site** - two-metal proofreading active site with catalytic residues D275, E277 (ExoI, metal-coordinating, verified); D368 (ExoII, structural/DNA-binding — not a metal-coordinating catalytic residue); D462 (ExoIII, metal-coordinating, verified from PDB [9F6L](https://www.rcsb.org/structure/9F6L) mismatch excision structure, Roske & Yeeles 2024)
 - **Zinc-finger motifs** - CysA/CysB in the CTD. CysA binds Zn2+ (required for PCNA binding). CysB is rendered as Zn2+ per the human p59-p261 crystal structure, though Netz et al. (2012) originally assigned a [4Fe-4S] cluster to CysB in B-family polymerases — the viewer depicts the Zn model; see the [4Fe-4S] entry for the CysX/P-domain cluster
 - **[4Fe-4S] cluster** - iron-sulfur cluster in the P domain via the CysX motif (coordinating cysteines C651, C654, C663, C747 in human POLE1), a feature unique to Pol e among B-family polymerases (ter Beek et al. 2019; Jain et al. 2014)
 - **DNA double helix** - template and primer backbone tubes with base-pair rungs
-- **Mutation hotspot markers** - somatic EDMs (P286R, V411L, S297F, P436R, S459F per Leon-Castillo 2020) and germline PPAP variants (L424V, S297F, F367S, M444K, S459F per Palles 2013 / Mur 2023) with interactive tooltips. Note: L424V (Leu->Val) is the germline PPAP founder; somatic L424I (Leu->Ile) is a distinct variant. D287E is included as a somatic recurrence but is not in the Leon-Castillo pathogenic set
+- **Mutation hotspot markers** - somatic EDMs (P286R, V411L, S297F, A456P, P436R, S459F per Leon-Castillo 2020) and germline PPAP variants (L424V, S297F, F367S, M444K, S459F per Palles 2013 / Mur 2023) with interactive tooltips. Note: L424V (Leu->Val) is the germline PPAP founder; somatic L424I (Leu->Ile) is a distinct variant. D287E is included as a somatic recurrence but is not in the Leon-Castillo pathogenic set. 10 variants total in the variant catalogue
 - **Accessory subunits** - ghost representations of POLE2 (p59), POLE3 (p17), POLE4 (p12)
 - **PCNA sliding clamp** - toroidal processivity factor with homotrimer symmetry markers and tripartite Pol e contact interface (PIP-box Q1180, Thumb insertion res. 1102-1122, P-domain contact)
 - **Beta-sheet hydrogen bonds** - inter-strand H-bond visualization (schematic, not from DSSP)
@@ -50,7 +50,7 @@ This tool renders a **procedural cartoon-ribbon schematic** of the POLE holoenzy
 A separate page (`molstar.html`) provides a **real coordinate viewer** using [Mol*](https://molstar.org/), the same viewer used by RCSB PDB and PDBe. Features:
 
 - Loads PDB 9F6D (Roske & Yeeles 2024) with domain-colored cartoon representation
-- **Finger conformational triad**: switch between open (9F6D), ajar (9F6E), and closed (9F6F) states. Four additional mismatch proofreading intermediates (9F6I-9F6L) are deposited but not yet wired into the selector
+- **Finger conformational triad**: switch between open (9F6D), ajar (9F6E), and closed (9F6F) states. Four additional mismatch proofreading intermediates (9F6I-9F6L) are deposited but not yet wired into the selector. **Construct note:** 9F6I and 9F6J use an exonuclease-dead construct (D275A/E277A); active-site labels at the exo site correspond to alanines, not native aspartate/glutamate catalytic residues
 - **PDB 9B8S** (He et al. 2024) — independent Pol e-PCNA cryo-EM structure
 - Real DSSP secondary structure, crystallographic B-factors, metal coordination geometry
 - Multiple representations: cartoon, ball-and-stick, surface, putty (B-factor), spacefill
@@ -61,7 +61,7 @@ A separate page (`molstar.html`) provides a **real coordinate viewer** using [Mo
 
 A variant analysis page (`variant.html`) provides per-mutation analysis for all characterized POLE pathogenic variants:
 
-- **ACMG classification** with Bayesian posterior probabilities (Mur et al. 2023 framework)
+- **ACMG classification** with Bayesian posterior probabilities (Tavtigian et al. 2018 likelihood-ratio framework, applied per Mur et al. 2023)
 - **Auditable evidence codes** — each PS/PM/PP code has a literature citation
 - **Mutational signature attribution** — per-variant SBS10a/b/28/14 weights with bar charts
 - **DDG stability prediction** — heuristic destabilization estimate (not FoldX/Rosetta)
@@ -124,7 +124,7 @@ This viewer is a **schematic teaching tool**, not a molecular graphics program:
 - **Electrostatic surface is not computed.** The charge mode shows formal amino acid charge averaged per domain, not a Poisson-Boltzmann (APBS/PDB2PQR) electrostatic potential mapped onto a solvent-excluded surface.
 - **The molecular envelope is a geometric approximation**, not a Connolly/MSMS solvent-excluded surface.
 - **H-bonds are schematic.** They are placed along the backbone to illustrate i->i+4 and inter-strand patterns, but donor-acceptor distances and angles are not computed from atomic coordinates via DSSP.
-- **Polymerase active-site numbering is provisional.** D640, D642 (Motif A) and D860 (Motif C) are human POLE1 (UniProt Q07864) numbers that have not been independently verified against the deposited 9F6D coordinates. The literature commonly reports catalytic aspartates in *S. cerevisiae* Pol2 numbering (D640, D877); the human-yeast offset is ~14 residues in this region but is not constant. Every residue label in this tool carries its organism and numbering source; cross-check against UniProt Q07864 active-site features before citing.
+- **Polymerase active-site numbering is provisional.** D640, D642 (Motif A) and D860 (Motif C) are human POLE1 (UniProt Q07864) numbers that have not been independently verified against the deposited 9F6D coordinates. He et al. 2024 (PDB 9B8S) report D626, V627 (Motif A) and D862 (Motif C) as the catalytic residues; this numbering has not been reconciled with 9F6D coordinates in this tool. The literature commonly reports catalytic aspartates in *S. cerevisiae* Pol2 numbering (D640, D877); the human-yeast offset is ~14 residues in this region but is not constant. Every residue label in this tool carries its organism and numbering source; cross-check against UniProt Q07864 active-site features before citing.
 
 For coordinate-derived molecular visualization, load PDB **9F6D** (human Pol e-PCNA-DNA, open Finger conformation) into [Mol\*](https://molstar.org/) or [PyMOL](https://pymol.org/).
 

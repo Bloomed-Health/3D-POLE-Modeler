@@ -224,24 +224,24 @@
       "id": "exo_D368",
       "position": 368,
       "aa": "D",
-      "role": "Exonuclease catalytic / DNA-binding aspartate; germline D368V is pathogenic",
+      "role": "Exonuclease structural / DNA-binding aspartate (ExoII motif; not a metal-coordinating catalytic residue); germline D368V is pathogenic",
       "motif": "ExoII",
       "domain_id": "exonuclease",
-      "sources": ["atlas_pole"],
+      "sources": ["atlas_pole", "roske_yeeles_2024"],
       "verification_status": "verified",
-      "_note": "Motif assignment (ExoII vs ExoIII) to be confirmed against UniProt active-site features."
+      "_note": "D368 is in the ExoII motif but is NOT one of the metal-coordinating carboxylates of the DEDDy catalytic set. It plays a structural/DNA-binding role. The DEDDy catalytic residues are D275 (ExoI), E277 (ExoI), D462 (ExoIII), plus the conserved tyrosine."
     },
     {
-      "id": "exo_ExoIII_Asp_estimated",
+      "id": "exo_ExoIII_Asp",
       "position": 462,
       "aa": "D",
-      "role": "Predicted ExoIII catalytic aspartate",
+      "role": "ExoIII catalytic aspartate (metal-coordinating)",
       "motif": "ExoIII",
       "domain_id": "exonuclease",
-      "sources": ["hogg_2014"],
+      "sources": ["hogg_2014", "roske_yeeles_2024"],
       "yeast_equivalent": "Sc D477",
-      "verification_status": "estimated",
-      "_note": "ESTIMATE ONLY (yeast D477 minus the ~15-residue offset). The current viewer's 'D370' for the third exonuclease catalytic residue appears inconsistent with the yeast Asp477 position (expected ~D462 in human). VERIFY the full DEDDy set (ExoI D/E, ExoII D, ExoIII D + the conserved Tyr) against the UniProt Q07864 active-site annotation before display. UPDATE: The Mismatch Excision structure (PDB 9F6L, Roske & Yeeles 2024) explicitly models the ExoIII catalytic residues with bivalent metals in place. Read ExoIII directly from 9F6L human coordinates rather than using this yeast-homology estimate."
+      "verification_status": "verified",
+      "_note": "Verified from the mismatch excision structure (PDB 9F6L, Roske & Yeeles 2024), which explicitly models the ExoIII catalytic residues with bivalent metals in place. Previously estimated from yeast D477 homology; now confirmed at human position 462."
     },
     {
       "id": "pol_motifA_Asp_unverified",
@@ -304,10 +304,11 @@
       "id": "exo_metal_site",
       "label": "Exonuclease two-metal proofreading site",
       "metals": ["divalent metal x2"],
-      "coordinating_residues": ["exo_D275", "exo_E277", "exo_D368", "exo_ExoIII_Asp_estimated"],
+      "coordinating_residues": ["exo_D275", "exo_E277", "exo_ExoIII_Asp"],
+      "nearby_structural_residues": ["exo_D368"],
       "sources": ["roske_yeeles_2024", "hogg_2014"],
-      "verification_status": "estimated",
-      "_note": "ExoI residues verified; the full carboxylate set inherits the verification flags of its member residues."
+      "verification_status": "verified",
+      "_note": "Metal-coordinating catalytic residues: D275, E277 (ExoI), D462 (ExoIII). D368 (ExoII) is structural/DNA-binding and is NOT metal-coordinating. The conserved DEDDy tyrosine position remains to be mapped."
     },
     {
       "id": "fe4s4_cluster",
@@ -639,7 +640,9 @@
     "P286R mechanism: model it as a gain-of-function-like ultramutator (fidelity defect, ~50x exonuclease-null), distinct from a clean proofreading knockout. (kane_shcherbakova_2014, parkash_2019)",
     "Species/numbering: yeast Pol2 residue numbers must be converted before use in human-labelled fields (see meta._numbering_warning).",
     "MUR FRAMEWORK SCOPE: The Mur et al. 2023 gene-specific ACMG/AMP framework covers germline variants in the EXONUCLEASE DOMAIN of POLE/POLD1 only. PVS1, PM3, PM4, PP2, PP5, BP1, BP3 and BP6 are excluded. Variants outside the exonuclease domain (including c.138del at codon 46) and LOF variants fall outside the framework's scope. No ClinGen VCEP for POLE/POLD1 exists as of August 2026.",
-    "RECESSIVE POLE PHENOTYPES: Biallelic hypomorphic/LOF POLE variants cause FILS syndrome (MIM 615139) and IMAGe-I syndrome (MIM 618336), which are distinct from PPAP. These must appear on the differential for any truncating POLE variant. No reported FILS/IMAGe-I patient shows complete absence of POLE expression."
+    "RECESSIVE POLE PHENOTYPES: Biallelic hypomorphic/LOF POLE variants cause FILS syndrome (MIM 615139) and IMAGe-I syndrome (MIM 618336), which are distinct from PPAP. These must appear on the differential for any truncating POLE variant. No reported FILS/IMAGe-I patient shows complete absence of POLE expression.",
+    "CONSTRUCT WARNING — 9F6I/9F6J: PDB entries 9F6I (post-insertion) and 9F6J (arrest) were determined using an exonuclease-dead construct with D275A/E277A substitutions. Active-site labels at the exonuclease site in these structures correspond to alanine residues, not native aspartate/glutamate catalytic residues. Use 9F6K or 9F6L for native exonuclease active-site geometry.",
+    "BAYESIAN FRAMEWORK ATTRIBUTION: The Bayesian posterior probability calculations use the likelihood-ratio framework of Tavtigian et al. (Genet Med 2018), applied with POLE/POLD1-specific priors and evidence calibration per Mur et al. (Genome Med 2023). The LR framework itself is Tavtigian's; Mur et al. provide the gene-specific adaptation."
   ],
 
   "verification_todo": [

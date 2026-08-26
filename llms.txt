@@ -4,12 +4,20 @@
 
 The project provides four interconnected viewers for exploring POLE domain architecture, catalytic mechanisms, and cancer-associated mutations:
 
-- **Schematic Viewer** (`index.html`): Procedural cartoon-ribbon model with 8 functional domains, two-metal-ion active sites, DNA duplex, PCNA sliding clamp, [4Fe-4S] cluster, Zn-finger motifs, and 9 mutation hotspot markers. Interactive controls for toggles, color schemes (Default/PyMOL/Accessible), keyboard shortcuts, and distance measurement.
-- **Mol* Coordinate Viewer** (`molstar.html`): Real atomic coordinates from PDB 9F6D/9F6E/9F6F (Roske & Yeeles 2024) and 9B8S (He et al. 2024). Supports cartoon/ball-and-stick/spacefill/surface representations with domain, B-factor, chain-id, and secondary-structure coloring.
-- **Variant Analysis** (`variant.html`): ACMG classification with auditable Bayesian evidence codes, mutational signature attribution (SBS10a/b/28/14), computational predictors (AlphaMissense, REVEL, CADD), and DDG stability estimates for 9 characterized pathogenic variants.
-- **Mutation Viewer** (`mutation.html`): Side-by-side wild-type vs. truncated visualization of the c.138del germline frameshift (p.Leu46Phefs*8) with reading frame analysis and domain retention chart.
+- **Schematic Viewer** (`index.html`): Procedural cartoon-ribbon model with 8 functional domains, two-metal-ion active sites (polymerase: D640/D642 Motif A, D860 Motif C — provisional; exonuclease: D275/E277 ExoI, D462 ExoIII — verified), DNA duplex, PCNA sliding clamp, [4Fe-4S] cluster, Zn-finger motifs, and 10 mutation hotspot markers. Interactive controls for toggles, color schemes (Default/PyMOL/Accessible), keyboard shortcuts, and distance measurement.
+- **Mol* Coordinate Viewer** (`molstar.html`): Real atomic coordinates from PDB 9F6D/9F6E/9F6F (Roske & Yeeles 2024, matched DNA open/ajar/closed), 9F6I-9F6L (proofreading intermediates), and 9B8S (He et al. 2024). Supports cartoon/ball-and-stick/spacefill/surface representations with domain, B-factor, chain-id, and secondary-structure coloring. Note: 9F6I/9F6J use an exo-dead construct (D275A/E277A).
+- **Variant Analysis** (`variant.html`): ACMG classification with auditable Bayesian evidence codes (Tavtigian et al. 2018 LR framework, applied per Mur et al. 2023), mutational signature attribution (SBS10a/b/28/14, COSMIC v3.4), computational predictors (AlphaMissense, REVEL, CADD — REVEL used as calibrated PP3 evidence; AM/CADD shown as correlated annotations), and DDG stability estimates for 10 characterized pathogenic variants: P286R, V411L, S297F, L424V, F367S, D287E, M444K, S459F, P436R, A456P.
+- **Mutation Viewer** (`mutation.html`): Side-by-side wild-type vs. truncated visualization of the c.138del germline frameshift (p.Leu46Phefs*8) with reading frame analysis, domain retention chart, and hypothesis panel (H1-H5).
 
 Key technologies: Three.js (WebGL), Mol* (molecular viewer), ES modules, Vitest, ESLint, Julia pipeline for data processing.
+
+## Scientific Notes
+
+- **Exonuclease active site**: DEDDy family. Metal-coordinating catalytic residues: D275, E277 (ExoI, verified), D462 (ExoIII, verified from PDB 9F6L). D368 (ExoII) is structural/DNA-binding — NOT a metal-coordinating catalytic residue.
+- **Polymerase active site**: D640/D642 (Motif A), D860 (Motif C) — human numbering provisional, not yet verified against 9F6D coordinates. He et al. 2024 (PDB 9B8S) report D626/V627/D862 as an alternative; not reconciled in this tool.
+- **PP3 evidence**: Only REVEL is used as calibrated evidence for PP3/BP4 likelihood ratios. AlphaMissense and CADD are correlated annotations shown in a separate predictors panel, not stacked for LR calculation.
+- **Bayesian framework**: Posterior probabilities use the Tavtigian et al. 2018 likelihood-ratio framework with gene-specific priors from Mur et al. 2023.
+- **Canonical data** (`data/pole_canonical_data.json`) contains 18 total variant records (10 in the interactive viewer + 8 additional in the JSON catalogue including c.138del).
 
 ## Docs
 
@@ -26,10 +34,11 @@ Key technologies: Three.js (WebGL), Mol* (molecular viewer), ES modules, Vitest,
 - [ribbon.js](js/ribbon.js): Geometry primitives for cartoon ribbon (helix tubes, strand arrows, loop tubes, secondary-structure segmentation)
 - [pole-geometry.js](js/pole-geometry.js): Pure utility functions for procedural backbone generation (PRNG, domain backbone, inter-domain linkers)
 - [pole-palette.js](js/pole-palette.js): Shared THREE.Color palette and color scheme definitions (Default, PyMOL, Accessible)
+- [shared-ui.js](js/shared-ui.js): Shared UI utilities (progress bar, mobile sidebar toggle, provenance footer) used by all HTML pages
 
 ## Data Layer
 
-- [domainConfig.js](js/data/domainConfig.js): Shared domain definitions (DOMAINS, DOMAIN_ORDER, MUTATIONS, DOMAIN_COLORS) consumed by all viewers
+- [domainConfig.js](js/data/domainConfig.js): Legacy domain definitions (DEPRECATED — migrate to poleData.js). Still consumed by pole-palette.js and molstar-viewer.js for backward compatibility.
 - [poleData.js](js/data/poleData.js): Async loader and accessor for canonical JSON; schema validation, reference resolution, provenance footer
 - [Canonical Data JSON](data/pole_canonical_data.json): Single source of truth for domain boundaries, active site residues, metal sites, ClinVar-anchored variants, signatures, and references
 - [Data Schema](data/pole_canonical_data.schema.json): JSON Schema for validating canonical data
@@ -40,7 +49,7 @@ Key technologies: Three.js (WebGL), Mol* (molecular viewer), ES modules, Vitest,
 - [Mol* Coordinate Viewer](molstar.html): PDB coordinate viewer
 - [Variant Analysis](variant.html): ACMG classification and signature analysis
 - [Mutation Viewer](mutation.html): c.138del frameshift visualization
-- [AlphaFold Viewer](alphafold.html): AlphaFold predicted structure
+- [AlphaFold Viewer](alphafold.html): AlphaFold predicted structure (full-length 2,286 AA with pLDDT confidence coloring)
 
 ## Pipeline
 

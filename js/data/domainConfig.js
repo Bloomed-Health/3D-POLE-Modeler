@@ -51,9 +51,11 @@ export const MUTATIONS = [
   { id: 'P436R', residue: 436, domain: 'exo', label: 'Pro436\u2192Arg',
     detail: 'Somatic ExoIII / endometrial / SBS10a' },
   { id: 'M444K', residue: 444, domain: 'exo', label: 'Met444\u2192Lys',
-    detail: 'Somatic / ExoIII motif / CRC / SBS10b' },
+    detail: 'Germline PPAP / exonuclease domain' },
   { id: 'S459F', residue: 459, domain: 'exo', label: 'Ser459\u2192Phe',
     detail: 'Germline / PPAP-associated / Valle 2023' },
   { id: 'F367S', residue: 367, domain: 'exo', label: 'Phe367\u2192Ser',
-    detail: 'Germline PPAP / adjacent to ExoIII catalytic triad' },
+    detail: 'Germline PPAP / adjacent to ExoII structural residue D368' },
+  { id: 'A456P', residue: 456, domain: 'exo', label: 'Ala456\u2192Pro',
+    detail: 'Somatic EDM / Leon-Castillo 2020 pathogenic set / endometrial' },
 ];

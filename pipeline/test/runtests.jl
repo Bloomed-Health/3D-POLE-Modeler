@@ -17,7 +17,7 @@ using OrderedCollections: OrderedDict
         # All domains should be non-overlapping major regions
         @test POLEPipeline.DOMAIN_RANGES[:ntd][1] == 1
         @test POLEPipeline.DOMAIN_RANGES[:ctd][2] == 2286
-        @test length(POLEPipeline.POLE_MUTATIONS) == 9
+        @test length(POLEPipeline.POLE_MUTATIONS) == 10
     end
 
     @testset "Conservation" begin
@@ -104,7 +104,7 @@ using OrderedCollections: OrderedDict
 
         # Pre-computed attributions
         sigs = POLEPipeline.get_pole_mutation_signatures()
-        @test length(sigs) == 9
+        @test length(sigs) == 10
         # P286R should be dominated by SBS10a/b
         @test sigs[1][:SBS10a] + sigs[1][:SBS10b] > 0.7
         # S297F should be dominated by SBS28
@@ -132,7 +132,7 @@ using OrderedCollections: OrderedDict
 
         # Classify all POLE mutations
         classifs = POLEPipeline.classify_pole_mutations(POLEPipeline.POLE_MUTATIONS)
-        @test length(classifs) == 9
+        @test length(classifs) == 10
         # P286R should be pathogenic
         @test classifs[1].acmg_class in ["Pathogenic", "Likely_pathogenic"]
     end
