@@ -240,13 +240,41 @@ function get_pole_evidence_citations(mutation_id::AbstractString)
 end
 
 """
+    is_in_classification_scope(mutation) -> Bool
+
+Check whether a mutation falls within the Mur et al. 2023 framework scope.
+Returns true only for missense/inframe_indel variants within the exonuclease domain (268-471).
+Variants outside scope should not receive a Bayesian posterior from this framework.
+"""
+function is_in_classification_scope(mutation)
+    # Check consequence type
+    consequence = hasproperty(mutation, :consequence) ? mutation.consequence : "missense"
+    valid_consequences = ("missense", "inframe_indel")
+    if !(consequence in valid_consequences)
+        return false
+    end
+
+    # Check residue position within exonuclease domain (narrow/Church convention for classification)
+    residue = mutation.residue
+    return 268 <= residue <= 471
+end
+
+"""
     classify_pole_mutations(mutations) -> Vector{ACMGClassification}
 
 Classify all known POLE mutations using pre-curated evidence.
+Variants outside the Mur et al. 2023 framework scope receive "Out_of_scope" classification.
 """
 function classify_pole_mutations(mutations)
     classifications = ACMGClassification[]
     for mut in mutations
+        if !is_in_classification_scope(mut)
+            push!(classifications, ACMGClassification(
+                "Out_of_scope", 0.0, 0.0, 0.0,
+                PRIOR_PATHOGENICITY, Symbol[], 0.0,
+            ))
+            continue
+        end
         evidence = get_pole_evidence(mut.id)
         classif = classify_variant(evidence)
         push!(classifications, classif)

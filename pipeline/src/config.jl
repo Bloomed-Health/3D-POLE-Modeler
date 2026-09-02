@@ -112,7 +112,7 @@ const FRAMESHIFT_VARIANT = (
 
 # Catalytic residues
 const CATALYTIC_RESIDUES = Dict(
-    :exo_site => [275, 277, 368, 462],      # D275, E277, D368, D462 (estimated from yeast D477 homology; D370 was incorrect)
+    :exo_site => [275, 277, 368, 462],      # D275, E277 (ExoI, verified), D368 (ExoII structural, not metal-coordinating), D462 (ExoIII, verified from PDB 9F6L; previously estimated from yeast D477 homology)
     :pol_motif_a => [640, 642],              # D640, D642
     :pol_motif_c => [860],                   # D860
 )

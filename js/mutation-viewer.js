@@ -23,7 +23,7 @@
 import * as THREE from 'three';
 import { buildSSElement, segmentBySSType } from './ribbon.js';
 import { PAL as BASE_PAL } from './pole-palette.js';
-import { SCALE, makeRng, generateLinker } from './pole-geometry.js';
+import { SCALE, makeRng, generateLinker, generateHelixPoints, generateStrandPoints, generateLoopPoints, generateDomainBackbone } from './pole-geometry.js';
 
 // ==================== PALETTE ====================
 
@@ -60,12 +60,15 @@ let MUT_CODONS = [
   { codon: 'TAG', aa: '*',   pos: 53, status: 'stop' },
 ];
 
+// Domain ranges: Atlas of Genetics / UniProt convention (matches pole_canonical_data.json)
 let DOMAINS = [
-  { key: 'ntd',     label: 'NTD',                         start: 1,    end: 280,  color: PAL.ntd },
-  { key: 'exo',     label: "3\u2032\u21925\u2032 Exonuclease", start: 268,  end: 471,  color: PAL.exo },
-  { key: 'palm',    label: 'Palm',                         start: 600,  end: 870,  color: PAL.palm },
+  { key: 'ntd',     label: 'NTD',                         start: 1,    end: 222,  color: PAL.ntd },
+  { key: 'exo',     label: "3\u2032\u21925\u2032 Exonuclease", start: 223,  end: 517,  color: PAL.exo },
+  { key: 'palm',    label: 'Palm',                         start: 518,  end: 870,  color: PAL.palm },
+  { key: 'pdomain', label: 'P-domain',                     start: 640,  end: 760,  color: PAL.pdomain },
   { key: 'fingers', label: 'Fingers',                      start: 870,  end: 1020, color: PAL.fingers },
-  { key: 'thumb',   label: 'Thumb',                        start: 1020, end: 1190, color: PAL.thumb },
+  { key: 'thumb',   label: 'Thumb',                        start: 1020, end: 1189, color: PAL.thumb },
+  { key: 'inactpol',label: 'Inactive Pol',                 start: 1190, end: 1900, color: PAL.inactpol },
   { key: 'ctd',     label: 'CTD',                          start: 1900, end: 2286, color: PAL.ctd },
 ];
 
@@ -74,14 +77,25 @@ let TRUNCATION_SITE = 53;
 
 // ==================== PIPELINE DATA LOADER ====================
 
+let _dataProvenance = 'hardcoded_default';
+
+/**
+ * Get the current data provenance status.
+ * @returns {'pipeline' | 'hardcoded_default'}
+ */
+export function getDataProvenance() {
+  return _dataProvenance;
+}
+
 /**
  * Load frameshift mutation data from pipeline JSON.
- * Falls back to hardcoded defaults on failure.
+ * Returns a structured result indicating success/failure.
+ * @returns {{ loaded: boolean, data: object|null, reason: string }}
  */
 export async function loadMutationPipelineData(basePath = './data') {
   try {
     const resp = await fetch(`${basePath}/pole_mutations.json`);
-    if (!resp.ok) throw new Error(resp.status);
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
     const data = await resp.json();
 
     if (data?.frameshift) {
@@ -92,84 +106,16 @@ export async function loadMutationPipelineData(basePath = './data') {
       if (fs.total_residues) TOTAL_RESIDUES = fs.total_residues;
     }
 
+    _dataProvenance = 'pipeline';
     console.info('[POLEPipeline] Mutation viewer data loaded');
-    return data;
+    return { loaded: true, data, reason: 'ok' };
   } catch (e) {
     console.warn('[POLEPipeline] Mutation data not available, using defaults:', e.message);
-    return null;
+    return { loaded: false, data: null, reason: e.message };
   }
 }
 
 // ==================== BACKBONE GENERATION ====================
-
-function generateHelixPoints(cur, dir, n) {
-  const axis = dir.clone().normalize();
-  let pA = new THREE.Vector3(1, 0, 0);
-  if (Math.abs(axis.dot(pA)) > 0.85) pA.set(0, 1, 0);
-  const pB = new THREE.Vector3().crossVectors(axis, pA).normalize();
-  pA.crossVectors(pB, axis).normalize();
-  // Handedness check: ensure right-handed winding
-  const check = new THREE.Vector3().crossVectors(pA, pB);
-  if (check.dot(axis) < 0) pB.negate();
-  const pts = [];
-  for (let i = 0; i < n; i++) {
-    const ang = i * (2 * Math.PI / 3.6);
-    const p = cur.clone()
-      .add(axis.clone().multiplyScalar(i * 1.5 * SCALE))
-      .add(pA.clone().multiplyScalar(Math.cos(ang) * 2.3 * SCALE))
-      .add(pB.clone().multiplyScalar(Math.sin(ang) * 2.3 * SCALE));
-    pts.push({ pos: p, ss: 'H' });
-  }
-  return pts;
-}
-
-function generateStrandPoints(cur, dir, n) {
-  // Proper 120° pleated-sheet rotation using perpendicular frame
-  const sDir = dir.clone().normalize();
-  let sA = new THREE.Vector3(1, 0, 0);
-  if (Math.abs(sDir.dot(sA)) > 0.85) sA.set(0, 1, 0);
-  const sB = new THREE.Vector3().crossVectors(sDir, sA).normalize();
-  sA.crossVectors(sB, sDir).normalize();
-  const pts = [];
-  for (let i = 0; i < n; i++) {
-    const ang = i * (2 * Math.PI / 3);
-    const p = cur.clone()
-      .add(sDir.clone().multiplyScalar(i * 3.3 * SCALE))
-      .add(sA.clone().multiplyScalar(Math.cos(ang) * 0.7 * SCALE))
-      .add(sB.clone().multiplyScalar(Math.sin(ang) * 0.7 * SCALE));
-    pts.push({ pos: p, ss: 'E' });
-  }
-  return pts;
-}
-
-function generateLoopPoints(cur, dir, center, n, rng) {
-  // 3.8 Å step chain with dihedral-inspired angular deflection
-  const target = center.clone().add(new THREE.Vector3(
-    (rng() - 0.5) * 7, (rng() - 0.5) * 7, (rng() - 0.5) * 7));
-  let loopCur = cur.clone();
-  let loopDir = target.clone().sub(cur);
-  if (loopDir.length() < 0.01) loopDir.set(rng() - 0.5, rng() - 0.5, rng() - 0.5);
-  loopDir.normalize();
-  const pts = [];
-  for (let i = 0; i < n; i++) {
-    const toTarget = target.clone().sub(loopCur);
-    if (toTarget.length() > 0.01) loopDir.lerp(toTarget.normalize(), 0.3).normalize();
-    const phi = (rng() - 0.5) * Math.PI * 0.6;
-    const psi = (rng() - 0.5) * Math.PI * 0.4;
-    let perpSeed = new THREE.Vector3(1, 0, 0);
-    if (Math.abs(loopDir.dot(perpSeed)) > 0.85) perpSeed.set(0, 1, 0);
-    const perp1 = new THREE.Vector3().crossVectors(loopDir, perpSeed).normalize();
-    const perp2 = new THREE.Vector3().crossVectors(loopDir, perp1).normalize();
-    const step = loopDir.clone()
-      .add(perp1.clone().multiplyScalar(Math.sin(phi) * 0.5))
-      .add(perp2.clone().multiplyScalar(Math.sin(psi) * 0.3))
-      .normalize().multiplyScalar(3.8 * SCALE);
-    loopCur = loopCur.clone().add(step);
-    pts.push({ pos: loopCur.clone(), ss: 'L' });
-    loopDir = step.clone().normalize();
-  }
-  return pts;
-}
 
 // Domain backbone geometry (secondary structure elements)
 const DOMAIN_SS = {
@@ -225,28 +171,14 @@ const DOMAIN_CENTERS = {
 
 const DOMAIN_ORDER = ['ntd', 'exo', 'palm', 'fingers', 'thumb', 'ctd'];
 
-function generateDomainBackbone(key) {
-  const center = new THREE.Vector3(...DOMAIN_CENTERS[key]);
-  const ss = DOMAIN_SS[key];
-  const rng = makeRng(key.charCodeAt(0) * 137 + key.charCodeAt(1) * 31);
-  const points = [];
-  let cur = center.clone().add(new THREE.Vector3(
-    (rng() - 0.5) * 5, (rng() - 0.5) * 5, (rng() - 0.5) * 5));
-  let dir = new THREE.Vector3(rng() - 0.5, rng() - 0.5, rng() - 0.5).normalize();
+// Combined domain definitions for generateDomainBackbone() (shared from pole-geometry.js)
+const DOMAIN_BACKBONE_DEFS = {};
+for (const key of DOMAIN_ORDER) {
+  DOMAIN_BACKBONE_DEFS[key] = { center: DOMAIN_CENTERS[key], ss: DOMAIN_SS[key] };
+}
 
-  for (const el of ss) {
-    let pts;
-    if (el.t === 'H') pts = generateHelixPoints(cur, dir, el.n);
-    else if (el.t === 'E') pts = generateStrandPoints(cur, dir, el.n);
-    else pts = generateLoopPoints(cur, dir, center, el.n, rng);
-    points.push(...pts);
-    cur = points[points.length - 1].pos.clone();
-    const toC = center.clone().sub(cur).normalize();
-    dir = dir.clone().lerp(toC, 0.35 + rng() * 0.3).normalize();
-    dir.add(new THREE.Vector3(
-      (rng() - 0.5) * 0.5, (rng() - 0.5) * 0.5, (rng() - 0.5) * 0.5)).normalize();
-  }
-  return points;
+function generateMutationDomainBackbone(key) {
+  return generateDomainBackbone(key, DOMAIN_BACKBONE_DEFS);
 }
 
 // ==================== MAIN CLASS ====================
@@ -333,7 +265,7 @@ export class MutationViewer {
     const backbones = {};
 
     for (const key of DOMAIN_ORDER) {
-      const bb = generateDomainBackbone(key);
+      const bb = generateMutationDomainBackbone(key);
       backbones[key] = bb;
 
       const segments = segmentBySSType(bb);
@@ -497,7 +429,7 @@ export class MutationViewer {
 
   _buildInlineGhost(offset) {
     for (const key of DOMAIN_ORDER) {
-      const bb = generateDomainBackbone(key);
+      const bb = generateMutationDomainBackbone(key);
       const segments = segmentBySSType(bb);
       for (let s = 0; s < segments.length; s++) {
         const seg = segments[s];

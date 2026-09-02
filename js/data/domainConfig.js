@@ -1,16 +1,10 @@
 // ==========================================================================
-// DEPRECATED: migrate to poleData.js (js/data/poleData.js)
+// Shared POLE Domain Configuration (synchronous)
 //
-// This file is retained for backward compatibility with existing consumers
-// (pole-viewer.js, molstar-viewer.js, pole-palette.js, molstar.html).
-// New code should import from poleData.js which reads from the canonical
-// data/pole_canonical_data.json.
-//
-// Shared POLE Domain Configuration
-//
-// DOMAIN BOUNDARY NOTE: These ranges are approximate and have not been
-// derived from DSSP analysis of deposited coordinates.
-// See: data/pole_canonical_data.json for the canonical values.
+// Synchronous domain/mutation config for viewers that need static imports at
+// module load time. Values MUST match data/pole_canonical_data.json.
+// For async metadata (provenance, verification status, references), use
+// poleData.js which loads from the canonical JSON.
 // ==========================================================================
 
 export const DOMAIN_COLORS = {
@@ -24,15 +18,18 @@ export const DOMAIN_COLORS = {
   ctd:      '#b8a04a',
 };
 
+// Domain boundary convention: Atlas of Genetics / UniProt (broad) ranges.
+// Matches pole_canonical_data.json and pipeline/src/config.jl.
+// Alternative convention (Church et al. 2013, narrow EXO 268-471) is not used here.
 export const DOMAINS = {
-  ntd:      { range: [1, 280],    color: '#c4a47a', name: 'N-terminal domain',     abbrev: 'NTD' },
-  exo:      { range: [268, 471],  color: '#b85c5c', name: "3'\u21925' Exonuclease", abbrev: 'EXO' },
-  palm:     { range: [472, 699],  color: '#6b8e6b', name: 'Palm subdomain',        abbrev: 'PALM' },
-  pdomain:  { range: [700, 760],  color: '#4a8a7a', name: 'Processivity domain',   abbrev: 'P-DOM' },
-  fingers:  { range: [761, 1020], color: '#5b7f99', name: 'Fingers subdomain',     abbrev: 'FNG' },
-  thumb:    { range: [1021,1190], color: '#8b7ba8', name: 'Thumb subdomain',       abbrev: 'THM' },
-  inactpol: { range: [1191,1900], color: '#7a6a8a', name: 'Inactive Pol module',   abbrev: 'INACT' },
-  ctd:      { range: [1901,2286], color: '#b8a04a', name: 'C-terminal domain',     abbrev: 'CTD' },
+  ntd:      { range: [1, 222],    color: '#c4a47a', name: 'N-terminal domain',     abbrev: 'NTD' },
+  exo:      { range: [223, 517],  color: '#b85c5c', name: "3'\u21925' Exonuclease", abbrev: 'EXO' },
+  palm:     { range: [518, 870],  color: '#6b8e6b', name: 'Palm subdomain',        abbrev: 'PALM' },
+  pdomain:  { range: [640, 760],  color: '#4a8a7a', name: 'Processivity domain',   abbrev: 'P-DOM' },
+  fingers:  { range: [870, 1020], color: '#5b7f99', name: 'Fingers subdomain',     abbrev: 'FNG' },
+  thumb:    { range: [1020,1189], color: '#8b7ba8', name: 'Thumb subdomain',       abbrev: 'THM' },
+  inactpol: { range: [1190,1900], color: '#7a6a8a', name: 'Inactive Pol module',   abbrev: 'INACT' },
+  ctd:      { range: [1900,2286], color: '#b8a04a', name: 'C-terminal domain',     abbrev: 'CTD' },
 };
 
 export const DOMAIN_ORDER = ['ntd','exo','palm','pdomain','fingers','thumb','inactpol','ctd'];

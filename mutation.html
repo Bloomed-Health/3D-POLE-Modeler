@@ -435,7 +435,14 @@ import { initProgress, initSidebarToggle } from './js/shared-ui.js';
 const setProgress = initProgress();
 
 setProgress(10, 'Loading pipeline data\u2026');
-await loadMutationPipelineData('./data').catch(() => null);
+const pipelineResult = await loadMutationPipelineData('./data');
+
+if (!pipelineResult.loaded) {
+  const notice = document.createElement('div');
+  notice.className = 'fallback-notice';
+  notice.textContent = 'Pipeline data unavailable. Displaying hardcoded default values.';
+  document.body.appendChild(notice);
+}
 
 setProgress(20, 'Building molecular models\u2026');
 

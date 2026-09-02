@@ -11,8 +11,8 @@
 <link rel="stylesheet" href="css/style.css">
 
 <!-- Mol* -->
-<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/molstar@4.5.0/build/viewer/molstar.css" />
-<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/molstar@4.5.0/build/viewer/molstar.js"></script>
+<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/molstar@4.5.0/build/viewer/molstar.css" integrity="sha384-xZVk2Aim21bclRZhTxMctn6Dadxk5MbwgPW/dGZVMAS2hcx3DmKrAdG7LKPsluNG" crossorigin="anonymous" />
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/molstar@4.5.0/build/viewer/molstar.js" integrity="sha384-r7rgEIJtWBqVcKdSz0Jt7Ro4eKCigSmpfEOKHQ1c8HJXySCFOzL5BG3SR1T+HgWh" crossorigin="anonymous"></script>
 
 </head>
 <body class="variant-page">
@@ -135,7 +135,7 @@
     <div class="panel" id="signature-panel" style="display:none">
       <h3>Mutational signature attribution</h3>
       <p style="font-size:10px;color:var(--ink-faint);margin-bottom:8px">
-        Estimated contribution of POLE-associated SBS signatures (COSMIC v3.4)
+        Literature-derived cohort averages (COSMIC v3.4). Not patient-specific decomposition.
       </p>
       <div class="sig-chart" id="sig-chart"></div>
     </div>
@@ -147,9 +147,10 @@
 
     <div class="panel" id="ddg-panel" style="display:none">
       <h3>Stability prediction</h3>
-      <div id="ddg-value" style="font-family:'JetBrains Mono',monospace;font-size:14px;margin-bottom:6px"></div>
+      <span class="provenance-chip provenance-chip--warn" style="margin-bottom:6px">Heuristic estimate</span>
+      <div id="ddg-value" style="font-family:'JetBrains Mono',monospace;font-size:14px;margin-bottom:6px;margin-top:6px"></div>
       <p style="font-size:9px;color:var(--ink-faint);line-height:1.5">
-        Heuristic estimate. For validated &Delta;&Delta;G, use FoldX or Rosetta with PDB 9F6D coordinates.
+        Thermodynamic stability (&Delta;&Delta;G) is not the primary observable for POLE pathogenicity. The mechanism is kinetic (pol&harr;exo partitioning), not thermodynamic. For validated &Delta;&Delta;G, use FoldX or Rosetta with PDB 9F6D coordinates.
       </p>
     </div>
 
@@ -467,6 +468,15 @@ function showClassification(v) {
   const panel = document.getElementById('classification-panel');
   panel.style.display = '';
 
+  // Scope indicator (add once)
+  if (!panel.querySelector('.provenance-chip')) {
+    const scope = document.createElement('div');
+    scope.style.cssText = 'margin-bottom:10px';
+    scope.innerHTML = `<span class="provenance-chip provenance-chip--info">Gene-specific framework</span>
+      <p style="font-size:9px;color:var(--ink-faint);margin-top:4px;line-height:1.4">Scope: germline exonuclease-domain variants in POLE/POLD1. PVS1 excluded. Not a ClinGen VCEP specification.</p>`;
+    panel.insertBefore(scope, panel.querySelector('h3'));
+  }
+
   const badge = document.getElementById('acmg-badge');
   const cls = v.classification.class;
   badge.textContent = cls.replace('_', ' ');
@@ -510,6 +520,13 @@ function showSignatures(v) {
 
   const chart = document.getElementById('sig-chart');
   chart.innerHTML = '';
+
+  // Provenance header
+  const header = document.createElement('div');
+  header.style.cssText = 'margin-bottom:8px';
+  header.innerHTML = `<span class="provenance-chip provenance-chip--warn">Literature-derived cohort averages</span>
+    <p style="font-size:9px;color:var(--ink-faint);margin-top:4px;line-height:1.4">Weights reflect published cohort-level signature decompositions, not patient-specific analysis. SBS14 reflects concurrent POLE + MMR deficiency. Presence alone does not establish POLE pathogenicity.</p>`;
+  chart.appendChild(header);
 
   for (const [sig, weight] of Object.entries(v.signatures)) {
     const row = document.createElement('div');

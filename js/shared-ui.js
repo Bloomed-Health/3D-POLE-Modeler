@@ -64,5 +64,11 @@ export async function initProvenanceFooter() {
     const data = await loadPoleData();
     const el = document.querySelector('[data-pole-provenance]');
     if (el) el.textContent = provenanceFooter(data);
-  } catch (e) { /* degrade silently if canonical JSON unavailable */ }
+  } catch (e) {
+    const el = document.querySelector('[data-pole-provenance]');
+    if (el) {
+      el.textContent = 'Provenance data unavailable';
+      el.style.color = '#e67e22';
+    }
+  }
 }

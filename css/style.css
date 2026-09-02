@@ -1145,16 +1145,6 @@ footer .ax b { color: var(--ink); font-weight: 500; }
 .repr-selector button:hover { border-color: var(--accent); color: var(--ink); }
 .repr-selector button.active { background: var(--accent-dim); border-color: var(--accent); color: var(--accent); }
 
-/* Chain info cards */
-.chain-info {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 10px;
-  line-height: 1.6;
-  color: var(--ink-dim);
-  padding: 6px 0;
-}
-.chain-info .chain-label { color: var(--accent); font-weight: 500; }
-
 /* ---- variant.html: Variant viewer styles ---- */
 
 /* Constrain Mol* expanded layout to the canvas container, not the viewport */
@@ -1242,6 +1232,51 @@ footer .ax b { color: var(--ink); font-weight: 500; }
 .evidence-table .code { color: var(--accent); font-weight: 600; }
 .evidence-table .lr { color: var(--ink); font-weight: 500; }
 .evidence-table .citation { font-size: 8.5px; color: var(--ink-faint); line-height: 1.4; }
+
+/* ---- Loading error state (Phase 6) ---- */
+
+/* ---- Provenance chips ---- */
+
+.provenance-chip {
+  display: inline-block;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 8.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 2px;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.provenance-chip--warn {
+  color: #e67e22;
+  background: rgba(230, 126, 34, 0.1);
+  border: 1px solid rgba(230, 126, 34, 0.25);
+}
+
+.provenance-chip--info {
+  color: #5ab8d8;
+  background: rgba(90, 184, 216, 0.1);
+  border: 1px solid rgba(90, 184, 216, 0.25);
+}
+
+/* Fallback notice banner for missing pipeline data */
+.fallback-notice {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 300;
+  background: rgba(230, 126, 34, 0.12);
+  border-bottom: 1px solid rgba(230, 126, 34, 0.3);
+  color: #e67e22;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-align: center;
+  padding: 6px 16px;
+}
 
 /* ---- Loading error state (Phase 6) ---- */
 

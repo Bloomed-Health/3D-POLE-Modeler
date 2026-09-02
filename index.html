@@ -47,12 +47,13 @@
     </a>
     <div class="panel">
       <h3>Functional domains <span class="num">N &rarr; C</span></h3>
+      <p style="font-size:8.5px;color:var(--ink-faint);margin-bottom:8px;line-height:1.4">Boundaries are schematic (illustrative); not derived from DSSP</p>
 
       <div class="domain" data-domain="ntd" role="button" aria-label="Focus N-terminal domain">
         <div class="swatch" style="background:var(--c-ntd)"></div>
         <div>
           <div class="name">N-terminal domain</div>
-          <div class="range">res. 1&ndash;280</div>
+          <div class="range">res. 1&ndash;222</div>
           <div class="desc">Structural scaffolding region preceding the catalytic core. Contains residues affected by the ultra-rare c.138del germline truncation.</div>
         </div>
         <span class="range">NTD</span>
@@ -62,7 +63,7 @@
         <div class="swatch" style="background:var(--c-exo)"></div>
         <div>
           <div class="name">3&prime;&rarr;5&prime; Exonuclease</div>
-          <div class="range">res. 268&ndash;471</div>
+          <div class="range">res. 223&ndash;517</div>
           <div class="desc">Proofreading domain that excises misincorporated nucleotides. Contains catalytic residues D275, E277, D368 (ExoI/II motifs) coordinating two divalent metal ions; D462 (ExoIII, estimated) completes the DEDDy carboxylate set. Primary site of cancer-driving POLE mutations.</div>
         </div>
         <span class="range">EXO</span>
@@ -72,7 +73,7 @@
         <div class="swatch" style="background:var(--c-palm)"></div>
         <div>
           <div class="name">Palm subdomain</div>
-          <div class="range">res. 600&ndash;870</div>
+          <div class="range">res. 518&ndash;870</div>
           <div class="desc">Houses the polymerase active site. Conserved aspartate carboxylates (D640, D642 motif A; D860 motif C) coordinate two Mg²⁺ ions for phosphodiester bond formation via the two-metal-ion catalytic mechanism.</div>
         </div>
         <span class="range">PALM</span>
@@ -82,7 +83,7 @@
         <div class="swatch" style="background:var(--c-pdomain)"></div>
         <div>
           <div class="name">Processivity (P) domain</div>
-          <div class="range">res. 700&ndash;760</div>
+          <div class="range">res. 640&ndash;760</div>
           <div class="desc">Pol&nbsp;&epsilon;-specific insertion between Palm and Fingers that distinguishes it from all other B-family polymerases. Houses the [4Fe-4S] iron-sulfur cluster (CysX motif) essential for polymerase activity, contacts the nascent duplex, and forms one of three PCNA contact surfaces.</div>
         </div>
         <span class="range">P-DOM</span>
@@ -102,7 +103,7 @@
         <div class="swatch" style="background:var(--c-thumb)"></div>
         <div>
           <div class="name">Thumb subdomain</div>
-          <div class="range">res. 1020&ndash;1190</div>
+          <div class="range">res. 1020&ndash;1189</div>
           <div class="desc">Helical bundle that grips the minor groove of the nascent duplex DNA product. Contacts extend ~8&nbsp;bp into the product duplex. The Thumb insertion (res.&nbsp;1102&ndash;1122) forms a second PCNA contact, contributing to the tripartite interface that makes Pol&nbsp;&epsilon;&ndash;PCNA resistant to displacement by Pol&nbsp;&delta; and FEN1.</div>
         </div>
         <span class="range">THM</span>
@@ -112,7 +113,7 @@
         <div class="swatch" style="background:var(--c-inactpol)"></div>
         <div>
           <div class="name">Inactive Pol module</div>
-          <div class="range">res. 1198&ndash;1900</div>
+          <div class="range">res. 1190&ndash;1900</div>
           <div class="desc">Non-catalytic B-family polymerase fold (the &ldquo;Pol2 module&rdquo; of Yuan et&nbsp;al. 2020) that retains the canonical Palm/Fingers/Thumb architecture but has lost all enzymatic activity. Serves as the structural platform for POLE2/3/4 accessory subunit assembly and bridges the catalytic N-terminal half to the CTD zinc-finger appendix.</div>
         </div>
         <span class="range">INACT</span>
@@ -286,8 +287,12 @@
         Pol &epsilon; performs <em style="color:var(--accent)">leading-strand synthesis</em> at the eukaryotic replisome, copying the template 3&prime;&rarr;5&prime; while extending the nascent strand 5&prime;&rarr;3&prime; at &gt;50 nt/s. Base-substitution error rate approaches <span style="font-family:'JetBrains Mono',monospace;font-size:10.5px">10&minus;7</span> per nucleotide incorporated.
       </p>
       <p style="font-family:'Fraunces',serif;font-size:12px;line-height:1.55;color:var(--ink-dim);margin-top:8px;font-weight:300">
-        The intrinsic 3&prime;&rarr;5&prime; exonuclease excises misincorporated nucleotides via an intramolecular shuttling mechanism, switching the primer terminus between the polymerase and exonuclease active sites separated by ~40&nbsp;&Aring; (Roske &amp; Yeeles 2024). The mismatch-recognition pathway proceeds through four structurally resolved states: post-insertion &rarr; arrest &rarr; frayed substrate &rarr; mismatch excision.
+        <b>Model 1 (Roske &amp; Yeeles 2024):</b> The intrinsic 3&prime;&rarr;5&prime; exonuclease excises misincorporated nucleotides via an intramolecular shuttling mechanism, switching the primer terminus between the polymerase and exonuclease active sites separated by ~40&nbsp;&Aring; (measured from Roske &amp; Yeeles 2024 cryo-EM structures; not computed from this schematic model&rsquo;s coordinates). The mismatch-recognition pathway proceeds through four structurally resolved states: post-insertion &rarr; arrest &rarr; frayed substrate &rarr; mismatch excision.
       </p>
+      <p style="font-family:'Fraunces',serif;font-size:12px;line-height:1.55;color:var(--ink-dim);margin-top:8px;font-weight:300">
+        <b>Model 2 (Wang et al. 2025):</b> An alternative pathway proposes that the primer terminus can be transferred to the exonuclease site through a different conformational route, potentially involving partial strand separation rather than full intramolecular threading. The relative contributions of these two pathways remain an active area of investigation.
+      </p>
+      <div style="margin-top:6px"><span class="provenance-chip provenance-chip--info">Active scientific dispute (2025&ndash;2026)</span></div>
     </div>
 
     <div class="panel">
@@ -322,7 +327,7 @@
           <div class="name">F367S</div>
           <div class="loc">EXO &middot; germline PPAP</div>
         </div>
-        <div class="text">Adjacent to ExoIII catalytic residue D368. Germline variant associated with polymerase proofreading-associated polyposis.</div>
+        <div class="text">Adjacent to ExoII structural residue D368. Germline variant associated with polymerase proofreading-associated polyposis.</div>
       </div>
 
       <a href="variant.html" style="display:block;padding:8px 10px;margin-top:8px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--accent);text-decoration:none;text-align:center;border:1px dashed var(--line);border-radius:2px;transition:border-color .2s">
@@ -341,6 +346,8 @@
       <h3 style="font-size:10px;color:var(--ink-faint);letter-spacing:0.08em">References</h3>
       <div style="font-family:'JetBrains Mono',monospace;font-size:9px;line-height:1.65;color:var(--ink-faint)">
         Roske &amp; Yeeles, <em>NSMB</em> 31:1921 (2024)<br>
+        Wang et al. (2025) &mdash; alternative proofreading pathway<br>
+        Roske &amp; Yeeles, <em>PNAS</em> (2026) &mdash; reply to Wang et al.<br>
         He et al., <em>Nat Commun</em> 15:7847 (2024)<br>
         Mur et al., <em>Genome Med</em> 15:85 (2023)<br>
         Yuan et al., <em>Nat Commun</em> 11:3165 (2020)<br>

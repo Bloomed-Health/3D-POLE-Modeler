@@ -28,7 +28,7 @@
 const DEFAULT_DATA_URL = new URL('../../data/pole_canonical_data.json', import.meta.url);
 
 /** Statuses that count as fully verified. Everything else is provisional. */
-export const VERIFIED_STATUSES = new Set(['verified', 'verified_as_disputed']);
+const VERIFIED_STATUSES = new Set(['verified', 'verified_as_disputed']);
 
 let _data = null;      // resolved data object once loaded
 let _loading = null;   // in-flight promise (dedupes concurrent callers)
@@ -71,7 +71,7 @@ export function getLoadedData() {
 }
 
 /** Testing/util: clear the cache. */
-export function _resetCache() { _data = null; _loading = null; }
+function _resetCache() { _data = null; _loading = null; }
 
 /* ===========================================================================
  * Provenance / verification status
@@ -103,8 +103,6 @@ export function resolveSources(rec, data = getLoadedData()) {
 export const getMeta = (data = getLoadedData()) => data.meta || {};
 export const getReferences = (data = getLoadedData()) => data.references || {};
 export const getReferenceById = (key, data = getLoadedData()) => (data.references || {})[key] || null;
-export const getInterpretiveNotes = (data = getLoadedData()) => data.interpretive_notes || [];
-export const getVerificationTodo = (data = getLoadedData()) => data.verification_todo || [];
 
 /**
  * A compact provenance string for a UI footer, e.g.
@@ -130,9 +128,6 @@ export function getDomains({ includeProvisional = true } = {}, data = getLoadedD
   const ds = data.domains || [];
   return includeProvisional ? ds : ds.filter((d) => !isProvisional(d));
 }
-
-export const getDomainById = (id, data = getLoadedData()) =>
-  (data.domains || []).find((d) => d.id === id) || null;
 
 /** Every domain whose [start, end] span contains `pos` (null bounds skipped). */
 export function domainsForResidue(pos, data = getLoadedData()) {
@@ -164,32 +159,12 @@ export function getResidues({ role, motif, domainId } = {}, data = getLoadedData
   return rs;
 }
 
-export const getResidueById = (id, data = getLoadedData()) =>
-  (data.residues || []).find((r) => r.id === id) || null;
-
-/** Exonuclease (proofreading) catalytic / metal-coordinating carboxylates. */
-export const getExonucleaseCatalyticResidues = (data = getLoadedData()) =>
-  getResidues({ domainId: 'exonuclease' }, data).filter(
-    (r) => /catalytic|metal/i.test(r.role || '') && !/non-catalytic/i.test(r.role || '')
-  );
-
-/** Polymerase active-site aspartates (Motif A / Motif C). */
-export const getPolymeraseActiveSiteResidues = (data = getLoadedData()) =>
-  getResidues({ motif: 'Pol Motif' }, data);
 
 /* ===========================================================================
  * Metal sites ([4Fe-4S], two-metal pol site, exo site, Zn fingers)
  * ======================================================================== */
 
 export const getMetalSites = (data = getLoadedData()) => data.metal_sites || [];
-export const getMetalSiteById = (id, data = getLoadedData()) =>
-  (data.metal_sites || []).find((m) => m.id === id) || null;
-
-/** The [4Fe-4S] record (note: it carries a DISPUTED dual-location annotation). */
-export const getIronSulfurCluster = (data = getLoadedData()) => getMetalSiteById('fe4s4_cluster', data);
-
-export const getZincFingers = (data = getLoadedData()) =>
-  getMetalSites(data).filter((m) => /^zn_/.test(m.id || ''));
 
 /* ===========================================================================
  * Variants
@@ -227,18 +202,10 @@ export const getVariantByLegacy = (legacy, data = getLoadedData()) =>
 export const getVariantsByCodon = (codon, data = getLoadedData()) =>
   (data.variants || []).filter((v) => v.codon === codon);
 
-/** A variant is a somatic hotspot iff it has a somatic_role. */
-export const isSomaticHotspot = (v) => !!(v && v.somatic_role);
-
 /** True for truncating / loss-of-function protein consequences (frameshift, nonsense). */
-export function isTruncating(v) {
+function isTruncating(v) {
   const p = (v && v.hgvs_p) || '';
   return /fs|Ter|\*\d|\*\)/.test(p);
-}
-
-/** True if the variant has an active investigation status. */
-export function isUnderInvestigation(v) {
-  return v && v.investigation_status === 'active_hypothesis';
 }
 
 /** Canonical ClinVar URL for a variant, or null if no VCV id is recorded yet. */

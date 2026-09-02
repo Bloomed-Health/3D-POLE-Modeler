@@ -706,7 +706,7 @@ export class POLEViewer {
       { l: 'D275', offset: [-1.5, 0.8, 0.5] },
       { l: 'E277', offset: [-1.2, -0.6, 1.8] },
       { l: 'D368', offset: [0.8, 0.5, 2.0] },
-      { l: 'D462*', offset: [1.2, -0.8, 0.8] },
+      { l: 'D462', offset: [1.2, -0.8, 0.8] },
     ];
     for (const res of catRes) {
       const resPos = exoCenter.clone().add(new THREE.Vector3(...res.offset));
