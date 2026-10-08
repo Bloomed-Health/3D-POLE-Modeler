@@ -60,21 +60,15 @@ end
 
 Compute per-residue charge with sliding window smoothing.
 Output is normalized to [-1, 1] range.
+
+NOTE: Output is indexed sequentially by position in the `residues` vector, NOT by
+residue number. If PDB has gaps, the array indices will not correspond to residue
+numbers. Downstream consumers (e.g., compute_domain_summary) that slice by residue
+number must reindex to a gapless residue-number array first.
 """
 function compute_charge_map(residues::Vector{Residue3D}; window::Int=5)
-    n = length(residues)
     raw_charges = [amino_acid_charge(r.resname) for r in residues]
-
-    # Sliding window average
-    smoothed = zeros(Float64, n)
-    half_w = window ÷ 2
-    for i in 1:n
-        start_idx = max(1, i - half_w)
-        end_idx = min(n, i + half_w)
-        smoothed[i] = mean(raw_charges[start_idx:end_idx])
-    end
-
-    return smoothed
+    return sliding_window(raw_charges, window)
 end
 
 """
@@ -83,18 +77,8 @@ end
 Compute charge map from one-letter amino acid sequence string.
 """
 function compute_charge_from_sequence(sequence::AbstractString; window::Int=5)
-    n = length(sequence)
     raw_charges = [amino_acid_charge(c) for c in sequence]
-
-    smoothed = zeros(Float64, n)
-    half_w = window ÷ 2
-    for i in 1:n
-        start_idx = max(1, i - half_w)
-        end_idx = min(n, i + half_w)
-        smoothed[i] = mean(raw_charges[start_idx:end_idx])
-    end
-
-    return smoothed
+    return sliding_window(raw_charges, window)
 end
 
 """
@@ -130,14 +114,6 @@ function generate_synthetic_charge_map(
         end
     end
 
-    # Smooth
-    half_w = 2
-    smoothed = zeros(Float64, total_residues)
-    for i in 1:total_residues
-        start_idx = max(1, i - half_w)
-        end_idx = min(total_residues, i + half_w)
-        smoothed[i] = mean(charges[start_idx:end_idx])
-    end
-
-    return smoothed
+    # Smooth (window=5 gives half_w=2, matching original hard-coded value)
+    return sliding_window(charges, 5)
 end

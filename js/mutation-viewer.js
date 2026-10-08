@@ -24,6 +24,10 @@ import * as THREE from 'three';
 import { buildSSElement, segmentBySSType } from './ribbon.js';
 import { PAL as BASE_PAL } from './pole-palette.js';
 import { SCALE, makeRng, generateLinker, generateHelixPoints, generateStrandPoints, generateLoopPoints, generateDomainBackbone } from './pole-geometry.js';
+import { animateCamera } from './utils/animate.js';
+import { FPSCounter } from './utils/fps-counter.js';
+import { downloadScreenshot } from './utils/screenshot.js';
+import { attachCameraControls } from './utils/camera-controller.js';
 
 // ==================== PALETTE ====================
 
@@ -36,6 +40,10 @@ const PAL = {
 };
 
 // ==================== SEQUENCE DATA (defaults, overridden by pipeline JSON) ====================
+// WARNING: These codons are hardcoded placeholders and have NOT been derived from the
+// NM_006231.4 reference sequence. They should be replaced with codons programmatically
+// extracted from the reference transcript. The HGVS annotation is
+// NM_006231.4:c.138del → p.(Leu46Phefs*8). Override via pipeline JSON when available.
 
 let WT_CODONS = [
   { codon: 'GAG', aa: 'Glu', pos: 43 }, { codon: 'AGC', aa: 'Ser', pos: 44 },
@@ -50,7 +58,7 @@ let MUT_CODONS = [
   { codon: 'GAG', aa: 'Glu', pos: 43, status: 'normal' },
   { codon: 'AGC', aa: 'Ser', pos: 44, status: 'normal' },
   { codon: 'TCC', aa: 'Ser', pos: 45, status: 'normal' },
-  { codon: 'TGA', aa: 'Phe', pos: 46, status: 'frameshift' },
+  { codon: 'TTT', aa: 'Phe', pos: 46, status: 'frameshift' },
   { codon: 'GGA', aa: 'Gly', pos: 47, status: 'frameshift' },
   { codon: 'GTT', aa: 'Val', pos: 48, status: 'frameshift' },
   { codon: 'GAG', aa: 'Glu', pos: 49, status: 'frameshift' },
@@ -187,7 +195,7 @@ export class MutationViewer {
   constructor(containerEl, tooltipEl) {
     this.container = containerEl;
     this.tooltipEl = tooltipEl;
-    this.autoRotate = true;
+    this.autoRotate = !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     this.isDragging = false;
     this.prevMouse = { x: 0, y: 0 };
     this.cameraTheta = -0.4;
@@ -196,9 +204,7 @@ export class MutationViewer {
     this.mode = 'comparison';
     this.cameraTarget = new THREE.Vector3(0, 0, 0);
     this.groups = {};
-    this.fpsFrames = 0;
-    this.fpsTime = 0;
-    this.fpsCallback = null;
+    this._fps = new FPSCounter();
     this._init();
   }
 
@@ -209,7 +215,6 @@ export class MutationViewer {
     this._buildDomainLossChart();
     this._buildDivider();
     this._setupControls();
-    this._setupTouch();
     this._startRenderLoop();
   }
 
@@ -217,7 +222,7 @@ export class MutationViewer {
     this.scene = new THREE.Scene();
     this.scene.fog = new THREE.FogExp2(PAL.bg, 0.003);
     this.camera = new THREE.PerspectiveCamera(40, 1, 0.1, 2000);
-    this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
+    this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     this.renderer.outputColorSpace = THREE.SRGBColorSpace;
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -556,93 +561,8 @@ export class MutationViewer {
 
   _setupControls() {
     const el = this.renderer.domElement;
-    this._shiftDown = false;
-    el.addEventListener('pointerdown', (e) => {
-      this.isDragging = true;
-      this._shiftDown = e.shiftKey || e.button === 1;
-      this.prevMouse = { x: e.clientX, y: e.clientY };
-    });
-    window.addEventListener('pointerup', () => { this.isDragging = false; this._shiftDown = false; });
-    window.addEventListener('pointermove', (e) => {
-      if (!this.isDragging) return;
-      const dx = e.clientX - this.prevMouse.x;
-      const dy = e.clientY - this.prevMouse.y;
-      if (this._shiftDown || e.shiftKey) {
-        const panScale = this.cameraRadius * 0.002;
-        const rx = Math.cos(this.cameraTheta);
-        const rz = -Math.sin(this.cameraTheta);
-        this.cameraTarget.x -= dx * panScale * rx;
-        this.cameraTarget.z -= dx * panScale * rz;
-        this.cameraTarget.y += dy * panScale;
-      } else {
-        this.cameraTheta -= dx * 0.005;
-        this.cameraPhi = Math.max(-1.2, Math.min(1.2, this.cameraPhi + dy * 0.005));
-      }
-      this.prevMouse = { x: e.clientX, y: e.clientY };
-      this._updateCamera();
-    });
-    el.addEventListener('wheel', (e) => {
-      e.preventDefault();
-      this.cameraRadius = Math.max(20, Math.min(200, this.cameraRadius + e.deltaY * 0.04));
-      this._updateCamera();
-    }, { passive: false });
+    attachCameraControls(this, el, { minRadius: 20, maxRadius: 200 });
     el.style.cursor = 'grab';
-  }
-
-  _setupTouch() {
-    const el = this.renderer.domElement;
-    let lastPinchDist = 0;
-
-    el.addEventListener('touchstart', e => {
-      e.preventDefault();
-      if (e.touches.length === 1) {
-        this.isDragging = true;
-        this.prevMouse = { x: e.touches[0].clientX, y: e.touches[0].clientY };
-      } else if (e.touches.length === 2) {
-        this.isDragging = false;
-        lastPinchDist = Math.hypot(
-          e.touches[0].clientX - e.touches[1].clientX,
-          e.touches[0].clientY - e.touches[1].clientY);
-      }
-    }, { passive: false });
-
-    let lastTwoFingerMid = null;
-    el.addEventListener('touchmove', e => {
-      e.preventDefault();
-      if (e.touches.length === 1 && this.isDragging) {
-        const dx = e.touches[0].clientX - this.prevMouse.x;
-        const dy = e.touches[0].clientY - this.prevMouse.y;
-        this.cameraTheta -= dx * 0.005;
-        this.cameraPhi = Math.max(-1.2, Math.min(1.2, this.cameraPhi + dy * 0.005));
-        this.prevMouse = { x: e.touches[0].clientX, y: e.touches[0].clientY };
-        this._updateCamera();
-      } else if (e.touches.length === 2) {
-        const dist = Math.hypot(
-          e.touches[0].clientX - e.touches[1].clientX,
-          e.touches[0].clientY - e.touches[1].clientY);
-        const delta = lastPinchDist - dist;
-        this.cameraRadius = Math.max(20, Math.min(200, this.cameraRadius + delta * 0.1));
-        lastPinchDist = dist;
-
-        // Two-finger pan
-        const midX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
-        const midY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
-        if (lastTwoFingerMid) {
-          const panDx = midX - lastTwoFingerMid.x;
-          const panDy = midY - lastTwoFingerMid.y;
-          const panScale = this.cameraRadius * 0.002;
-          const rx = Math.cos(this.cameraTheta);
-          const rz = -Math.sin(this.cameraTheta);
-          this.cameraTarget.x -= panDx * panScale * rx;
-          this.cameraTarget.z -= panDx * panScale * rz;
-          this.cameraTarget.y += panDy * panScale;
-        }
-        lastTwoFingerMid = { x: midX, y: midY };
-        this._updateCamera();
-      }
-    }, { passive: false });
-
-    el.addEventListener('touchend', () => { this.isDragging = false; lastTwoFingerMid = null; });
   }
 
   _updateCamera() {
@@ -673,12 +593,7 @@ export class MutationViewer {
       }
 
       // FPS counter
-      this.fpsFrames++;
-      if (t - this.fpsTime >= 1) {
-        if (this.fpsCallback) this.fpsCallback(this.fpsFrames);
-        this.fpsFrames = 0;
-        this.fpsTime = t;
-      }
+      this._fps.tick(t);
 
       this.renderer.render(this.scene, this.camera);
       requestAnimationFrame(tick);
@@ -699,36 +614,14 @@ export class MutationViewer {
   setAutoRotate(on) { this.autoRotate = on; }
 
   resetView() {
-    const s = { th: this.cameraTheta, ph: this.cameraPhi, r: this.cameraRadius,
-      tx: this.cameraTarget.x, ty: this.cameraTarget.y, tz: this.cameraTarget.z };
-    const e = { th: -0.4, ph: 0.2, r: 60, tx: 0, ty: 0, tz: 0 };
-    const t0 = performance.now();
-    const animate = () => {
-      const p = Math.min(1, (performance.now() - t0) / 600);
-      const ease = p < 0.5 ? 2*p*p : 1 - Math.pow(-2*p+2, 2) / 2;
-      this.cameraTheta = s.th + (e.th - s.th) * ease;
-      this.cameraPhi = s.ph + (e.ph - s.ph) * ease;
-      this.cameraRadius = s.r + (e.r - s.r) * ease;
-      this.cameraTarget.set(
-        s.tx + (e.tx - s.tx) * ease, s.ty + (e.ty - s.ty) * ease, s.tz + (e.tz - s.tz) * ease);
-      this._updateCamera();
-      if (p < 1) requestAnimationFrame(animate);
-    };
-    animate();
+    animateCamera(this, { th: -0.4, ph: 0.2, r: 60, tx: 0, ty: 0, tz: 0 }, 600);
   }
 
   takeScreenshot() {
-    this.renderer.render(this.scene, this.camera);
-    const dataURL = this.renderer.domElement.toDataURL('image/png');
-    const a = document.createElement('a');
-    a.href = dataURL;
-    a.download = `POLE-mutation-${Date.now()}.png`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
+    downloadScreenshot(this.renderer, this.scene, this.camera, 'POLE-mutation');
   }
 
-  setFPSCallback(cb) { this.fpsCallback = cb; }
+  setFPSCallback(cb) { this._fps.setCallback(cb); }
 
   static getSequenceData() { return { wildtype: WT_CODONS, mutant: MUT_CODONS }; }
 

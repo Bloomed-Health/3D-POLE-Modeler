@@ -103,20 +103,20 @@
     <div class="panel">
       <h3>Representation</h3>
       <div class="repr-selector" id="repr-selector">
-        <button class="active" data-repr="cartoon">Cartoon</button>
-        <button data-repr="ball_and_stick">Ball &amp; Stick</button>
-        <button data-repr="surface">Surface</button>
+        <button class="control-btn active" data-repr="cartoon">Cartoon</button>
+        <button class="control-btn" data-repr="ball_and_stick">Ball &amp; Stick</button>
+        <button class="control-btn" data-repr="surface">Surface</button>
       </div>
     </div>
 
     <div class="panel">
       <h3>Color mode</h3>
       <div class="color-mode-selector" id="color-mode">
-        <button class="active" data-mode="plddt" style="border-color:#65CBF3;color:#65CBF3">pLDDT</button>
-        <button data-mode="domain">Domain</button>
-        <button data-mode="chain">Chain</button>
-        <button data-mode="element">Element</button>
-        <button data-mode="secondary">Secondary structure</button>
+        <button class="control-btn active" data-mode="plddt" style="border-color:#65CBF3;color:#65CBF3">pLDDT</button>
+        <button class="control-btn" data-mode="domain">Domain</button>
+        <button class="control-btn" data-mode="chain">Chain</button>
+        <button class="control-btn" data-mode="element">Element</button>
+        <button class="control-btn" data-mode="secondary">Secondary structure</button>
       </div>
     </div>
 
@@ -206,10 +206,10 @@
     <div class="panel">
       <h3>Tools</h3>
       <div class="tool-buttons">
-        <button class="tool-btn" id="btn-screenshot" title="Export PNG">Screenshot</button>
-        <button class="tool-btn" id="btn-measure" title="Toggle distance measurement">Measure</button>
-        <button class="tool-btn" id="btn-reset" title="Reset camera">Reset view</button>
-        <button class="tool-btn" id="btn-molstar-ui" title="Show Mol* controls">Mol* Controls</button>
+        <button class="control-btn tool-btn" id="btn-screenshot" title="Export PNG">Screenshot</button>
+        <button class="control-btn tool-btn" id="btn-measure" title="Toggle distance measurement">Measure</button>
+        <button class="control-btn tool-btn" id="btn-reset" title="Reset camera">Reset view</button>
+        <button class="control-btn tool-btn" id="btn-molstar-ui" title="Show Mol* controls">Mol* Controls</button>
       </div>
     </div>
 
@@ -343,22 +343,10 @@
   </footer>
 </div>
 
-<script>
-// ==================== DOMAIN DEFINITIONS ====================
-
-// Domain ranges: Atlas of Genetics / UniProt convention (matches pole_canonical_data.json)
-const DOMAINS = {
-  ntd:      { range: [1, 222],    color: '#c4a47a', name: 'N-terminal domain' },
-  exo:      { range: [223, 517],  color: '#b85c5c', name: "3'→5' Exonuclease" },
-  palm:     { range: [518, 870],  color: '#6b8e6b', name: 'Palm subdomain' },
-  pdomain:  { range: [640, 760],  color: '#4a8a7a', name: 'Processivity domain' },
-  fingers:  { range: [870, 1020], color: '#5b7f99', name: 'Fingers subdomain' },
-  thumb:    { range: [1020,1189], color: '#8b7ba8', name: 'Thumb subdomain' },
-  inactpol: { range: [1190,1900], color: '#7a6a8a', name: 'Inactive Pol module' },
-  ctd:      { range: [1900,2286], color: '#b8a04a', name: 'C-terminal domain' },
-};
-
-const DOMAIN_ORDER = ['ntd','exo','palm','pdomain','fingers','thumb','inactpol','ctd'];
+<script type="module">
+import { DOMAINS, DOMAIN_ORDER } from './js/data/domainConfig.js';
+import { initSidebarToggle, initProvenanceFooter } from './js/shared-ui.js';
+import { initKeyboardShortcuts } from './js/utils/keyboard.js';
 
 // ==================== STATE ====================
 
@@ -584,39 +572,25 @@ document.getElementById('btn-molstar-ui').addEventListener('click', () => {
 });
 
 // Sidebar toggle (mobile)
-import('./js/shared-ui.js').then(({ initSidebarToggle }) => initSidebarToggle());
+initSidebarToggle();
 
 // Keyboard shortcuts
-document.addEventListener('keydown', e => {
-  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
-  switch (e.key.toLowerCase()) {
-    case 'r': {
-      const rotToggle = document.querySelector('[data-toggle="rotate"]');
-      rotToggle.click();
-      break;
-    }
-    case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': {
-      const idx = parseInt(e.key) - 1;
-      if (idx < domainKeys.length) {
-        domainEls.forEach(d => d.classList.remove('active'));
-        domainEls[idx].classList.add('active');
-        focusDomain(domainKeys[idx]);
-      }
-      break;
-    }
-    case 's':
-      if (!e.ctrlKey && !e.metaKey) viewer?.plugin?.helpers?.viewportScreenshot?.download();
-      break;
-    case 'escape':
-      domainEls.forEach(d => d.classList.remove('active'));
-      viewer?.plugin?.canvas3d?.requestCameraReset();
-      break;
-  }
+initKeyboardShortcuts({
+  'r': { action: () => document.querySelector('[data-toggle="rotate"]').click() },
+  '1': { action: () => { if (0 < domainKeys.length) { domainEls.forEach(d => d.classList.remove('active')); domainEls[0].classList.add('active'); focusDomain(domainKeys[0]); } } },
+  '2': { action: () => { if (1 < domainKeys.length) { domainEls.forEach(d => d.classList.remove('active')); domainEls[1].classList.add('active'); focusDomain(domainKeys[1]); } } },
+  '3': { action: () => { if (2 < domainKeys.length) { domainEls.forEach(d => d.classList.remove('active')); domainEls[2].classList.add('active'); focusDomain(domainKeys[2]); } } },
+  '4': { action: () => { if (3 < domainKeys.length) { domainEls.forEach(d => d.classList.remove('active')); domainEls[3].classList.add('active'); focusDomain(domainKeys[3]); } } },
+  '5': { action: () => { if (4 < domainKeys.length) { domainEls.forEach(d => d.classList.remove('active')); domainEls[4].classList.add('active'); focusDomain(domainKeys[4]); } } },
+  '6': { action: () => { if (5 < domainKeys.length) { domainEls.forEach(d => d.classList.remove('active')); domainEls[5].classList.add('active'); focusDomain(domainKeys[5]); } } },
+  '7': { action: () => { if (6 < domainKeys.length) { domainEls.forEach(d => d.classList.remove('active')); domainEls[6].classList.add('active'); focusDomain(domainKeys[6]); } } },
+  '8': { action: () => { if (7 < domainKeys.length) { domainEls.forEach(d => d.classList.remove('active')); domainEls[7].classList.add('active'); focusDomain(domainKeys[7]); } } },
+  's': { noModifier: true, action: () => viewer?.plugin?.helpers?.viewportScreenshot?.download() },
+  'escape': { action: () => { domainEls.forEach(d => d.classList.remove('active')); viewer?.plugin?.canvas3d?.requestCameraReset(); } },
 });
-</script>
-<script type="module">
-  import { initProvenanceFooter } from './js/shared-ui.js';
-  initProvenanceFooter();
+
+// Provenance footer
+initProvenanceFooter();
 </script>
 
 </body>

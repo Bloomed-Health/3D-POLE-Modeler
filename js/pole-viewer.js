@@ -13,7 +13,7 @@
 //   Roske & Yeeles, Nat Struct Mol Biol 31:1921 (2024) — human Pol ε structures
 //   He, Wang, Yao, O'Donnell & Li, Nat Commun 15:7847 (2024) — human Pol ε–PCNA
 //   Mur et al., Genome Med 15:85 (2023) — POLE/POLD1 ACMG classification
-//   Yuan, Georgescu, Schauer, O'Donnell & Li, Nat Commun 11:3165 (2020) — yeast Pol ε
+//   Yuan, Georgescu, Schauer, O'Donnell & Li, Nat Commun 11:3156 (2020) — yeast Pol ε
 //   Robinson, Coorens et al., Nat Genet 53:1434 (2021) — normal-tissue mutation rates
 //   Hogg et al., Nat Struct Mol Biol 21:49 (2014) — S. cerevisiae Pol2 NTD (4M8O)
 //
@@ -28,6 +28,10 @@ import { buildSSElement, segmentBySSType } from './ribbon.js';
 import { DOMAINS as BASE_DOMAINS, DOMAIN_ORDER, MUTATIONS as BASE_MUTATIONS } from './data/domainConfig.js';
 import { PAL, COLOR_SCHEMES } from './pole-palette.js';
 import { SCALE, generateDomainBackbone, generateLinker } from './pole-geometry.js';
+import { animateCamera } from './utils/animate.js';
+import { FPSCounter } from './utils/fps-counter.js';
+import { downloadScreenshot } from './utils/screenshot.js';
+import { attachCameraControls } from './utils/camera-controller.js';
 
 
 // ==================== DOMAIN ARCHITECTURE ====================
@@ -38,7 +42,7 @@ const SCHEMATIC_EXTENSIONS = {
     header:'// NTD (1-280) // Structural scaffold',
     ss:[ {t:'H',n:14},{t:'L',n:6},{t:'E',n:7},{t:'L',n:4},{t:'E',n:6},{t:'L',n:5},{t:'H',n:18},{t:'L',n:5},{t:'E',n:8},{t:'L',n:4},{t:'E',n:7},{t:'L',n:6},{t:'H',n:12},{t:'L',n:8},{t:'H',n:10},{t:'L',n:5},{t:'E',n:6},{t:'L',n:4},{t:'H',n:16},{t:'L',n:7},{t:'H',n:10},{t:'L',n:8},{t:'E',n:5},{t:'L',n:6},{t:'H',n:8},{t:'L',n:9} ] },
   exo: { center:[-10,2,7], color:'exo',
-    header:"// EXO (268-471) // 3'\u21925' proofreading / D275/E277/D368",
+    header:"// EXO (268-471) // 3'\u21925' proofreading / D275/E277(ExoI) D368(ExoII,structural) D462(ExoIII)",
     ss:[ {t:'E',n:6},{t:'L',n:4},{t:'H',n:14},{t:'L',n:5},{t:'E',n:7},{t:'L',n:3},{t:'E',n:6},{t:'H',n:12},{t:'L',n:6},{t:'H',n:16},{t:'L',n:4},{t:'E',n:8},{t:'L',n:5},{t:'H',n:10},{t:'L',n:6},{t:'E',n:7},{t:'L',n:3},{t:'H',n:14},{t:'L',n:5},{t:'H',n:8},{t:'L',n:6},{t:'E',n:6},{t:'L',n:4},{t:'H',n:10},{t:'L',n:4} ] },
   palm: { center:[0,-1,0], color:'palm',
     header:'// PALM (600-870) // Catalytic core / motifs A(D640xD642) C(D860)',
@@ -71,6 +75,7 @@ const MUTATION_OFFSETS = {
   P286R: [2.5,1.2,2.0], V411L: [-2.8,-0.5,1.8], S297F: [0.5,2.8,-1.2],
   L424V: [-1.5,2.0,2.5], D287E: [3.0,-1.0,1.0], P436R: [-2.0,1.5,-1.5],
   M444K: [1.0,-2.0,2.5], S459F: [-3.0,0.5,-0.5], F367S: [2.0,0.8,-2.0],
+  A456P: [-1.0,-1.5,1.5],
 };
 let MUTATIONS = BASE_MUTATIONS.map(m => ({ ...m, offset: MUTATION_OFFSETS[m.id] || [0,0,0] }));
 
@@ -81,12 +86,12 @@ export class POLEViewer {
   constructor(containerEl, tooltipEl) {
     this.container = containerEl;
     this.tooltipEl = tooltipEl;
-    this.autoRotate = true;
+    this.autoRotate = !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     this.isDragging = false;
     this.prevMouse = { x:0, y:0 };
     this.cameraTheta = -0.3;
     this.cameraPhi = 0.15;
-    this.cameraRadius = 95;
+    this.cameraRadius = 155;
     this.hoverTarget = null;
     this.groups = {};
     this.domainMeshes = {};
@@ -104,9 +109,9 @@ export class POLEViewer {
     this.measureLabel = null;
     this.exoPolT = 0;
     this.exoPolPlaying = false;
-    this.fpsFrames = 0;
-    this.fpsTime = 0;
-    this.fpsCallback = null;
+    this._fps = new FPSCounter();
+    this.labelMinPriority = 2;
+    this._labelSprites = [];
 
     this._init();
   }
@@ -129,7 +134,6 @@ export class POLEViewer {
     this._buildExoPolPath();
     this._buildParticles();
     this._setupControls();
-    this._setupTouch();
     this._startRenderLoop();
   }
 
@@ -137,7 +141,7 @@ export class POLEViewer {
     this.scene = new THREE.Scene();
     this.scene.fog = new THREE.FogExp2(PAL.bg, 0.003);
     this.camera = new THREE.PerspectiveCamera(40,1,0.1,2000);
-    this.renderer = new THREE.WebGLRenderer({ antialias:true, alpha:true, preserveDrawingBuffer:true });
+    this.renderer = new THREE.WebGLRenderer({ antialias:true, alpha:true });
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
     this.renderer.outputColorSpace = THREE.SRGBColorSpace;
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -948,24 +952,11 @@ export class POLEViewer {
       const anchor = new THREE.Vector3(...dom.center);
       const labelPos = anchor.clone().add(new THREE.Vector3(off.dx, off.dy, off.dz));
 
-      // Domain abbreviated label -high priority
-      const label = this._spriteLabel(dom.abbrev, '#d0d8e0', hex);
+      const label = this._spriteLabel(dom.abbrev, '#e8edf2', hex, 0, dom.range[0] + '\u2013' + dom.range[1]);
       label.position.copy(labelPos);
       label.userData.labelPriority = 3;
       this.groups.labels.add(label);
-
-      // Leader line from label down to domain center
       this.groups.labels.add(this._leaderLine(labelPos, anchor, col));
-
-      // Domain header comment -positioned above the abbreviation
-      const header = this._spriteLabel(
-        `// ${dom.abbrev} (${dom.range[0]}-${dom.range[1]})`,
-        hex, hex, 320
-      );
-      header.scale.set(10, 2.5, 1);
-      header.position.copy(labelPos.clone().add(new THREE.Vector3(0, 3.2, 0)));
-      header.userData.labelPriority = 1;
-      this.groups.labels.add(header);
     }
 
     const asAnchor = this.activeSitePos.clone();
@@ -1008,116 +999,92 @@ export class POLEViewer {
     const geo = new THREE.BufferGeometry().setFromPoints([from, to]);
     const mat = new THREE.LineDashedMaterial({
       color, dashSize: 0.3, gapSize: 0.2,
-      transparent: true, opacity: 0.25
+      transparent: true, opacity: 0.45
     });
     const line = new THREE.Line(geo, mat);
     line.computeLineDistances();
     return line;
   }
 
-  _spriteLabel(text, textColor, accentColor, width) {
-    const w = width || 320, h = 96;
-    const dpr = 2; // HiDPI for crisp text
+  _spriteLabel(text, textColor, accentColor, width, sub) {
+    // Fixed screen-size label: text-fitted pill, constant pixel height regardless of zoom.
+    const dpr = 3, fs = 12, padX = 9, dot = 6, gap = 7, h = 22;
+    const font = '500 ' + fs + 'px "JetBrains Mono", ui-monospace, monospace';
+    const subFont = '400 ' + fs + 'px "JetBrains Mono", ui-monospace, monospace';
+    const m = document.createElement('canvas').getContext('2d');
+    m.font = font; const tw = m.measureText(text).width;
+    let sw = 0; if (sub) { m.font = subFont; sw = m.measureText(sub).width + 9; }
+    const w = Math.ceil(padX + dot + gap + tw + sw + padX);
     const c = document.createElement('canvas');
     c.width = w * dpr; c.height = h * dpr;
     const ctx = c.getContext('2d');
     ctx.scale(dpr, dpr);
-    ctx.clearRect(0,0,w,h);
-    ctx.fillStyle = 'rgba(8,11,17,0.9)';
-    ctx.fillRect(2,18,w-4,48);
-    ctx.fillStyle = accentColor;
-    ctx.fillRect(2,18,5,48);
-    ctx.font = '600 24px "JetBrains Mono", monospace';
-    ctx.fillStyle = textColor;
+    const r = 5;
+    ctx.beginPath(); ctx.roundRect(0.5, 0.5, w - 1, h - 1, r);
+    ctx.fillStyle = 'rgba(14,18,24,0.9)'; ctx.fill();
+    ctx.globalAlpha = 0.6; ctx.strokeStyle = accentColor; ctx.lineWidth = 1; ctx.stroke();
+    ctx.globalAlpha = 1;
+    ctx.beginPath(); ctx.arc(padX + dot / 2, h / 2, dot / 2, 0, Math.PI * 2);
+    ctx.fillStyle = accentColor; ctx.fill();
     ctx.textBaseline = 'middle';
-    ctx.fillText(text,18,42);
-    ctx.strokeStyle = accentColor;
-    ctx.lineWidth = 1.5;
-    ctx.beginPath(); ctx.moveTo(0,18); ctx.lineTo(14,10); ctx.stroke();
+    ctx.font = font; ctx.fillStyle = '#eef2f5';
+    ctx.fillText(text, padX + dot + gap, h / 2 + 0.5);
+    if (sub) { ctx.font = subFont; ctx.fillStyle = '#93a0ad'; ctx.fillText(sub, padX + dot + gap + tw + 9, h / 2 + 0.5); }
     const tex = new THREE.CanvasTexture(c);
     tex.colorSpace = THREE.SRGBColorSpace;
-    const sprite = new THREE.Sprite(
-      new THREE.SpriteMaterial({ map:tex, transparent:true, depthTest:true, depthWrite:false }));
-    sprite.scale.set(9,2.8,1);
+    tex.anisotropy = 4;
+    const sprite = new THREE.Sprite(new THREE.SpriteMaterial({
+      map: tex, transparent: true, depthTest: false, depthWrite: false, sizeAttenuation: false, fog: false }));
+    sprite.renderOrder = 20;
     sprite.userData.labelPriority = 0;
     sprite.userData.baseOpacity = 1;
+    sprite.userData.pxW = w; sprite.userData.pxH = h;
+    sprite.material.opacity = 0;
+    this._labelSprites.push(sprite);
     return sprite;
+  }
+
+  setLabelDensity(level) {
+    this.labelMinPriority = ({ essential: 3, standard: 2, all: 0 })[level] ?? 2;
   }
 
   // ==================== LABEL OVERLAP CULLING ====================
 
   _updateLabelVisibility() {
-    if (!this.groups.labels || !this.groups.labels.visible) return;
-
-    const labels = [];
-    this.groups.labels.children.forEach(s => {
-      if (s.isSprite) labels.push(s);
-    });
-    // Also include labels from other visible groups
-    for (const gk of ['exoPolPath', 'zincMotifs', 'fesCluster', 'exoSite', 'accessory', 'pcna']) {
-      if (this.groups[gk] && this.groups[gk].visible) {
-        this.groups[gk].children.forEach(s => {
-          if (s.isSprite) labels.push(s);
-        });
-      }
-    }
-    if (labels.length === 0) return;
-
-    const w2 = this.renderer.domElement.width / 2;
-    const h2 = this.renderer.domElement.height / 2;
-
-    // Project each label to screen space
-    const projected = [];
+    const el = this.renderer.domElement;
+    const W = el.clientWidth, H = el.clientHeight;
+    if (!W || !H) return;
+    const P11 = this.camera.projectionMatrix.elements[5];
+    const labelsOn = !this.groups.labels || this.groups.labels.visible;
+    const minP = this.labelMinPriority ?? 0;
     const v = new THREE.Vector3();
-    for (const s of labels) {
-      v.setFromMatrixPosition(s.matrixWorld);
-      v.project(this.camera);
-      // Convert NDC (-1..1) to pixel coords
-      projected.push({
-        sprite: s,
-        x: (v.x + 1) * w2,
-        y: (-v.y + 1) * h2,
-        z: v.z,
-        priority: s.userData.labelPriority || 0,
-        baseOpacity: s.userData.baseOpacity || 1,
-      });
+    const items = [];
+    for (const s of this._labelSprites) {
+      if (!s.parent) continue;
+      const ls = this.labelScale || 1;
+      const sy = 2 * s.userData.pxH * ls / (P11 * H);
+      s.scale.set(sy * s.userData.pxW / s.userData.pxH, sy, 1);
+      let vis = true;
+      for (let p = s.parent; p; p = p.parent) if (!p.visible) { vis = false; break; }
+      const meas = !!s.userData.isMeasure;
+      const pr = s.userData.labelPriority || 0;
+      if (!vis || (!meas && (!labelsOn || pr < minP))) { s.visible = false; s.material.opacity = 0; continue; }
+      v.setFromMatrixPosition(s.matrixWorld).project(this.camera);
+      if (v.z > 1 || v.z < -1) { s.visible = false; continue; }
+      items.push({ s, x: (v.x + 1) * W / 2, y: (-v.y + 1) * H / 2, z: v.z,
+        pr: meas ? 99 : pr, hw: s.userData.pxW * ls / 2 + 4, hh: s.userData.pxH * ls / 2 + 3 });
     }
-
-    // Sort: highest priority first, then closest to camera (lower z)
-    projected.sort((a, b) => b.priority - a.priority || a.z - b.z);
-
-    // Check overlap -each label occupies a screen-space rect
+    items.sort((a, b) => b.pr - a.pr || a.z - b.z);
     const placed = [];
-    const LABEL_W = 130; // approximate half-width in pixels
-    const LABEL_H = 35; // approximate half-height in pixels
-
-    for (const p of projected) {
-      // Behind camera -hide
-      if (p.z > 1 || p.z < -1) {
-        p.sprite.material.opacity = 0;
-        p.sprite.visible = false;
-        continue;
-      }
-
-      // Check overlap with already-placed labels
-      let overlapping = false;
+    for (const p of items) {
+      let ov = false;
       for (const q of placed) {
-        if (Math.abs(p.x - q.x) < LABEL_W && Math.abs(p.y - q.y) < LABEL_H) {
-          overlapping = true;
-          break;
-        }
+        if (Math.abs(p.x - q.x) < p.hw + q.hw && Math.abs(p.y - q.y) < p.hh + q.hh) { ov = true; break; }
       }
-
-      const targetOpacity = overlapping ? 0 : p.baseOpacity;
-      // Smooth transition
-      const current = p.sprite.material.opacity;
-      const newOpacity = current + (targetOpacity - current) * 0.15;
-      p.sprite.material.opacity = newOpacity;
-      p.sprite.visible = newOpacity > 0.02;
-
-      if (!overlapping) {
-        placed.push(p);
-      }
+      const o = p.s.material.opacity + ((ov ? 0 : 1) - p.s.material.opacity) * 0.18;
+      p.s.material.opacity = o;
+      p.s.visible = o > 0.02;
+      if (!ov) placed.push(p);
     }
   }
 
@@ -1128,23 +1095,26 @@ export class POLEViewer {
     this.groups.hbonds.visible = true;
     this.scene.add(this.groups.hbonds);
 
+    // Batch all helix H-bond lines per domain into a single LineSegments call
     for (const key of DOMAIN_ORDER) {
       const bb = this.backboneCache[key];
       if (!bb) continue;
       const domColor = PAL[DOMAINS[key].color];
+      const points = [];
 
       for (let i = 0; i < bb.length - 4; i++) {
         if (bb[i].ss === 'H' && bb[i+4].ss === 'H') {
-          const geo = new THREE.BufferGeometry().setFromPoints([bb[i].pos, bb[i+4].pos]);
-          const mat = new THREE.LineDashedMaterial({
-            color: domColor, dashSize:0.12, gapSize:0.1,
-            transparent:true, opacity:0.35
-          });
-          const line = new THREE.Line(geo, mat);
-          line.computeLineDistances();
-          this.groups.hbonds.add(line);
+          points.push(bb[i].pos, bb[i+4].pos);
         }
       }
+      if (points.length === 0) continue;
+
+      const geo = new THREE.BufferGeometry().setFromPoints(points);
+      const mat = new THREE.LineBasicMaterial({
+        color: domColor, transparent: true, opacity: 0.35
+      });
+      const lines = new THREE.LineSegments(geo, mat);
+      this.groups.hbonds.add(lines);
     }
   }
 
@@ -1155,17 +1125,18 @@ export class POLEViewer {
     this.groups.sheetHbonds.visible = true;
     this.scene.add(this.groups.sheetHbonds);
 
+    // Batch all beta-sheet H-bond lines per domain into a single LineSegments call
     for (const key of DOMAIN_ORDER) {
       const bb = this.backboneCache[key];
       if (!bb) continue;
       const segments = segmentBySSType(bb);
       const strands = segments.filter(s => s.type === 'E');
+      const sheetPts = [];
 
       // Find spatially proximal strand pairs
       for (let i = 0; i < strands.length; i++) {
         for (let j = i + 1; j < strands.length; j++) {
           const sA = strands[i], sB = strands[j];
-          // Compute midpoints
           const midA = new THREE.Vector3();
           for (let k = sA.startIdx; k <= sA.endIdx; k++) midA.add(bb[k].pos);
           midA.divideScalar(sA.endIdx - sA.startIdx + 1);
@@ -1175,27 +1146,23 @@ export class POLEViewer {
 
           if (midA.distanceTo(midB) > 8.0) continue;
 
-          // Draw inter-strand H-bonds every 2nd residue
           const lenA = sA.endIdx - sA.startIdx + 1;
           const lenB = sB.endIdx - sB.startIdx + 1;
           const nBonds = Math.min(lenA, lenB);
           for (let k = 0; k < nBonds; k += 2) {
             const idxA = sA.startIdx + k;
             const idxB = sB.startIdx + Math.min(k, lenB - 1);
-            const pA = bb[idxA].pos;
-            const pB = bb[idxB].pos;
-            const geo = new THREE.BufferGeometry().setFromPoints([pA, pB]);
-            const mat = new THREE.LineDashedMaterial({
-              color: PAL[DOMAINS[key].color],
-              dashSize: 0.12, gapSize: 0.1,
-              transparent: true, opacity: 0.3
-            });
-            const line = new THREE.Line(geo, mat);
-            line.computeLineDistances();
-            this.groups.sheetHbonds.add(line);
+            sheetPts.push(bb[idxA].pos, bb[idxB].pos);
           }
         }
       }
+
+      if (sheetPts.length === 0) continue;
+      const geo = new THREE.BufferGeometry().setFromPoints(sheetPts);
+      const mat = new THREE.LineBasicMaterial({
+        color: PAL[DOMAINS[key].color], transparent: true, opacity: 0.3
+      });
+      this.groups.sheetHbonds.add(new THREE.LineSegments(geo, mat));
     }
   }
 
@@ -1205,49 +1172,116 @@ export class POLEViewer {
     this.groups.exoPolPath = new THREE.Group();
     this.groups.exoPolPath.visible = true;
     this.scene.add(this.groups.exoPolPath);
-
-    const exoCenter = new THREE.Vector3(...DOMAINS.exo.center);
-    const palmCenter = this.activeSitePos.clone();
-    const mid = exoCenter.clone().add(palmCenter).multiplyScalar(0.5);
-    mid.y += 8;
-
-    const curve = new THREE.CatmullRomCurve3([exoCenter, mid, palmCenter]);
-    this.exoPolCurve = curve;
-
-    // Path tube
-    const tubeGeo = new THREE.TubeGeometry(curve, 60, 0.06, 6, false);
-    const tubeMat = new THREE.MeshPhysicalMaterial({
-      color:0x7abba8, transparent:true, opacity:0.3, roughness:0.5
+    // Schematic waypoints for the four mismatch-proofreading intermediates
+    // (Roske & Yeeles 2024: 9F6I post-insertion, 9F6J arrest, 9F6K frayed substrate, 9F6L mismatch excision).
+    // Handover runs Thumb -> P domain (frayed) -> back to Thumb (excision); positions are illustrative only.
+    const pol = this.activeSitePos.clone();
+    const exo = new THREE.Vector3(...DOMAINS.exo.center);
+    const pdom = new THREE.Vector3(...DOMAINS.pdomain.center);
+    const thumb = new THREE.Vector3(...DOMAINS.thumb.center);
+    const pts = [pol.clone(), pol.clone().lerp(thumb, 0.18), pdom.clone().add(new THREE.Vector3(0, 2.5, 0)), exo.clone()];
+    this.proofPts = pts;
+    this.proofCurve = new THREE.CatmullRomCurve3(pts, false, 'catmullrom', 0.5);
+    this.exoPolCurve = null; // legacy straight tween disabled
+    this._proofU = 0;
+    this.groups.exoPolPath.add(new THREE.Mesh(new THREE.TubeGeometry(this.proofCurve, 90, 0.07, 6, false),
+      new THREE.MeshPhysicalMaterial({ color:0x7abba8, transparent:true, opacity:0.35, roughness:0.5 })));
+    const names = ['1 \u00b7 Post-insertion', '2 \u00b7 Arrest', '3 \u00b7 Frayed substrate', '4 \u00b7 Mismatch excision'];
+    const pdb = ['9F6I', '9F6J', '9F6K', '9F6L'];
+    const offs = [[-5, -6, 4], [6, -7, 3], [6, 6, -4], [-6, 7, 5]];
+    this.proofNodes = [];
+    pts.forEach((p, i) => {
+      const node = new THREE.Mesh(new THREE.SphereGeometry(0.22, 12, 12),
+        new THREE.MeshBasicMaterial({ color:0x7abba8, transparent:true, opacity:0.7 }));
+      node.position.copy(p);
+      this.groups.exoPolPath.add(node);
+      this.proofNodes.push(node);
+      const lp = p.clone().add(new THREE.Vector3(...offs[i]));
+      const lbl = this._spriteLabel(names[i], '#e8edf2', '#7abba8', 0, pdb[i]);
+      lbl.position.copy(lp);
+      lbl.userData.labelPriority = 2;
+      this.groups.exoPolPath.add(lbl);
+      this.groups.exoPolPath.add(this._leaderLine(lp, p, new THREE.Color(0x7abba8)));
     });
-    this.groups.exoPolPath.add(new THREE.Mesh(tubeGeo, tubeMat));
-
-    // Animated sphere
-    this.exoPolSphere = new THREE.Mesh(
-      new THREE.SphereGeometry(0.3, 12, 12),
-      new THREE.MeshPhysicalMaterial({
-        color:0x7abba8, emissive:0x7abba8, emissiveIntensity:0.6,
-        roughness:0.2, metalness:0.4
-      })
-    );
-    this.exoPolSphere.position.copy(exoCenter);
+    this.exoPolSphere = new THREE.Mesh(new THREE.SphereGeometry(0.42, 16, 16),
+      new THREE.MeshPhysicalMaterial({ color:0xa6dccb, emissive:0x7abba8, emissiveIntensity:0.9, roughness:0.2, metalness:0.3 }));
+    this.exoPolSphere.position.copy(pts[0]);
     this.groups.exoPolPath.add(this.exoPolSphere);
-
-    // Endpoint labels
-    const exoLabel = this._spriteLabel('EXO site', '#b85c5c', '#b85c5c', 160);
-    exoLabel.scale.set(6, 1.5, 1);
-    exoLabel.position.copy(exoCenter.clone().add(new THREE.Vector3(0, 2, 0)));
-    this.groups.exoPolPath.add(exoLabel);
-
-    const polLabel = this._spriteLabel('POL site', '#6b8e6b', '#6b8e6b', 160);
-    polLabel.scale.set(6, 1.5, 1);
-    polLabel.position.copy(palmCenter.clone().add(new THREE.Vector3(0, 2, 0)));
-    this.groups.exoPolPath.add(polLabel);
-
-    // Distance annotation (Roske & Yeeles 2024: "almost 40 A" between active sites)
-    const distLabel = this._spriteLabel('~40 \u00c5 shuttling distance', '#7abba8', '#7abba8', 320);
-    distLabel.scale.set(10, 2, 1);
-    distLabel.position.copy(mid.clone().add(new THREE.Vector3(0, 2, 0)));
+    const mid = pol.clone().add(exo).multiplyScalar(0.5).add(new THREE.Vector3(0, -6, 0));
+    const distLabel = this._spriteLabel('Pol\u2194Exo ~40 \u00c5', '#e8edf2', '#7abba8', 0, 'cryo-EM, not model');
+    distLabel.position.copy(mid);
+    distLabel.userData.labelPriority = 1;
     this.groups.exoPolPath.add(distLabel);
+  }
+
+  setProofStep(i) {
+    if (!this.proofCurve) return;
+    const to = Math.max(0, Math.min(3, i)) / 3, from = this._proofU;
+    const t0 = performance.now();
+    this.proofNodes.forEach((n, k) => { n.scale.setScalar(k === i ? 1.8 : 1); n.material.opacity = k === i ? 1 : 0.55; });
+    const step = () => {
+      const p = Math.min(1, (performance.now() - t0) / 1100);
+      const e = p < 0.5 ? 2 * p * p : 1 - Math.pow(-2 * p + 2, 2) / 2;
+      this._proofU = from + (to - from) * e;
+      this.exoPolSphere.position.copy(this.proofCurve.getPoint(this._proofU));
+      if (p < 1) requestAnimationFrame(step);
+    };
+    step();
+  }
+
+  focusResidue(res) {
+    const order = DOMAIN_ORDER.filter(k => res >= DOMAINS[k].range[0] && res <= DOMAINS[k].range[1])
+      .sort((a, b) => (DOMAINS[a].range[1] - DOMAINS[a].range[0]) - (DOMAINS[b].range[1] - DOMAINS[b].range[0]));
+    const key = order[0];
+    if (!key) return null;
+    const bb = this.backboneCache[key], [r0, r1] = DOMAINS[key].range;
+    const idx = Math.round((res - r0) / Math.max(1, r1 - r0) * (bb.length - 1));
+    const pos = bb[Math.max(0, Math.min(bb.length - 1, idx))].pos.clone();
+    if (!this._resMarker) {
+      const g = new THREE.Group();
+      const ring = new THREE.Mesh(new THREE.RingGeometry(0.7, 0.9, 32),
+        new THREE.MeshBasicMaterial({ color:0xf1d595, side:THREE.DoubleSide, transparent:true, opacity:0.95, depthTest:false }));
+      ring.renderOrder = 15;
+      g.add(ring);
+      g.add(new THREE.Mesh(new THREE.SphereGeometry(0.28, 12, 12), new THREE.MeshBasicMaterial({ color:0xf1d595, depthTest:false })));
+      g.userData.ring = ring;
+      this.scene.add(g);
+      this._resMarker = g;
+    }
+    this._resMarker.visible = true;
+    this._resMarker.position.copy(pos);
+    animateCamera(this, { r: 30, tx: pos.x, ty: pos.y, tz: pos.z });
+    return { key, domains: order };
+  }
+  clearResidueMarker() { if (this._resMarker) this._resMarker.visible = false; }
+
+  getView() { const t = this.cameraTarget; return [this.cameraTheta, this.cameraPhi, this.cameraRadius, t.x, t.y, t.z]; }
+  setView(a) {
+    if (!a || a.length < 6 || a.some(x => !isFinite(x))) return;
+    [this.cameraTheta, this.cameraPhi, this.cameraRadius] = a;
+    this.cameraTarget.set(a[3], a[4], a[5]);
+    this._updateCamera();
+  }
+  setFigureMode(on) { if (this.scene.fog) this.scene.fog.color.set(on ? 0xf3f4f1 : PAL.bg); }
+  pxPerAngstrom() {
+    const H = this.renderer.domElement.clientHeight || 1;
+    const worldPerPx = 2 * Math.tan(THREE.MathUtils.degToRad(this.camera.fov / 2)) * this.cameraRadius / H;
+    return SCALE / worldPerPx;
+  }
+
+  _handleMutationClick(e) {
+    if (!this.groups.mutations || !this.groups.mutations.visible) return false;
+    const rect = this.renderer.domElement.getBoundingClientRect();
+    const ndc = new THREE.Vector2(((e.clientX - rect.left) / rect.width) * 2 - 1, -((e.clientY - rect.top) / rect.height) * 2 + 1);
+    this.raycaster.setFromCamera(ndc, this.camera);
+    const hits = this.raycaster.intersectObjects(this.groups.mutations.children, true);
+    if (!hits.length) return false;
+    let o = hits[0].object;
+    while (o && !(o.userData && o.userData.mut)) o = o.parent;
+    if (!o) return false;
+    o.userData.pulseBoost = 1;
+    if (this.onMutationSelect) this.onMutationSelect(o.userData.mut);
+    return true;
   }
 
   // ==================== PARTICLES ====================
@@ -1267,121 +1301,32 @@ export class POLEViewer {
 
   _setupControls() {
     const el = this.renderer.domElement;
-    this._shiftDown = false;
     this._pointerDownPos = { x: 0, y: 0 };
-    el.addEventListener('pointerdown', e => {
-      if (this.measureMode) { this._handleMeasureClick(e); return; }
-      this.isDragging=true;
-      this._shiftDown = e.shiftKey || e.button === 1;
-      this.prevMouse={x:e.clientX,y:e.clientY};
-      this._pointerDownPos = { x: e.clientX, y: e.clientY };
+
+    attachCameraControls(this, el, {
+      minRadius: 25,
+      maxRadius: 200,
+      onPointerDown: e => {
+        if (this.measureMode) { this._handleMeasureClick(e); return false; }
+        this._pointerDownPos = { x: e.clientX, y: e.clientY };
+      },
+      onLongPress: pos => this._hover(pos),
+      onTouchEnd: () => { this.tooltipEl.style.opacity = '0'; },
     });
-    window.addEventListener('pointerup', () => { this.isDragging=false; this._shiftDown=false; });
+
     el.addEventListener('click', e => {
       if (this.measureMode) return;
-      // Only treat as click if pointer didn't move (not a drag)
       const dx = e.clientX - this._pointerDownPos.x;
       const dy = e.clientY - this._pointerDownPos.y;
       if (dx * dx + dy * dy > 25) return;
+      if (this._handleMutationClick(e)) return;
       this._handleDomainClick(e);
     });
-    window.addEventListener('pointermove', e => {
-      if (!this.isDragging) return;
-      const dx = e.clientX-this.prevMouse.x;
-      const dy = e.clientY-this.prevMouse.y;
-      if (this._shiftDown || e.shiftKey) {
-        // Pan: move look-at target along camera-plane axes
-        const panScale = this.cameraRadius * 0.002;
-        const rx = Math.cos(this.cameraTheta);
-        const rz = -Math.sin(this.cameraTheta);
-        this.cameraTarget.x -= dx * panScale * rx;
-        this.cameraTarget.z -= dx * panScale * rz;
-        this.cameraTarget.y += dy * panScale;
-      } else {
-        // Orbit
-        this.cameraTheta -= dx*0.005;
-        this.cameraPhi = Math.max(-1.2,Math.min(1.2, this.cameraPhi+dy*0.005));
-      }
-      this.prevMouse = {x:e.clientX,y:e.clientY};
-      this._updateCamera();
-    });
-    el.addEventListener('wheel', e => {
-      e.preventDefault();
-      this.cameraRadius = Math.max(25,Math.min(200,this.cameraRadius+e.deltaY*0.04));
-      this._updateCamera();
-    }, {passive:false});
 
     this.raycaster = new THREE.Raycaster();
     this.mouseNDC = new THREE.Vector2();
     el.addEventListener('mousemove', e => this._hover(e));
     el.style.cursor = 'grab';
-  }
-
-  _setupTouch() {
-    const el = this.renderer.domElement;
-    let lastPinchDist = 0;
-    let longPressTimer = null;
-
-    el.addEventListener('touchstart', e => {
-      e.preventDefault();
-      clearTimeout(longPressTimer);
-      if (e.touches.length === 1) {
-        this.isDragging = true;
-        this.prevMouse = { x:e.touches[0].clientX, y:e.touches[0].clientY };
-        longPressTimer = setTimeout(() => {
-          this._hover({ clientX:e.touches[0].clientX, clientY:e.touches[0].clientY });
-        }, 500);
-      } else if (e.touches.length === 2) {
-        this.isDragging = false;
-        lastPinchDist = Math.hypot(
-          e.touches[0].clientX - e.touches[1].clientX,
-          e.touches[0].clientY - e.touches[1].clientY);
-      }
-    }, {passive:false});
-
-    let lastTwoFingerMid = null;
-    el.addEventListener('touchmove', e => {
-      e.preventDefault();
-      clearTimeout(longPressTimer);
-      if (e.touches.length === 1 && this.isDragging) {
-        const dx = e.touches[0].clientX - this.prevMouse.x;
-        const dy = e.touches[0].clientY - this.prevMouse.y;
-        this.cameraTheta -= dx * 0.005;
-        this.cameraPhi = Math.max(-1.2, Math.min(1.2, this.cameraPhi + dy * 0.005));
-        this.prevMouse = { x:e.touches[0].clientX, y:e.touches[0].clientY };
-        this._updateCamera();
-      } else if (e.touches.length === 2) {
-        const dist = Math.hypot(
-          e.touches[0].clientX - e.touches[1].clientX,
-          e.touches[0].clientY - e.touches[1].clientY);
-        const delta = lastPinchDist - dist;
-        this.cameraRadius = Math.max(25, Math.min(200, this.cameraRadius + delta * 0.1));
-        lastPinchDist = dist;
-
-        // Two-finger pan
-        const midX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
-        const midY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
-        if (lastTwoFingerMid) {
-          const panDx = midX - lastTwoFingerMid.x;
-          const panDy = midY - lastTwoFingerMid.y;
-          const panScale = this.cameraRadius * 0.002;
-          const rx = Math.cos(this.cameraTheta);
-          const rz = -Math.sin(this.cameraTheta);
-          this.cameraTarget.x -= panDx * panScale * rx;
-          this.cameraTarget.z -= panDx * panScale * rz;
-          this.cameraTarget.y += panDy * panScale;
-        }
-        lastTwoFingerMid = { x: midX, y: midY };
-        this._updateCamera();
-      }
-    }, {passive:false});
-
-    el.addEventListener('touchend', () => {
-      clearTimeout(longPressTimer);
-      this.isDragging = false;
-      lastTwoFingerMid = null;
-      this.tooltipEl.classList.remove('show');
-    });
   }
 
   _updateCamera() {
@@ -1437,9 +1382,11 @@ export class POLEViewer {
           }
         }
 
+        const hm = t.userData.mut || null;
+        if (hm !== this._hoverMut) { this._hoverMut = hm; if (this.onMutationHover) this.onMutationHover(hm); }
         this.tooltipEl.querySelector('.t-name').textContent=name;
         this.tooltipEl.querySelector('.t-detail').textContent=detail;
-        this.tooltipEl.classList.add('show');
+        this.tooltipEl.style.opacity='1';
         this.tooltipEl.style.left=(e.clientX-rect.left+12)+'px';
         this.tooltipEl.style.top=(e.clientY-rect.top+12)+'px';
         this.renderer.domElement.style.cursor='pointer';
@@ -1447,7 +1394,8 @@ export class POLEViewer {
       }
     }
     this.hoverTarget=null;
-    this.tooltipEl.classList.remove('show');
+    if (this._hoverMut) { this._hoverMut = null; if (this.onMutationHover) this.onMutationHover(null); }
+    this.tooltipEl.style.opacity='0';
     this.renderer.domElement.style.cursor = this.measureMode ? 'crosshair' : (this.isDragging?'grabbing':'grab');
   }
 
@@ -1574,7 +1522,7 @@ export class POLEViewer {
     this.clock = new THREE.Clock();
     const tick = () => {
       const dt=this.clock.getDelta(), t=this.clock.getElapsedTime();
-      if (this.autoRotate) { this.cameraTheta+=dt*0.06; this._updateCamera(); }
+      if (this.autoRotate) { this.cameraTheta+=dt*0.06*(this.rotateSpeed??1); this._updateCamera(); }
 
       // Mutation marker animation
       this.groups.mutations.children.forEach((g,i) => {
@@ -1585,8 +1533,15 @@ export class POLEViewer {
         g.userData.ring.lookAt(this.camera.position);
         g.userData.ring.rotateZ(t*0.4);
         if (g.userData.pulseBoost>0) g.userData.pulseBoost=Math.max(0,g.userData.pulseBoost-dt*0.8);
+        const tgtS = g.userData.mut === this._emphMut ? 1.7 : 1;
+        const cs = g.scale.x + (tgtS - g.scale.x) * Math.min(1, dt * 10);
+        g.scale.setScalar(cs);
       });
 
+      if (this._resMarker && this._resMarker.visible) {
+        this._resMarker.userData.ring.lookAt(this.camera.position);
+        this._resMarker.userData.ring.scale.setScalar(1 + Math.sin(t * 4) * 0.18);
+      }
       this.activeSiteLight.intensity=0.5+Math.sin(t*2.5)*0.15;
       this.groups.protein.scale.setScalar(1+Math.sin(t*0.4)*0.003);
 
@@ -1602,12 +1557,7 @@ export class POLEViewer {
       this._updateLabelVisibility();
 
       // FPS counter
-      this.fpsFrames++;
-      if (t - this.fpsTime >= 1) {
-        if (this.fpsCallback) this.fpsCallback(this.fpsFrames);
-        this.fpsFrames = 0;
-        this.fpsTime = t;
-      }
+      this._fps.tick(t);
 
       this.renderer.render(this.scene,this.camera);
       requestAnimationFrame(tick);
@@ -1663,19 +1613,7 @@ export class POLEViewer {
 
   focusMutation(mutId) {
     const marker=this.mutMarkers[mutId]; if (!marker) return;
-    const s={th:this.cameraTheta,ph:this.cameraPhi,r:this.cameraRadius};
-    const e={th:-1.2,ph:0,r:35};
-    const t0=performance.now();
-    const animate=()=>{
-      const p=Math.min(1,(performance.now()-t0)/800);
-      const ease=p<0.5?2*p*p:1-Math.pow(-2*p+2,2)/2;
-      this.cameraTheta=s.th+(e.th-s.th)*ease;
-      this.cameraPhi=s.ph+(e.ph-s.ph)*ease;
-      this.cameraRadius=s.r+(e.r-s.r)*ease;
-      this._updateCamera();
-      if (p<1) requestAnimationFrame(animate);
-    };
-    animate();
+    animateCamera(this, { th: -1.2, ph: 0, r: 35 });
     marker.userData.pulseBoost=1;
   }
 
@@ -1683,41 +1621,11 @@ export class POLEViewer {
     const dom = DOMAINS[key];
     if (!dom) return;
     const domCenter = new THREE.Vector3(...dom.center);
-    const s = { th:this.cameraTheta, ph:this.cameraPhi, r:this.cameraRadius,
-      tx:this.cameraTarget.x, ty:this.cameraTarget.y, tz:this.cameraTarget.z };
-    const e = { th:s.th, ph:s.ph, r:35, tx:domCenter.x, ty:domCenter.y, tz:domCenter.z };
-    const t0 = performance.now();
-    const animate = () => {
-      const p = Math.min(1, (performance.now()-t0)/800);
-      const ease = p<0.5 ? 2*p*p : 1-Math.pow(-2*p+2,2)/2;
-      this.cameraTheta = s.th+(e.th-s.th)*ease;
-      this.cameraPhi = s.ph+(e.ph-s.ph)*ease;
-      this.cameraRadius = s.r+(e.r-s.r)*ease;
-      this.cameraTarget.set(
-        s.tx+(e.tx-s.tx)*ease, s.ty+(e.ty-s.ty)*ease, s.tz+(e.tz-s.tz)*ease);
-      this._updateCamera();
-      if (p<1) requestAnimationFrame(animate);
-    };
-    animate();
+    animateCamera(this, { r: 35, tx: domCenter.x, ty: domCenter.y, tz: domCenter.z });
   }
 
   resetView() {
-    const s = { th:this.cameraTheta, ph:this.cameraPhi, r:this.cameraRadius,
-      tx:this.cameraTarget.x, ty:this.cameraTarget.y, tz:this.cameraTarget.z };
-    const e = { th:-0.3, ph:0.15, r:55, tx:0, ty:0, tz:0 };
-    const t0 = performance.now();
-    const animate = () => {
-      const p = Math.min(1, (performance.now()-t0)/600);
-      const ease = p<0.5 ? 2*p*p : 1-Math.pow(-2*p+2,2)/2;
-      this.cameraTheta = s.th+(e.th-s.th)*ease;
-      this.cameraPhi = s.ph+(e.ph-s.ph)*ease;
-      this.cameraRadius = s.r+(e.r-s.r)*ease;
-      this.cameraTarget.set(
-        s.tx+(e.tx-s.tx)*ease, s.ty+(e.ty-s.ty)*ease, s.tz+(e.tz-s.tz)*ease);
-      this._updateCamera();
-      if (p<1) requestAnimationFrame(animate);
-    };
-    animate();
+    animateCamera(this, { th: -0.3, ph: 0.15, r: 55, tx: 0, ty: 0, tz: 0 }, 600);
   }
 
   // ==================== COLOR MODES ====================
@@ -1750,15 +1658,9 @@ export class POLEViewer {
   // ==================== SCREENSHOT ====================
 
   takeScreenshot() {
-    this.renderer.render(this.scene, this.camera);
-    const dataURL = this.renderer.domElement.toDataURL('image/png');
-    const a = document.createElement('a');
-    a.href = dataURL;
-    a.download = `POLE-structure-${Date.now()}.png`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
+    downloadScreenshot(this.renderer, this.scene, this.camera, 'POLE-structure');
   }
 
-  setFPSCallback(cb) { this.fpsCallback = cb; }
+  setFPSCallback(cb) { this._fps.setCallback(cb); }
+  setEmphasisMutation(id) { this._emphMut = id || null; }
 }

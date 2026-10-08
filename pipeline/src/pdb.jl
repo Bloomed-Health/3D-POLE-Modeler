@@ -17,7 +17,12 @@ function download_pdb(pdb_id::AbstractString, cache_dir::AbstractString)
     end
     url = "https://files.rcsb.org/download/$(id_lower).cif"
     @info "Downloading PDB $pdb_id from $url"
-    Downloads.download(url, local_path)
+    try
+        Downloads.download(url, local_path)
+    catch e
+        @error "Failed to download PDB $pdb_id" exception=e
+        rethrow()
+    end
     return local_path
 end
 
@@ -112,69 +117,44 @@ end
 Parse HELIX/SHEET records from mmCIF to get secondary structure assignments.
 Falls back to phi/psi-based assignment if records not present.
 """
-function extract_ss_from_mmcif(path::AbstractString)
+"""Parse a single mmCIF loop section by prefix (e.g. "_struct_conf.") and
+return SSElements of the given type using beg_auth_seq_id / end_auth_seq_id columns."""
+function parse_mmcif_section(lines::Vector{<:AbstractString}, prefix::AbstractString, ss_type::Symbol)
     elements = SSElement[]
+    in_section = false
+    cols = Dict{String,Int}()
+    for line in lines
+        stripped = strip(line)
+        if startswith(stripped, prefix)
+            in_section = true
+            field = split(stripped, '.')[2]
+            cols[field] = length(cols) + 1
+        elseif in_section && !startswith(stripped, "_") && !startswith(stripped, "#") && !isempty(stripped) && !startswith(stripped, "loop_")
+            tokens = split(stripped)
+            if haskey(cols, "beg_auth_seq_id") && haskey(cols, "end_auth_seq_id")
+                beg_idx = cols["beg_auth_seq_id"]
+                end_idx = cols["end_auth_seq_id"]
+                if beg_idx <= length(tokens) && end_idx <= length(tokens)
+                    start_res = tryparse(Int, tokens[beg_idx])
+                    end_res = tryparse(Int, tokens[end_idx])
+                    if start_res !== nothing && end_res !== nothing
+                        push!(elements, SSElement(ss_type, start_res, end_res, end_res - start_res + 1))
+                    end
+                end
+            end
+        elseif in_section && (startswith(stripped, "_") || startswith(stripped, "#") || startswith(stripped, "loop_"))
+            in_section = false
+            cols = Dict{String,Int}()
+        end
+    end
+    return elements
+end
 
-    # Parse _struct_conf (helices) and _struct_sheet_range (strands) from mmCIF
+function extract_ss_from_mmcif(path::AbstractString)
     lines = readlines(path)
 
-    # Parse helices from _struct_conf
-    in_struct_conf = false
-    conf_cols = Dict{String,Int}()
-    for line in lines
-        stripped = strip(line)
-        if startswith(stripped, "_struct_conf.")
-            in_struct_conf = true
-            field = split(stripped, '.')[2]
-            col_idx = length(conf_cols) + 1
-            conf_cols[field] = col_idx
-        elseif in_struct_conf && !startswith(stripped, "_") && !startswith(stripped, "#") && !isempty(stripped) && !startswith(stripped, "loop_")
-            tokens = split(stripped)
-            if haskey(conf_cols, "beg_auth_seq_id") && haskey(conf_cols, "end_auth_seq_id")
-                beg_idx = conf_cols["beg_auth_seq_id"]
-                end_idx = conf_cols["end_auth_seq_id"]
-                if beg_idx <= length(tokens) && end_idx <= length(tokens)
-                    start_res = tryparse(Int, tokens[beg_idx])
-                    end_res = tryparse(Int, tokens[end_idx])
-                    if start_res !== nothing && end_res !== nothing
-                        push!(elements, SSElement(:H, start_res, end_res, end_res - start_res + 1))
-                    end
-                end
-            end
-        elseif in_struct_conf && (startswith(stripped, "_") || startswith(stripped, "#") || startswith(stripped, "loop_"))
-            in_struct_conf = false
-            conf_cols = Dict{String,Int}()
-        end
-    end
-
-    # Parse strands from _struct_sheet_range
-    in_sheet_range = false
-    sheet_cols = Dict{String,Int}()
-    for line in lines
-        stripped = strip(line)
-        if startswith(stripped, "_struct_sheet_range.")
-            in_sheet_range = true
-            field = split(stripped, '.')[2]
-            col_idx = length(sheet_cols) + 1
-            sheet_cols[field] = col_idx
-        elseif in_sheet_range && !startswith(stripped, "_") && !startswith(stripped, "#") && !isempty(stripped) && !startswith(stripped, "loop_")
-            tokens = split(stripped)
-            if haskey(sheet_cols, "beg_auth_seq_id") && haskey(sheet_cols, "end_auth_seq_id")
-                beg_idx = sheet_cols["beg_auth_seq_id"]
-                end_idx = sheet_cols["end_auth_seq_id"]
-                if beg_idx <= length(tokens) && end_idx <= length(tokens)
-                    start_res = tryparse(Int, tokens[beg_idx])
-                    end_res = tryparse(Int, tokens[end_idx])
-                    if start_res !== nothing && end_res !== nothing
-                        push!(elements, SSElement(:E, start_res, end_res, end_res - start_res + 1))
-                    end
-                end
-            end
-        elseif in_sheet_range && (startswith(stripped, "_") || startswith(stripped, "#") || startswith(stripped, "loop_"))
-            in_sheet_range = false
-            sheet_cols = Dict{String,Int}()
-        end
-    end
+    elements = parse_mmcif_section(lines, "_struct_conf.", :H)
+    append!(elements, parse_mmcif_section(lines, "_struct_sheet_range.", :E))
 
     sort!(elements, by=e -> e.start_res)
     @info "Extracted $(length(elements)) SS elements ($(count(e->e.type==:H, elements)) helices, $(count(e->e.type==:E, elements)) strands)"
@@ -253,19 +233,29 @@ end
     extract_metal_coordination(metals, residues; cutoff) -> Vector{MetalSite}
 
 Find protein residues within coordination distance of each metal site.
+
+NOTE: This currently measures metal-to-Cα distance, which is an approximation.
+True metal coordination involves side-chain donor atoms (Oδ for Asp/Glu, Nε for His,
+Sγ for Cys) and backbone carbonyls, typically at 2.0-2.5 Å. Cα atoms are ~3.5-4.5 Å
+from coordinating carboxylate oxygens. A proper implementation should extract all
+heavy atoms and measure to the closest donor atom per residue.
 """
 function extract_metal_coordination(
     metals::Vector{MetalSite},
     residues::Vector{Residue3D};
     cutoff::Float64=METAL_COORDINATION_CUTOFF,
 )
+    # LIMITATION: Using Cα positions as proxy. The cutoff ($(METAL_COORDINATION_CUTOFF) Å)
+    # is too tight for Cα–metal distances (typically 3.5–5.0 Å). Results will under-report
+    # coordinating residues. For accurate coordination geometry, extract side-chain atoms.
+    effective_cutoff = max(cutoff, 5.0)  # Use 5.0 Å for Cα-based measurement
     coordinated = MetalSite[]
     for m in metals
         coord_res = Int[]
         coord_dist = Float64[]
         for r in residues
             d = sqrt((m.x - r.x)^2 + (m.y - r.y)^2 + (m.z - r.z)^2)
-            if d <= cutoff
+            if d <= effective_cutoff
                 push!(coord_res, r.resnum)
                 push!(coord_dist, round(d, digits=2))
             end

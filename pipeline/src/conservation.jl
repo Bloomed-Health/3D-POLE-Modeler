@@ -135,17 +135,7 @@ end
 Apply rolling mean smoothing to conservation scores.
 """
 function smooth_conservation(scores::Vector{Float64}; window::Int=5)
-    n = length(scores)
-    smoothed = zeros(Float64, n)
-    half_w = window ÷ 2
-
-    for i in 1:n
-        start_idx = max(1, i - half_w)
-        end_idx = min(n, i + half_w)
-        smoothed[i] = mean(scores[start_idx:end_idx])
-    end
-
-    return smoothed
+    return sliding_window(scores, window)
 end
 
 """
@@ -178,14 +168,16 @@ end
 """
     generate_synthetic_conservation(total_residues, domain_ranges) -> Vector{Float64}
 
-Generate synthetic per-residue conservation scores based on known domain conservation patterns.
-Used when no MSA file is available. Based on literature values for POLE conservation.
+Generate placeholder per-residue conservation scores based on known domain conservation
+patterns. Used when no MSA file is available. Returns flat domain-level estimates from
+literature — no per-residue variation is synthesised, as that would produce misleading
+detail. For real per-residue conservation, provide a curated MSA.
 """
 function generate_synthetic_conservation(
     total_residues::Int,
     domain_ranges::OrderedDict{Symbol, Tuple{Int,Int}},
 )
-    # Known domain-level conservation from literature
+    # Known domain-level conservation from literature (flat per-domain)
     domain_conservation = Dict(
         :ntd      => 0.30,
         :exo      => 0.85,
@@ -197,17 +189,18 @@ function generate_synthetic_conservation(
         :ctd      => 0.40,
     )
 
-    # Catalytic site residues get maximum conservation
-    catalytic_sites = Set([275, 277, 286, 297, 368, 370, 411, 640, 642, 860])
+    # Verified catalytic residues only (no synthetic hotspot positions)
+    # D275/E277 (ExoI), D368 (ExoII structural), D462 (ExoIII),
+    # D640/D642 (Motif A, provisional), D860 (Motif C, provisional)
+    catalytic_sites = Set([275, 277, 368, 462, 640, 642, 860])
 
     scores = fill(0.3, total_residues)  # default for linker regions
 
     for (domain, (start_r, end_r)) in domain_ranges
         base = get(domain_conservation, domain, 0.3)
         for r in start_r:min(end_r, total_residues)
-            # Add noise for realism
-            noise = 0.05 * sin(r * 0.3) + 0.03 * cos(r * 0.7)
-            scores[r] = clamp(base + noise, 0.0, 1.0)
+            # Flat domain-level estimate — no synthetic per-residue noise
+            scores[r] = base
         end
     end
 
@@ -218,5 +211,5 @@ function generate_synthetic_conservation(
         end
     end
 
-    return smooth_conservation(scores; window=3)
+    return scores
 end

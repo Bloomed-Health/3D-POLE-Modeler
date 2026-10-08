@@ -50,23 +50,30 @@
     <div class="panel">
       <h3>PDB structure</h3>
       <div class="pdb-selector" id="pdb-selector">
-        <button class="active" data-pdb="9F6D" title="Roske & Yeeles 2024 — open Finger conformation">9F6D <span style="color:var(--ink-faint)">(open)</span></button>
-        <button data-pdb="9F6E" title="Roske & Yeeles 2024 — ajar Finger conformation">9F6E <span style="color:var(--ink-faint)">(ajar)</span></button>
-        <button data-pdb="9F6F" title="Roske & Yeeles 2024 — closed Finger conformation">9F6F <span style="color:var(--ink-faint)">(closed)</span></button>
-        <button data-pdb="9B8S" title="He et al. 2024 — Pol ε–PCNA cryo-EM">9B8S</button>
+        <button class="control-btn active" data-pdb="9F6D" title="Roske & Yeeles 2024 — open Finger conformation">9F6D <span style="color:var(--ink-faint)">(open)</span></button>
+        <button class="control-btn" data-pdb="9F6E" title="Roske & Yeeles 2024 — ajar Finger conformation">9F6E <span style="color:var(--ink-faint)">(ajar)</span></button>
+        <button class="control-btn" data-pdb="9F6F" title="Roske & Yeeles 2024 — closed Finger conformation">9F6F <span style="color:var(--ink-faint)">(closed)</span></button>
+        <button class="control-btn" data-pdb="9B8S" title="He et al. 2024 — Pol ε–PCNA cryo-EM">9B8S</button>
       </div>
       <p style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--ink-faint);margin-top:8px;line-height:1.5">
         Finger triad: open (9F6D) &rarr; ajar (9F6E) &rarr; closed (9F6F)<br>
         28&deg; / 19 &Aring; O-helix rotation upon dNTP binding
+      </p>
+      <div id="exo-dead-warning" style="display:none;margin-top:8px;padding:8px 10px;background:rgba(231,76,60,0.1);border:1px solid rgba(231,76,60,0.3);border-radius:2px">
+        <p style="font-family:'JetBrains Mono',monospace;font-size:9px;color:#e74c3c;font-weight:600;margin-bottom:4px">&#9888; EXO-DEAD CONSTRUCT</p>
+        <p style="font-size:9px;color:var(--ink-dim);line-height:1.4">This structure uses the exonuclease-dead D275A/E277A construct. Active-site labels correspond to alanines, not native D/E catalytic residues. For native exo geometry, use 9F6K or 9F6L.</p>
+      </div>
+      <p style="font-family:'Fraunces',serif;font-size:9px;color:var(--ink-faint);margin-top:6px;line-height:1.4;font-weight:300">
+        <b>Note:</b> PDB 9F6I (post-insertion) and 9F6J (arrest) use the exonuclease-dead D275A/E277A construct. For native exonuclease active-site geometry, use 9F6K or 9F6L.
       </p>
     </div>
 
     <div class="panel">
       <h3>Representation</h3>
       <div class="repr-selector" id="repr-selector">
-        <button class="active" data-repr="cartoon">Cartoon</button>
-        <button data-repr="ball_and_stick">Ball &amp; Stick</button>
-        <button data-repr="surface">Surface</button>
+        <button class="control-btn active" data-repr="cartoon">Cartoon</button>
+        <button class="control-btn" data-repr="ball_and_stick">Ball &amp; Stick</button>
+        <button class="control-btn" data-repr="surface">Surface</button>
       </div>
     </div>
 
@@ -149,7 +156,7 @@
 
     <div class="panel">
       <h3>Display toggles</h3>
-      <div class="toggle on" data-toggle="rotate"><span class="label">Auto-rotate</span><div class="switch"></div></div>
+      <div class="toggle" data-toggle="rotate" id="rotate-toggle"><span class="label">Auto-rotate</span><div class="switch"></div></div>
       <div class="toggle on" data-toggle="polymer"><span class="label">Protein chains</span><div class="switch"></div></div>
       <div class="toggle on" data-toggle="ligands"><span class="label">Ligands &amp; metals</span><div class="switch"></div></div>
       <div class="toggle on" data-toggle="water"><span class="label">Water molecules</span><div class="switch"></div></div>
@@ -159,21 +166,21 @@
     <div class="panel">
       <h3>Color mode</h3>
       <div class="color-mode-selector" id="color-mode">
-        <button class="active" data-mode="domain">Domain</button>
-        <button data-mode="bfactor">B-factor</button>
-        <button data-mode="chain">Chain</button>
-        <button data-mode="element">Element</button>
-        <button data-mode="secondary">Secondary structure</button>
+        <button class="control-btn active" data-mode="domain">Domain</button>
+        <button class="control-btn" data-mode="bfactor">B-factor</button>
+        <button class="control-btn" data-mode="chain">Chain</button>
+        <button class="control-btn" data-mode="element">Element</button>
+        <button class="control-btn" data-mode="secondary">Secondary structure</button>
       </div>
     </div>
 
     <div class="panel">
       <h3>Tools</h3>
       <div class="tool-buttons">
-        <button class="tool-btn" id="btn-screenshot" title="Export PNG">Screenshot</button>
-        <button class="tool-btn" id="btn-measure" title="Toggle distance measurement">Measure</button>
-        <button class="tool-btn" id="btn-reset" title="Reset camera">Reset view</button>
-        <button class="tool-btn" id="btn-molstar-ui" title="Show Mol* controls">Mol* Controls</button>
+        <button class="control-btn tool-btn" id="btn-screenshot" title="Export PNG">Screenshot</button>
+        <button class="control-btn tool-btn" id="btn-measure" title="Toggle distance measurement">Measure</button>
+        <button class="control-btn tool-btn" id="btn-reset" title="Reset camera">Reset view</button>
+        <button class="control-btn tool-btn" id="btn-molstar-ui" title="Show Mol* controls">Mol* Controls</button>
       </div>
     </div>
 
@@ -390,6 +397,7 @@
 <script type="module">
 import { DOMAINS, DOMAIN_ORDER, MUTATIONS } from './js/data/domainConfig.js';
 import { initProgress, initSidebarToggle } from './js/shared-ui.js';
+import { initKeyboardShortcuts } from './js/utils/keyboard.js';
 
 const PDB_INFO = {
   '9F6D': { citation: 'Roske & Yeeles 2024', detail: 'Open Finger conformation', resolution: '3.0 Å cryo-EM' },
@@ -450,8 +458,12 @@ async function initViewer() {
 
   setProgress(90, 'Finalizing…');
 
-  // Enable auto-rotate
-  setAutoRotate(true);
+  // Set auto-rotate based on motion preferences
+  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  autoRotate = !prefersReducedMotion;
+  setAutoRotate(autoRotate);
+  const molRotToggle = document.getElementById('rotate-toggle');
+  if (molRotToggle && autoRotate) molRotToggle.classList.add('on');
 
   // Zoom out so the full structure is visible on load.
   // Wait for Mol*'s internal camera reset (from loadStructureFromUrl) to settle,
@@ -675,6 +687,11 @@ document.querySelectorAll('#pdb-selector button').forEach(btn => {
     document.querySelectorAll('#pdb-selector button').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
 
+    // Show/hide exo-dead construct warning
+    const exoDeadPdbs = ['9F6I', '9F6J'];
+    const warnEl = document.getElementById('exo-dead-warning');
+    if (warnEl) warnEl.style.display = exoDeadPdbs.includes(pdb) ? '' : 'none';
+
     setProgress(10, `Loading PDB ${pdb}…`);
     document.getElementById('loading').style.display = '';
     await loadStructure(pdb);
@@ -766,7 +783,7 @@ document.querySelectorAll('.toggle').forEach(t => {
     t.classList.toggle('on', on);
     const toggle = t.dataset.toggle;
     if (toggle === 'rotate') setAutoRotate(on);
-    if (toggle === 'labels') showLabels = on;  // updateLabels() handles visibility each frame
+    if (toggle === 'labels') showLabels = on;  // positionLabels() handles visibility each frame
   });
 });
 
@@ -813,31 +830,18 @@ document.getElementById('btn-molstar-ui').addEventListener('click', () => {
 initSidebarToggle();
 
 // Keyboard shortcuts
-document.addEventListener('keydown', e => {
-  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
-  switch (e.key.toLowerCase()) {
-    case 'r': {
-      const rotToggle = document.querySelector('[data-toggle="rotate"]');
-      rotToggle.click();
-      break;
-    }
-    case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': {
-      const idx = parseInt(e.key) - 1;
-      if (idx < domainKeys.length) {
-        domainEls.forEach(d => d.classList.remove('active'));
-        domainEls[idx].classList.add('active');
-        focusDomain(domainKeys[idx]);
-      }
-      break;
-    }
-    case 's':
-      if (!e.ctrlKey && !e.metaKey) viewer?.plugin?.helpers?.viewportScreenshot?.download();
-      break;
-    case 'escape':
-      domainEls.forEach(d => d.classList.remove('active'));
-      viewer?.plugin?.canvas3d?.requestCameraReset();
-      break;
-  }
+initKeyboardShortcuts({
+  'r': { action: () => document.querySelector('[data-toggle="rotate"]').click() },
+  '1': { action: () => { if (0 < domainKeys.length) { domainEls.forEach(d => d.classList.remove('active')); domainEls[0].classList.add('active'); focusDomain(domainKeys[0]); } } },
+  '2': { action: () => { if (1 < domainKeys.length) { domainEls.forEach(d => d.classList.remove('active')); domainEls[1].classList.add('active'); focusDomain(domainKeys[1]); } } },
+  '3': { action: () => { if (2 < domainKeys.length) { domainEls.forEach(d => d.classList.remove('active')); domainEls[2].classList.add('active'); focusDomain(domainKeys[2]); } } },
+  '4': { action: () => { if (3 < domainKeys.length) { domainEls.forEach(d => d.classList.remove('active')); domainEls[3].classList.add('active'); focusDomain(domainKeys[3]); } } },
+  '5': { action: () => { if (4 < domainKeys.length) { domainEls.forEach(d => d.classList.remove('active')); domainEls[4].classList.add('active'); focusDomain(domainKeys[4]); } } },
+  '6': { action: () => { if (5 < domainKeys.length) { domainEls.forEach(d => d.classList.remove('active')); domainEls[5].classList.add('active'); focusDomain(domainKeys[5]); } } },
+  '7': { action: () => { if (6 < domainKeys.length) { domainEls.forEach(d => d.classList.remove('active')); domainEls[6].classList.add('active'); focusDomain(domainKeys[6]); } } },
+  '8': { action: () => { if (7 < domainKeys.length) { domainEls.forEach(d => d.classList.remove('active')); domainEls[7].classList.add('active'); focusDomain(domainKeys[7]); } } },
+  's': { noModifier: true, action: () => viewer?.plugin?.helpers?.viewportScreenshot?.download() },
+  'escape': { action: () => { domainEls.forEach(d => d.classList.remove('active')); viewer?.plugin?.canvas3d?.requestCameraReset(); } },
 });
 
 // ==================== ZOOM SLIDER ====================
@@ -942,8 +946,13 @@ function createLabelElements() {
     // HTML label
     const el = document.createElement('div');
     el.className = 'domain-label';
-    el.style.borderLeftColor = dom.color;
-    el.innerHTML = `${dom.abbrev}<span class="dl-range">${dom.range[0]}–${dom.range[1]}</span>`;
+    // Convert hex color to rgba for 0.6-opacity border
+    const hex = dom.color.replace('#', '');
+    const r = parseInt(hex.substring(0, 2), 16);
+    const g = parseInt(hex.substring(2, 4), 16);
+    const b = parseInt(hex.substring(4, 6), 16);
+    el.style.borderColor = `rgba(${r},${g},${b},0.6)`;
+    el.innerHTML = `<span class="dl-dot" style="background:${dom.color}"></span>${dom.abbrev} <span class="dl-range">${dom.range[0]}–${dom.range[1]}</span>`;
     el.style.opacity = '0';
     labelContainer.appendChild(el);
     labelEls[key] = el;
@@ -1029,7 +1038,7 @@ function project(pos) {
 }
 
 // Position labels each frame
-function updateLabels() {
+function positionLabels() {
   if (!showLabels || !Object.keys(domainCentroids).length) {
     // Hide all
     for (const key of DOMAIN_ORDER) {
@@ -1105,7 +1114,7 @@ setTimeout(() => { computeDomainCentroids(); }, 4000);
 // Sync slider + labels on every frame
 (function syncLoop() {
   syncSliderFromCamera();
-  updateLabels();
+  positionLabels();
   requestAnimationFrame(syncLoop);
 })();
 

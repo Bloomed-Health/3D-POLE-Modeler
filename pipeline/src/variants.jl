@@ -133,48 +133,29 @@ end
 """
     get_known_clinvar_variants() -> Vector{Variant}
 
-Built-in known pathogenic POLE ClinVar variants when file not available.
+Placeholder: returns an empty variant list. Real ClinVar data should be fetched
+from the ClinVar API or a downloaded VCF. The previous implementation contained
+invented pathogenicity scores that could be mistaken for real ClinVar data.
+
+To populate: use the ClinVar E-utilities API or download the ClinVar VCF for POLE
+(Gene ID 5426) and parse with an appropriate VCF library.
 """
 function get_known_clinvar_variants()
-    return [
-        Variant(286, 'P', 'R', :clinvar, "Pathogenic", 0.99, 0.0, "TCT>TGT"),
-        Variant(411, 'V', 'L', :clinvar, "Pathogenic", 0.95, 0.0, "GTG>CTG"),
-        Variant(297, 'S', 'F', :clinvar, "Pathogenic", 0.92, 0.0, "TCC>TTC"),
-        Variant(275, 'D', 'A', :clinvar, "Pathogenic", 0.90, 0.0, "GAT>GCT"),
-        Variant(368, 'D', 'A', :clinvar, "Pathogenic", 0.90, 0.0, "GAT>GCT"),
-        Variant(367, 'F', 'S', :clinvar, "Likely_pathogenic", 0.85, 0.0, "TTC>TCC"),
-        Variant(424, 'L', 'V', :clinvar, "Likely_pathogenic", 0.80, 0.0, "CTG>GTG"),
-        Variant(287, 'D', 'E', :clinvar, "Likely_pathogenic", 0.82, 0.0, "GAC>GAA"),
-        Variant(436, 'P', 'R', :clinvar, "Likely_pathogenic", 0.80, 0.0, "CCC>CGC"),
-        Variant(444, 'M', 'K', :clinvar, "Likely_pathogenic", 0.78, 0.0, "ATG>AAG"),
-        Variant(459, 'S', 'F', :clinvar, "Likely_pathogenic", 0.76, 0.0, "TCC>TTC"),
-        # Additional known variants
-        Variant(396, 'N', 'D', :clinvar, "VUS", 0.50, 0.0, ""),
-        Variant(640, 'D', 'N', :clinvar, "Pathogenic", 0.95, 0.0, "GAC>AAC"),
-        Variant(642, 'D', 'N', :clinvar, "Pathogenic", 0.93, 0.0, "GAC>AAC"),
-        Variant(860, 'D', 'N', :clinvar, "Pathogenic", 0.93, 0.0, "GAC>AAC"),
-    ]
+    @warn "get_known_clinvar_variants() returns empty list — real ClinVar data not yet integrated"
+    return Variant[]
 end
 
 """
     get_known_cosmic_variants() -> Vector{Variant}
 
-Built-in known COSMIC somatic POLE variants.
+Placeholder: returns an empty variant list. Real COSMIC data requires a licence
+and should be loaded from a downloaded COSMIC VCF or TSV file.
+
+To populate: download the COSMIC coding mutations file for POLE and parse.
 """
 function get_known_cosmic_variants()
-    return [
-        Variant(286, 'P', 'R', :cosmic, "somatic", 0.99, 0.85, "TCT>TGT"),
-        Variant(411, 'V', 'L', :cosmic, "somatic", 0.95, 0.45, "GTG>CTG"),
-        Variant(297, 'S', 'F', :cosmic, "somatic", 0.90, 0.20, "TCC>TTC"),
-        Variant(286, 'P', 'H', :cosmic, "somatic", 0.88, 0.10, "CCC>CAC"),
-        Variant(286, 'P', 'L', :cosmic, "somatic", 0.85, 0.05, "CCT>CTT"),
-        Variant(287, 'D', 'E', :cosmic, "somatic", 0.82, 0.12, "GAC>GAA"),
-        Variant(436, 'P', 'R', :cosmic, "somatic", 0.80, 0.10, "CCC>CGC"),
-        Variant(459, 'S', 'F', :cosmic, "somatic", 0.70, 0.08, "TCC>TTC"),
-        Variant(367, 'F', 'S', :cosmic, "somatic", 0.82, 0.12, "TTC>TCC"),
-        Variant(424, 'L', 'V', :cosmic, "somatic", 0.75, 0.15, "CTG>GTG"),
-        Variant(444, 'M', 'K', :cosmic, "somatic", 0.72, 0.08, "ATG>AAG"),
-    ]
+    @warn "get_known_cosmic_variants() returns empty list — real COSMIC data not yet integrated"
+    return Variant[]
 end
 
 """
@@ -218,13 +199,7 @@ function compute_variant_density(
     end
 
     # Sliding window sum
-    density = zeros(Float64, total_residues)
-    half_w = window ÷ 2
-    for i in 1:total_residues
-        start_idx = max(1, i - half_w)
-        end_idx = min(total_residues, i + half_w)
-        density[i] = sum(counts[start_idx:end_idx])
-    end
+    density = sliding_window(counts, window; op=sum)
 
     # Normalize to [0, 1]
     max_density = maximum(density)

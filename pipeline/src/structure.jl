@@ -25,12 +25,16 @@ function run_dssp(pdb_path::AbstractString)
 end
 
 """
-    parse_dssp_output(dssp_text) -> Vector{SSElement}
+    parse_dssp_output(dssp_text; target_chain) -> Vector{SSElement}
 
 Parse DSSP output into SSElement vector. Reads the residue lines after the header
 and maps DSSP codes (H/G/I → :H, E/B → :E, else → :L).
+
+When `target_chain` is provided, only residues from that chain are included.
+This prevents PCNA or accessory subunit helices from being merged into the
+POLE catalytic chain's secondary structure assignment.
 """
-function parse_dssp_output(dssp_text::AbstractString)
+function parse_dssp_output(dssp_text::AbstractString; target_chain::Union{Char,Nothing}=nothing)
     elements = SSElement[]
     in_residues = false
     current_type = :L
@@ -45,7 +49,19 @@ function parse_dssp_output(dssp_text::AbstractString)
         !in_residues && continue
         length(line) < 17 && continue
 
-        # DSSP format: columns 6-10 = residue number, column 17 = SS code
+        # DSSP format: column 12 = chain ID, columns 6-10 = residue number, column 17 = SS code
+        chain_char = length(line) >= 12 ? line[12] : ' '
+        if target_chain !== nothing && chain_char != target_chain
+            # Flush current element when crossing chain boundary
+            if current_start > 0 && current_type != :L
+                push!(elements, SSElement(current_type, current_start, prev_resnum,
+                    prev_resnum - current_start + 1))
+                current_type = :L
+                current_start = 0
+            end
+            continue
+        end
+
         resnum_str = strip(line[6:min(10, length(line))])
         resnum = tryparse(Int, resnum_str)
         resnum === nothing && continue
@@ -77,7 +93,8 @@ function parse_dssp_output(dssp_text::AbstractString)
     end
 
     sort!(elements, by=e -> e.start_res)
-    @info "DSSP: $(length(elements)) SS elements ($(count(e->e.type==:H, elements)) helices, $(count(e->e.type==:E, elements)) strands)"
+    chain_note = target_chain !== nothing ? " (chain $(target_chain))" : ""
+    @info "DSSP: $(length(elements)) SS elements$(chain_note) ($(count(e->e.type==:H, elements)) helices, $(count(e->e.type==:E, elements)) strands)"
     return elements
 end
 
@@ -106,12 +123,12 @@ function assign_secondary_structure(residues::Vector{Residue3D})
         # Check for α-helix: i to i+3 distance ≈ 5.0-5.5 Å
         if i + 3 <= n
             r3 = residues[i+3]
-            d13 = sqrt((r.x - r3.x)^2 + (r.y - r3.y)^2 + (r.z - r3.z)^2)
-            if 4.5 <= d13 <= 6.0
+            d13_sq = dist_sq(r, r3)
+            if 4.5^2 <= d13_sq <= 6.0^2
                 # Also check i to i+2 for consistency
                 r2 = residues[i+2]
-                d12 = sqrt((r.x - r2.x)^2 + (r.y - r2.y)^2 + (r.z - r2.z)^2)
-                if 4.5 <= d12 <= 6.5
+                d12_sq = dist_sq(r, r2)
+                if 4.5^2 <= d12_sq <= 6.5^2
                     ss_types[i] = :H
                 end
             end
@@ -120,8 +137,8 @@ function assign_secondary_structure(residues::Vector{Residue3D})
         # Check for β-strand: extended backbone
         if i + 2 <= n && ss_types[i] != :H
             r2 = residues[i+2]
-            d = sqrt((r.x - r2.x)^2 + (r.y - r2.y)^2 + (r.z - r2.z)^2)
-            if 6.0 <= d <= 7.5
+            d_sq = dist_sq(r, r2)
+            if 6.0^2 <= d_sq <= 7.5^2
                 ss_types[i] = :E
             end
         end

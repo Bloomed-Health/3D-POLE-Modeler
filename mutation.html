@@ -92,14 +92,14 @@
 
     <div class="panel">
       <h3>Display controls</h3>
-      <div class="toggle on" data-toggle="rotate"><span class="label">Auto-rotate</span><div class="switch"></div></div>
+      <div class="toggle" data-toggle="rotate" id="rotate-toggle"><span class="label">Auto-rotate</span><div class="switch"></div></div>
     </div>
 
     <div class="panel">
       <h3>Tools</h3>
       <div class="tool-buttons">
-        <button class="tool-btn" id="btn-screenshot" title="Export PNG (S)">Screenshot</button>
-        <button class="tool-btn" id="btn-reset" title="Reset view (Esc)">Reset view</button>
+        <button class="control-btn tool-btn" id="btn-screenshot" title="Export PNG (S)">Screenshot</button>
+        <button class="control-btn tool-btn" id="btn-reset" title="Reset view (Esc)">Reset view</button>
       </div>
     </div>
 
@@ -414,7 +414,7 @@
       <div class="shortcut"><kbd>Esc</kbd><span>Reset view</span></div>
       <div class="shortcut"><kbd>?</kbd><span>Show this help</span></div>
     </div>
-    <button class="tool-btn" id="close-help" style="margin-top:16px">Close</button>
+    <button class="control-btn tool-btn" id="close-help" style="margin-top:16px">Close</button>
   </div>
 </div>
 
@@ -430,6 +430,7 @@
 <script type="module">
 import { MutationViewer, loadMutationPipelineData } from './js/mutation-viewer.js';
 import { initProgress, initSidebarToggle } from './js/shared-ui.js';
+import { initKeyboardShortcuts } from './js/utils/keyboard.js';
 
 // Loading progress
 const setProgress = initProgress();
@@ -469,6 +470,10 @@ document.querySelectorAll('#view-switcher button').forEach(btn => {
   });
 });
 
+// Sync auto-rotate toggle with viewer's initial state
+const mutRotToggle = document.getElementById('rotate-toggle');
+if (viewer.autoRotate) mutRotToggle.classList.add('on');
+
 // ---- Toggle wiring ----
 document.querySelectorAll('.toggle').forEach(t => {
   t.addEventListener('click', () => {
@@ -492,32 +497,15 @@ document.getElementById('close-help').addEventListener('click', () => {
 });
 
 // ---- Keyboard shortcuts ----
-document.addEventListener('keydown', e => {
-  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
-
-  switch (e.key.toLowerCase()) {
-    case 'r': {
-      const rotToggle = document.querySelector('[data-toggle="rotate"]');
-      rotToggle.click();
-      break;
-    }
-    case 's':
-      if (!e.ctrlKey && !e.metaKey) viewer.takeScreenshot();
-      break;
-    case 'f':
-      fpsEl.style.display = fpsEl.style.display === 'none' ? 'inline' : 'none';
-      break;
-    case 'escape':
-      if (helpOverlay.style.display !== 'none') {
-        helpOverlay.style.display = 'none';
-      } else {
-        viewer.resetView();
-      }
-      break;
-    case '?':
-      helpOverlay.style.display = helpOverlay.style.display === 'none' ? 'flex' : 'none';
-      break;
-  }
+initKeyboardShortcuts({
+  'r': { action: () => document.querySelector('[data-toggle="rotate"]').click() },
+  's': { noModifier: true, action: () => viewer.takeScreenshot() },
+  'f': { action: () => { fpsEl.style.display = fpsEl.style.display === 'none' ? 'inline' : 'none'; } },
+  'escape': { action: () => {
+    if (helpOverlay.style.display !== 'none') { helpOverlay.style.display = 'none'; }
+    else { viewer.resetView(); }
+  }},
+  '?': { action: () => { helpOverlay.style.display = helpOverlay.style.display === 'none' ? 'flex' : 'none'; } },
 });
 
 // ---- Populate sequence panel ----

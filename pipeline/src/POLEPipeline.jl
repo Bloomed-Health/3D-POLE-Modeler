@@ -15,6 +15,7 @@ using Dates
 using Printf
 
 include("config.jl")
+include("utils.jl")
 include("pdb.jl")
 include("structure.jl")
 include("conservation.jl")
