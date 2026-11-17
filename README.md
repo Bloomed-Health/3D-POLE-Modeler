@@ -7,6 +7,8 @@
 
 Interactive 3D structural viewer for the human DNA Polymerase epsilon (Pol e) catalytic subunit (p261, UniProt Q07864).
 
+<img width="1438" height="821" alt="homescreen-demo" src="https://github.com/user-attachments/assets/b372734d-d3e4-48a8-bfdc-32bf4352f554" />
+
 ## Overview
 
 This tool provides interactive 3D structural viewers for exploring the domain architecture, catalytic mechanism, cancer-associated mutations, and clinical consequences of rare germline variants of Pol e. The home page renders **real atomic coordinates** from PDB 9F6D using [Mol\*](https://molstar.org/) in ball-and-stick representation. A separate schematic page (`schematic.html`) renders a **procedural cartoon-ribbon model** using Three.js.
