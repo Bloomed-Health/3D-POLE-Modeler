@@ -1,0 +1,1316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='28' font-size='28'>&#x03B5;</text></svg>">
+<title>POLE · Schematic Ribbon Viewer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&family=Newsreader:opsz,wght@6..72,300;6..72,400;6..72,500;6..72,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div id="loading">
+  <div class="helix"></div>
+  <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+  <div class="text" id="loading-text">Initializing renderer&hellip;</div>
+</div>
+
+<div id="app">
+  <header>
+    <div class="brand">
+      <a href="index.html" class="glyph" style="text-decoration:none;color:inherit">POL<em>&epsilon;</em></a>
+      <div class="sub">DNA Polymerase <b>&epsilon;</b> · Catalytic Subunit · <b>p261</b></div>
+    </div>
+    <div class="header-meta">
+      <div class="pill">CHR <b>12q24.33</b></div>
+      <div class="pill"><b>2,286</b> AA</div>
+      <div class="pill"><b>~261</b> kDa</div>
+      <a class="pill" href="https://www.uniprot.org/uniprot/Q07864" target="_blank" style="text-decoration:none">UniProt <b>Q07864</b></a>
+    </div>
+    <button class="sidebar-toggle" id="sidebar-toggle" aria-label="Toggle sidebars">&#9776;</button>
+  </header>
+
+  <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
+
+  <aside class="left" id="sidebar-left">
+    <button class="sidebar-close" id="sidebar-close-left" aria-label="Close menu">&times;</button>
+    <div class="mobile-sidebar-tabs">
+      <button class="active" data-sidebar="left">Controls</button>
+      <button data-sidebar="right">Info</button>
+    </div>
+
+    <!-- Search -->
+    <section class="search-section">
+      <div class="search-box">
+        <span class="search-icon">&#x2315;</span>
+        <input id="search-input" placeholder="Residue, variant, domain or site" autocomplete="off">
+        <span class="search-hint">[/]</span>
+      </div>
+      <div id="search-suggestions" class="search-suggestions" hidden></div>
+      <div id="search-lookup" class="search-lookup" hidden></div>
+    </section>
+
+    <!-- Sequence map + domains -->
+    <section class="sequence-section">
+      <div class="section-header">
+        <span class="dot-header">Functional domains</span>
+        <span class="section-count">N &rarr; C</span>
+      </div>
+
+      <!-- Mutation ticks -->
+      <div class="mut-ticks" id="mut-ticks"></div>
+
+      <!-- P-domain bar -->
+      <div class="pdom-bar">
+        <div class="pdom-fill" data-domain="pdomain" title="P-domain · 640–760 (insertion within Palm)" style="left:27.95%;width:5.25%"></div>
+      </div>
+
+      <!-- Domain segments -->
+      <div class="seq-segments" id="seq-segments"></div>
+
+      <!-- Residue scale -->
+      <div class="seq-scale">
+        <span style="position:absolute;left:0">1</span>
+        <span style="position:absolute;left:21.9%;transform:translateX(-50%)">500</span>
+        <span style="position:absolute;left:43.7%;transform:translateX(-50%)">1000</span>
+        <span style="position:absolute;left:65.6%;transform:translateX(-50%)">1500</span>
+        <span style="position:absolute;right:0">2286</span>
+      </div>
+
+      <!-- Legend -->
+      <div class="seq-legend">
+        <span class="seq-legend-item"><span class="seq-legend-swatch" style="background:#e38b74"></span>Somatic hotspot</span>
+        <span class="seq-legend-item"><span class="seq-legend-swatch" style="background:#a99be6"></span>Germline (PPAP)</span>
+      </div>
+
+      <!-- EXO detail -->
+      <div class="exo-detail">
+        <div class="exo-detail-header">
+          <span class="title">EXO detail</span>
+          <span class="range">223&ndash;517</span>
+        </div>
+        <div class="exo-track" id="exo-track">
+          <div class="exo-track-bar"></div>
+        </div>
+        <div class="exo-readout" id="exo-readout"></div>
+      </div>
+    </section>
+
+    <!-- Domain list -->
+    <section class="domain-list-section" id="domain-list"></section>
+
+    <!-- Display layers -->
+    <section class="layers-section">
+      <div class="section-header">
+        <span class="dot-header">Display layers</span>
+        <span class="section-count" id="layers-count">[14]</span>
+      </div>
+      <div id="layer-groups"></div>
+    </section>
+
+    <!-- Related views -->
+    <section class="panel" style="padding:16px 16px 16px;border-top:1px solid var(--line)">
+      <div class="section-header" style="margin-bottom:10px">
+        <span class="dot-header">Related views</span>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <a href="index.html" class="nav-card-v2 accent">
+          <span class="nav-dot"></span>
+          <span class="nav-body"><span class="nav-title">Mol* Coordinate Viewer</span><span class="nav-desc">PDB 9F6D &middot; DSSP &middot; B-factors</span></span>
+          <span class="nav-arrow">&rarr;</span>
+        </a>
+        <a href="alphafold.html" class="nav-card-v2 blue">
+          <span class="nav-dot"></span>
+          <span class="nav-body"><span class="nav-title">AlphaFold Structure</span><span class="nav-desc">Full-length 2,286 AA &middot; pLDDT</span></span>
+          <span class="nav-arrow">&rarr;</span>
+        </a>
+        <a href="variant.html" class="nav-card-v2 purple">
+          <span class="nav-dot"></span>
+          <span class="nav-body"><span class="nav-title">Variant Catalogue</span><span class="nav-desc">ACMG &middot; SBS signatures &middot; &Delta;&Delta;G</span></span>
+          <span class="nav-arrow">&rarr;</span>
+        </a>
+        <a href="mutation.html" class="nav-card-v2 red">
+          <span class="nav-dot"></span>
+          <span class="nav-body"><span class="nav-title">c.138del Frameshift</span><span class="nav-desc">p.Leu46Phefs*8 &middot; germline truncation</span></span>
+          <span class="nav-arrow">&rarr;</span>
+        </a>
+      </div>
+    </section>
+
+    <!-- Model note -->
+    <section class="panel" style="background:rgba(14,20,30,0.5);border-top:1px solid var(--line)">
+      <div class="section-header" style="margin-bottom:12px">
+        <span class="dot-header" style="color:var(--ink-faint);font-size:10px">Model note</span>
+      </div>
+      <p style="margin:0;font-family:'Newsreader',serif;font-weight:300;font-size:13.5px;line-height:1.6;color:var(--ink-faint)">
+        This is a <b style="font-weight:500;color:var(--ink-dim)">procedural schematic</b>, not an atomic-coordinate rendering. Ribbon geometry is algorithmically generated to illustrate domain topology. Domain boundaries are approximate and have not been derived from DSSP analysis of deposited coordinates. Quantitative color modes (B-factor, conservation, pLDDT) have been removed from this view; they are available in the <a href="index.html" style="color:var(--accent);font-weight:500;text-decoration:none">Mol* Coordinate Viewer</a> and <a href="alphafold.html" style="color:var(--accent);font-weight:500;text-decoration:none">AlphaFold Viewer</a> where they use real data.
+      </p>
+    </section>
+  </aside>
+
+  <main>
+    <div id="canvas-container" role="img" aria-label="3D protein structure schematic"></div>
+
+    <!-- Top-left: panel toggle + provenance badge -->
+    <div class="vp-top-left">
+      <button class="vp-btn" id="toggle-left-btn" title="Toggle left panel">&#x25E7; Layers</button>
+      <div class="provenance-badge" title="Procedural schematic · not PDB coordinates">
+        <span class="prov-full">Procedural &middot; not PDB coordinates</span>
+        <span class="prov-short">Procedural</span>
+      </div>
+    </div>
+
+    <!-- Top-center: view switcher -->
+    <div class="vp-top-center">
+      <div class="view-pill">
+        <span class="vp-active">Schematic</span>
+        <a href="index.html">Coordinates &middot; 9F6D</a>
+        <a href="alphafold.html">AlphaFold</a>
+      </div>
+    </div>
+
+    <!-- Top-right: shortcuts + info panel toggle -->
+    <div class="vp-top-right">
+      <button class="vp-btn" id="toggle-help-btn">Shortcuts <kbd>?</kbd></button>
+      <button class="vp-btn" id="toggle-right-btn" title="Toggle right panel">Info &#x25E8;</button>
+    </div>
+
+    <!-- Domain selection chip (hidden by default) -->
+    <button id="domain-chip" hidden>
+      <span class="chip-swatch"></span>
+      <span class="chip-name"></span>
+      <span class="chip-details">Details &rarr;</span>
+    </button>
+
+    <!-- Bottom toolbar -->
+    <div class="bottom-toolbar">
+      <button class="tb-btn" id="tb-rotate" title="Auto-rotate (R)"><span class="tb-icon">&#x27F3;</span><span class="tb-label">Rotate</span></button>
+      <button class="tb-btn" id="tb-reset" title="Reset view (Esc)"><span class="tb-icon">&#x25CE;</span><span class="tb-label">Reset</span></button>
+      <button class="tb-btn" id="tb-screenshot" title="Export PNG (S)"><span class="tb-icon">&#x2913;</span><span class="tb-label">PNG</span></button>
+      <button class="tb-btn" id="tb-figure" title="Light figure background"><span class="tb-icon">&#x25D0;</span><span class="tb-label">Figure</span></button>
+      <button class="tb-btn" id="tb-share" title="Copy link"><span class="tb-icon">&#x29C9;</span><span class="tb-label">Share</span></button>
+      <span class="tb-sep"></span>
+      <button class="tb-btn" id="tb-display" title="Labels, palette, label size, spin, measure"><span class="tb-icon">&#x25A4;</span><span class="tb-label">Display</span><span style="font-size:11px;opacity:0.8">&#x25BE;</span></button>
+    </div>
+
+    <!-- Display popup -->
+    <div id="display-popup" hidden>
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <span class="dot-header">Display</span>
+        <button id="display-close" style="border:0;background:none;color:var(--ink-dim);font:400 11.5px 'IBM Plex Mono',monospace;cursor:pointer;padding:0">Close &#x2715;</button>
+      </div>
+
+      <div>
+        <span class="display-row-label">Labels</span>
+        <div class="segmented-control cols-4" id="density-selector">
+          <button class="seg-btn" data-density="off">Off</button>
+          <button class="seg-btn" data-density="essential">Essential</button>
+          <button class="seg-btn active" data-density="standard">Standard</button>
+          <button class="seg-btn" data-density="all">All</button>
+        </div>
+      </div>
+
+      <div>
+        <span class="display-row-label">Palette</span>
+        <div class="segmented-control cols-3" id="scheme-selector">
+          <button class="seg-btn active" data-scheme="default">Default</button>
+          <button class="seg-btn" data-scheme="pymol">PyMOL</button>
+          <button class="seg-btn" data-scheme="colorblind">Accessible</button>
+        </div>
+      </div>
+
+      <div class="display-slider">
+        <label>Label size <span class="val" id="label-scale-val">1.0&times;</span></label>
+        <input type="range" id="label-scale" min="0.8" max="1.6" step="0.05" value="1">
+      </div>
+
+      <div class="display-slider">
+        <label>Spin speed <span class="val" id="spin-speed-val">1.0&times;</span></label>
+        <input type="range" id="spin-speed" min="0.25" max="4" step="0.25" value="1">
+      </div>
+
+      <div class="display-measure">
+        <div class="layer-toggle" id="measure-toggle">
+          <span class="switch-track"><span class="switch-knob"></span></span>
+          <span class="layer-label">Measure distance</span>
+        </div>
+        <p class="display-measure-warn">Schematic only. Distances come from the procedural model, not atomic coordinates. For real distances use the <a href="index.html">Mol* viewer</a>.</p>
+      </div>
+    </div>
+
+    <!-- Proofreading panel (shown when exoPolPath is on) -->
+    <div id="proof-panel" hidden>
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+        <span class="dot-header">Proofreading pathway</span>
+        <span style="font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:#e0b25c">Schematic</span>
+      </div>
+      <div class="proof-steps" id="proof-steps"></div>
+      <div class="proof-title"><span id="proof-title-text"></span> <span class="pdb-tag" id="proof-pdb"></span></div>
+      <div class="proof-note" id="proof-note"></div>
+      <div class="proof-controls">
+        <button class="proof-nav-btn" id="proof-prev">&#x25C0;</button>
+        <button class="proof-play-btn" id="proof-play">&#x25B6; Play</button>
+        <button class="proof-nav-btn" id="proof-next">&#x25B6;</button>
+        <span class="proof-dispute-tag">Model 1 &middot; disputed</span>
+      </div>
+      <div class="proof-footer">Exo &alpha;3 (&ldquo;wedge helix&rdquo;) blocks the direct path; the nascent strand is held by the Anchor loop (~res. 970&ndash;980). Waypoints are illustrative, not deposited coordinates.</div>
+    </div>
+
+    <!-- Scale indicator -->
+    <div class="vp-scale">
+      <span class="scale-bar"></span>
+      <span>~50 &Aring; (approx.)</span>
+    </div>
+
+    <!-- Measure hint -->
+    <div id="measure-hint" hidden>Click two points to measure. Schematic distances, not from coordinates.</div>
+
+    <!-- Toast -->
+    <div id="toast"></div>
+
+    <!-- Tooltip -->
+    <div id="tooltip">
+      <div class="t-name"></div>
+      <div class="t-detail"></div>
+    </div>
+
+    <!-- FPS counter (hidden) -->
+    <span id="fps-counter" class="fps-counter" style="display:none;position:absolute;bottom:12px;right:12px;z-index:3"></span>
+  </main>
+
+  <aside class="right" id="sidebar-right" hidden>
+    <button class="sidebar-close" id="sidebar-close-right" aria-label="Close menu">&times;</button>
+    <div class="mobile-sidebar-tabs">
+      <button data-sidebar="left">Controls</button>
+      <button class="active" data-sidebar="right">Info</button>
+    </div>
+
+    <!-- Selected domain (hidden by default) -->
+    <section id="selected-domain" hidden>
+      <div class="sel-header">
+        <span class="dot-header">Selected domain</span>
+        <button id="clear-selection" style="border:0;background:none;color:var(--ink-dim);font:400 11.5px 'IBM Plex Mono',monospace;cursor:pointer;padding:0">Clear &#x2715;</button>
+      </div>
+      <div class="sel-identity">
+        <span class="sel-swatch" id="sel-swatch"></span>
+        <span class="sel-name" id="sel-name"></span>
+      </div>
+      <div class="sel-meta" id="sel-meta"></div>
+      <p class="sel-desc" id="sel-desc"></p>
+      <div class="sel-note" id="sel-note"></div>
+    </section>
+
+    <!-- Locus & identity -->
+    <details class="panel-section" open>
+      <summary>Locus &amp; identity</summary>
+      <div class="panel">
+        <div class="locus-grid">
+          <div class="locus-k">Gene</div><div class="locus-v">POLE &middot; ENSG00000177084</div>
+          <div class="locus-k">Location</div><div class="locus-v" style="font-family:'IBM Plex Mono',monospace;font-size:11.5px">12q24.33</div>
+          <div class="locus-k">Span</div><div class="locus-v">~64 kb &middot; 49 exons</div>
+          <div class="locus-k">Family</div><div class="locus-v" style="font-family:'Newsreader',serif;font-size:14px">B-family &middot; Pol &epsilon;</div>
+          <div class="locus-k">Partners</div><div class="locus-v" style="font-family:'IBM Plex Mono',monospace;font-size:11.5px">POLE2 &middot; POLE3 &middot; POLE4</div>
+          <div class="locus-k">PDB</div><div class="locus-v" style="font-family:'IBM Plex Mono',monospace;font-size:11.5px"><a href="https://www.rcsb.org/structure/9F6D" target="_blank">9F6D</a> &middot; <a href="https://www.rcsb.org/structure/9F6E" target="_blank">9F6E</a> &middot; <a href="https://www.rcsb.org/structure/9F6F" target="_blank">9F6F</a> &middot; <a href="https://www.rcsb.org/structure/9B8S" target="_blank">9B8S</a> &middot; <a href="https://www.rcsb.org/structure/4M8O" target="_blank">4M8O</a></div>
+        </div>
+      </div>
+    </details>
+
+    <!-- Function -->
+    <details class="panel-section">
+      <summary>Function &middot; in vivo</summary>
+      <div class="panel">
+      <p style="margin:0;font-family:'Newsreader',serif;font-weight:300;font-size:16px;line-height:1.55;color:var(--ink)">
+        Pol &epsilon; performs <em style="color:var(--accent)">leading-strand synthesis</em> at the eukaryotic replisome, copying the template 3&prime;&rarr;5&prime; while extending the nascent strand 5&prime;&rarr;3&prime; at &gt;50 nt/s. Base-substitution error rate approaches <span style="font-family:'IBM Plex Mono',monospace;font-size:13px">10&minus;7</span> per nucleotide incorporated.
+      </p>
+
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-top:20px">
+        <span style="font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:var(--ink-dim)">Proofreading mechanism</span>
+        <span class="provenance-chip provenance-chip--info">Active dispute &middot; 2025&ndash;2026</span>
+      </div>
+
+      <div class="model-tabs" id="model-tabs">
+        <button class="model-tab-btn active" data-model="1">
+          <span class="tab-label">Model 1</span>
+          <span class="tab-sub">Roske &amp; Yeeles 2024</span>
+        </button>
+        <button class="model-tab-btn" data-model="2">
+          <span class="tab-label">Model 2</span>
+          <span class="tab-sub">Wang et al. 2025</span>
+        </button>
+      </div>
+
+      <div class="model-content" id="model1-content">
+        <p>The intrinsic 3&prime;&rarr;5&prime; exonuclease excises misincorporated nucleotides via an intramolecular shuttling mechanism, switching the primer terminus between the polymerase and exonuclease active sites separated by ~40&nbsp;&Aring; (measured from Roske &amp; Yeeles 2024 cryo-EM structures; not computed from this schematic model&rsquo;s coordinates). The mismatch-recognition pathway proceeds through four structurally resolved states: post-insertion &rarr; arrest &rarr; frayed substrate &rarr; mismatch excision.</p>
+        <div class="model-meta">
+          <span class="mk">Structures</span><span class="mv">9F6I &middot; 9F6J &middot; 9F6K &middot; 9F6L</span>
+          <span class="mk">Source</span><span class="mv"><a href="https://doi.org/10.1038/s41594-024-01370-y" target="_blank">Roske &amp; Yeeles, NSMB 2024 &#x2197;</a></span>
+        </div>
+        <button class="control-btn tool-btn" id="btn-play3d" style="margin-top:12px;border-color:var(--accent-40);color:var(--accent)">&#x25B6; Animate in 3D</button>
+      </div>
+
+      <div class="model-content" id="model2-content" hidden>
+        <p>An alternative pathway proposes that the primer terminus can be transferred to the exonuclease site through a different conformational route, potentially involving partial strand separation rather than full intramolecular threading. The relative contributions of these two pathways remain an active area of investigation.</p>
+        <div class="model-meta">
+          <span class="mk">Setup</span><span class="mv">Pol &epsilon;&ndash;PCNA, mismatch generated in situ</span>
+          <span class="mk">Unwinding</span><span class="mv">6 bp before exo-site entry</span>
+          <span class="mk">Source</span><span class="mv"><a href="https://doi.org/10.1073/pnas.2507232122" target="_blank">Wang et al., PNAS 2025 &#x2197;</a></span>
+        </div>
+        <p style="margin:10px 0 0;font-size:11px;line-height:1.5;color:var(--ink-faint)">Not shown in the 3D animation.</p>
+      </div>
+
+      <div style="margin-top:10px;font-size:11px;line-height:1.6;color:var(--ink-faint)">
+        Exchange: <a href="https://doi.org/10.1073/pnas.2533320123" target="_blank" style="color:var(--accent);text-decoration:none;border-bottom:1px dotted var(--accent-40)">Roske &amp; Yeeles letter, PNAS 2026</a> &middot; <a href="https://doi.org/10.1073/pnas.2535727123" target="_blank" style="color:var(--accent);text-decoration:none;border-bottom:1px dotted var(--accent-40)">Wang et al. reply, PNAS 2026</a>
+      </div>
+      </div>
+    </details>
+
+    <!-- Pathogenic hotspots -->
+    <details class="panel-section" open>
+      <summary>Pathogenic hotspots</summary>
+      <div class="panel">
+
+      <div class="variant-filters" id="variant-filters">
+        <button class="variant-filter-btn active" data-filter="all">All <span class="filter-count">[10]</span></button>
+        <button class="variant-filter-btn" data-filter="somatic">Somatic <span class="filter-count">[6]</span></button>
+        <button class="variant-filter-btn" data-filter="germline">Germline <span class="filter-count">[6]</span></button>
+      </div>
+
+      <div id="variant-list" style="display:flex;flex-direction:column;gap:8px"></div>
+
+      <a href="variant.html" style="display:block;margin-top:10px;padding:10px;border:1px dashed var(--line-2);border-radius:2px;text-align:center;font-size:11px;color:var(--accent);text-decoration:none;transition:border-color .2s">
+        View all variants with ACMG classification &rarr;
+      </a>
+      </div>
+    </details>
+
+    <!-- Catalytic mechanism -->
+    <details class="panel-section">
+      <summary>Catalytic mechanism</summary>
+      <div class="panel">
+      <p style="margin:0;font-family:'Newsreader',serif;font-weight:300;font-size:15px;line-height:1.6;color:var(--ink-dim)">
+        <b style="font-weight:500;color:var(--ink)">Two-metal-ion catalysis:</b> Metal A (Mg&sup2;&#x207A;) lowers the p<em>K</em>a of the primer 3&prime;-OH, generating the nucleophile. Metal B (Mg&sup2;&#x207A;) coordinates the &beta;,&gamma;-phosphates of the incoming dNTP and stabilizes the pentacoordinate transition state. Both metals are chelated by conserved aspartate carboxylates D626 (motif A) and D860/D862 (motif C) (He et al. 2024, PDB 9B8S).
+      </p>
+
+      <div class="residue-status-header" style="margin-top:20px">Polymerase site &middot; Palm</div>
+      <div class="residue-row"><span class="res-id">D626</span><span class="res-role">Motif A &middot; metal ligand</span><span class="res-status verified">Verified</span></div>
+      <div class="residue-row"><span class="res-id">D860</span><span class="res-role">Motif C &middot; metal ligand</span><span class="res-status verified">Verified</span></div>
+      <div class="residue-row"><span class="res-id">D862</span><span class="res-role">Motif C &middot; metal ligand</span><span class="res-status verified">Verified</span></div>
+
+      <div class="residue-status-header">Exonuclease site &middot; EXO (DEDDy)</div>
+      <div class="residue-row"><span class="res-id">D275</span><span class="res-role">ExoI &middot; metal-coordinating</span><span class="res-status verified">Verified</span></div>
+      <div class="residue-row"><span class="res-id">E277</span><span class="res-role">ExoI &middot; metal-coordinating</span><span class="res-status verified">Verified</span></div>
+      <div class="residue-row"><span class="res-id">D368</span><span class="res-role">ExoII &middot; DEDDy catalytic set</span><span class="res-status verified">Verified</span></div>
+      <div class="residue-row"><span class="res-id">D462</span><span class="res-role">ExoIII &middot; metal-coordinating (9F6L)</span><span class="res-status verified">Verified</span></div>
+
+      <p style="margin:12px 0 0;font-size:11px;line-height:1.55;color:#a8977a">Polymerase active-site residues verified from <a href="https://doi.org/10.1038/s41467-024-52257-x" target="_blank" style="color:var(--accent);text-decoration:none;border-bottom:1px dotted var(--accent-40)">He et al. 2024</a> (PDB 9B8S): D626 (Motif A), D860/D862 (Motif C).</p>
+      </div>
+    </details>
+
+    <!-- References -->
+    <details class="panel-section">
+      <summary>References</summary>
+      <div class="panel" style="border-top:1px solid var(--line)">
+        <div class="ref-list" id="ref-list"></div>
+      </div>
+    </details>
+  </aside>
+
+  <footer class="v2">
+    <span>Model <b>procedural schematic</b></span>
+    <span>Render <b>WebGL</b></span>
+    <span>Basis <a href="https://doi.org/10.1038/s41594-024-01370-y" target="_blank">Roske &amp; Yeeles 2024</a> &middot; <a href="https://www.rcsb.org/structure/9F6D" target="_blank">9F6D</a></span>
+    <small data-pole-provenance style="display:block;opacity:0.6;font-size:0.6rem"></small>
+    <span class="disclaimer">Research and educational use only. Not for clinical decision-making. Variant classifications reflect cited sources and may differ from current clinical laboratory assessments.</span>
+  </footer>
+</div>
+
+<!-- Keyboard help overlay -->
+<div id="keyboard-help" class="keyboard-overlay" style="display:none">
+  <div class="keyboard-overlay-inner">
+    <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:12px">
+      <h3 style="margin-bottom:0">Keyboard shortcuts</h3>
+      <button id="close-help" style="border:0;background:none;color:var(--ink-dim);font-size:12px;cursor:pointer;padding:0">Close &#x2715;</button>
+    </div>
+    <div class="shortcut-grid" id="shortcut-grid"></div>
+  </div>
+</div>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+
+<script type="module">
+import { POLEViewer } from './js/pole-viewer.js';
+import { initProgress, initSidebarToggle } from './js/shared-ui.js';
+import { DOMAINS_LIST, MUTATIONS } from './js/data/domainConfig.js';
+import { initKeyboardShortcuts } from './js/utils/keyboard.js';
+
+// =========================================================================
+// Data
+// =========================================================================
+
+const DOMS = DOMAINS_LIST;
+const VARIANTS = MUTATIONS;
+
+const LAYERS = [
+  { title:'Nucleic acid', items:[['dna','Template / nascent DNA'],['dntp','Incoming dNTP']] },
+  { title:'Active sites', items:[['metals','Catalytic Mg\u00B2\u207A ions'],['exoSite','Exonuclease active site'],['exoPolPath','Proofreading pathway']] },
+  { title:'Cofactors', items:[['zincMotifs','Zn-finger motifs'],['fesCluster','[4Fe-4S] cluster']] },
+  { title:'Variants', items:[['mutations','Mutation hotspots']] },
+  { title:'Complex', items:[['accessory','Accessory subunits'],['pcna','PCNA sliding clamp']] },
+  { title:'Structure detail', collapsed:true, items:[['surface','Molecular envelope'],['hbonds','H-bonds (i\u2192i+4)'],['sheetHbonds','\u03B2-sheet H-bonds']] },
+];
+
+const PROOF = [
+  { title:'Post-insertion', pdb:'9F6I', note:'Primer terminus at the polymerase active site following mismatch insertion. Exonuclease-dead construct (D275A/E277A).' },
+  { title:'Arrest', pdb:'9F6J', note:'Arrested intermediate. Exonuclease-dead construct (D275A/E277A); exo-site labels correspond to alanines.' },
+  { title:'Frayed substrate', pdb:'9F6K', note:'DNA handed from the Thumb to the P domain with a frayed primer terminus.' },
+  { title:'Mismatch excision', pdb:'9F6L', note:'DNA returns to the Thumb; primer terminus in the exonuclease site. D462 (ExoIII) resolved as metal-coordinating.' },
+];
+
+const SHORTCUTS = [
+  ['R','Auto-rotate'],['1\u20138','Focus domain'],['S','Export PNG'],['M','Measure distance'],
+  ['L','Labels on/off'],['D','DNA'],['H','Helix H-bonds'],['B','\u03B2-sheet H-bonds'],
+  ['Z','Zn-finger motifs'],['P','PCNA clamp'],['E','Proofreading pathway'],
+  ['Esc','Reset view'],['[ / ]','Toggle panels'],['/','Find residue'],['F','Figure mode'],['?','This help'],
+];
+
+const REFS = [
+  ['Roske & Yeeles, ','Nat Struct Mol Biol',' 31:1921\u20131931 (2024) \u00B7 Model 1','10.1038/s41594-024-01370-y'],
+  ['Wang, He, O\u2019Donnell & Li, ','PNAS',' 122:e2507232122 (2025) \u00B7 Model 2','10.1073/pnas.2507232122'],
+  ['Roske & Yeeles, ','PNAS',' 123:e2533320123 (2026) \u00B7 letter on Wang et al.','10.1073/pnas.2533320123'],
+  ['Wang et al., ','PNAS',' 123:e2535727123 (2026) \u00B7 reply to Roske & Yeeles','10.1073/pnas.2535727123'],
+  ['He et al., ','Nat Commun',' 15:7847 (2024)','10.1038/s41467-024-52257-x'],
+  ['Mur et al., ','Genome Med',' 15:85 (2023)','10.1186/s13073-023-01234-y'],
+  ['Yuan et al., ','Nat Commun',' 11:3156 (2020)','10.1038/s41467-020-16910-5'],
+  ['Robinson, Coorens et al., ','Nat Genet',' 53:1434 (2021)','10.1038/s41588-021-00930-y'],
+  ['Hogg et al., ','Nat Struct Mol Biol',' 21:49 (2014)','10.1038/nsmb.2712'],
+  ['Palles et al., ','Nat Genet',' 45:136 (2013)','10.1038/ng.2503'],
+  ['Leon-Castillo et al., ','J Pathol',' 250:323 (2020)','10.1002/path.5372'],
+  ['ter Beek et al., ','Nucleic Acids Res',' 47:5712 (2019)','10.1093/nar/gkz248'],
+];
+
+const SOM_COLOR = '#e38b74', GERM_COLOR = '#a99be6';
+const EXO_MOTIFS = [
+  { label:'ExoI', left:'17.7%' },
+  { label:'ExoII', left:'49.3%' },
+  { label:'ExoIII', left:'81.3%' },
+];
+const MAX_RES = 2286;
+
+// =========================================================================
+// State
+// =========================================================================
+
+const toggleState = {};
+LAYERS.forEach(g => g.items.forEach(([k]) => { toggleState[k] = true; }));
+// Start with some layers off for a cleaner initial view
+toggleState.surface = false;
+toggleState.hbonds = false;
+toggleState.sheetHbonds = false;
+toggleState.exoPolPath = false;
+
+let selectedDomain = null;
+let variantFilter = 'all';
+let currentProofStep = 0;
+let proofPlaying = false;
+let proofInterval = null;
+let figureMode = false;
+let measureMode = false;
+let displayOpen = false;
+let viewer = null;
+
+// =========================================================================
+// Render static UI
+// =========================================================================
+
+function pct(pos) { return (pos / MAX_RES * 100).toFixed(2) + '%'; }
+
+// -- Sequence map segments --
+const seqEl = document.getElementById('seq-segments');
+DOMS.filter(d => d.key !== 'pdomain').forEach(d => {
+  const seg = document.createElement('div');
+  seg.className = 'seq-segment';
+  seg.style.flex = String(d.range[1] - d.range[0]);
+  seg.style.background = d.color;
+  seg.title = `${d.name} \u00B7 ${d.range[0]}\u2013${d.range[1]}`;
+  seg.dataset.domain = d.key;
+  seqEl.appendChild(seg);
+});
+
+// -- Mutation ticks --
+const ticksEl = document.getElementById('mut-ticks');
+VARIANTS.forEach(v => {
+  const isSomatic = v.origins.includes('Somatic');
+  const tick = document.createElement('div');
+  tick.className = 'mut-tick';
+  tick.style.left = pct(v.residue);
+  tick.style.height = isSomatic ? '12px' : '9px';
+  tick.style.background = isSomatic ? SOM_COLOR : GERM_COLOR;
+  tick.title = v.id;
+  tick.dataset.variant = v.id;
+  ticksEl.appendChild(tick);
+});
+
+// -- EXO detail track --
+const exoTrack = document.getElementById('exo-track');
+const exoRange = [223, 517];
+const exoSpan = exoRange[1] - exoRange[0];
+function exoPct(res) { return ((res - exoRange[0]) / exoSpan * 100).toFixed(1) + '%'; }
+
+EXO_MOTIFS.forEach(m => {
+  const el = document.createElement('div');
+  el.className = 'exo-motif-label';
+  el.style.left = m.left;
+  el.innerHTML = `<span class="tick"></span><span class="text">${m.label}</span>`;
+  exoTrack.appendChild(el);
+});
+
+VARIANTS.forEach(v => {
+  if (v.residue < exoRange[0] || v.residue > exoRange[1]) return;
+  const isSomatic = v.origins.includes('Somatic');
+  const color = isSomatic ? SOM_COLOR : GERM_COLOR;
+  const pip = document.createElement('div');
+  pip.className = 'exo-variant-pip';
+  pip.style.left = exoPct(v.residue);
+  pip.style.height = isSomatic ? '34px' : '28px';
+  pip.title = v.id;
+  pip.dataset.variant = v.id;
+  pip.innerHTML = `<span class="dot" style="background:${color};color:${color}"></span><span class="stem" style="background:${color}"></span>`;
+  exoTrack.appendChild(pip);
+});
+
+// -- Domain list --
+const domListEl = document.getElementById('domain-list');
+DOMS.forEach((d, i) => {
+  const row = document.createElement('div');
+  row.className = 'domain-row';
+  row.dataset.domain = d.key;
+  row.title = `Shortcut ${i + 1}`;
+  row.innerHTML = `
+    <span class="swatch" style="background:${d.color}"></span>
+    <div style="min-width:0">
+      <div class="domain-name">${d.name}</div>
+      <div class="domain-info">res. ${d.range[0]}\u2013${d.range[1]} \u00B7 ${d.tag}</div>
+    </div>`;
+  domListEl.appendChild(row);
+});
+domListEl.insertAdjacentHTML('beforeend',
+  '<p style="margin:8px 8px 0;font-size:11.5px;line-height:1.5;color:var(--ink-faint)">Boundaries are schematic (illustrative); not derived from DSSP.</p>');
+
+// -- Layer groups --
+const layersEl = document.getElementById('layer-groups');
+LAYERS.forEach(g => {
+  const collapsed = g.collapsed ? ' collapsed' : '';
+  const groupEl = document.createElement('div');
+  groupEl.className = 'layer-group' + collapsed;
+  let itemsHtml = '';
+  g.items.forEach(([key, label]) => {
+    const on = toggleState[key] ? ' on' : '';
+    itemsHtml += `<div class="layer-toggle${on}" data-toggle="${key}">
+      <span class="switch-track"><span class="switch-knob"></span></span>
+      <span class="layer-label">${label}</span>
+    </div>`;
+  });
+  const activeCount = g.items.filter(([k]) => toggleState[k]).length;
+  groupEl.innerHTML = `
+    <div class="layer-group-header">
+      <span class="chevron">${collapsed ? '\u25B8' : '\u25BE'}</span>${g.title}
+      <span class="group-count">[${activeCount}]</span>
+    </div>
+    <div class="layer-group-items">${itemsHtml}</div>`;
+  layersEl.appendChild(groupEl);
+});
+
+// -- Variants list --
+function renderVariants() {
+  const list = document.getElementById('variant-list');
+  list.innerHTML = '';
+  const filtered = VARIANTS.filter(v => {
+    if (variantFilter === 'somatic') return v.origins.includes('Somatic');
+    if (variantFilter === 'germline') return v.origins.includes('Germline');
+    return true;
+  });
+  filtered.forEach(v => {
+    const card = document.createElement('div');
+    card.className = 'variant-card';
+    card.dataset.variant = v.id;
+    let badges = '';
+    v.origins.forEach(o => {
+      const cls = o === 'Somatic' ? 'somatic' : 'germline';
+      badges += `<span class="vc-badge ${cls}">${o}</span>`;
+    });
+    card.innerHTML = `
+      <div class="vc-header">
+        <span class="vc-id">${v.id}</span>
+        <span class="vc-hgvs">${v.label}</span>
+        <span class="vc-badges">${badges}</span>
+      </div>
+      <div class="vc-loc-line">
+        <span class="vc-loc">${v.loc}</span>
+        <span class="vc-loc-sep"></span>
+        <span class="vc-res">res ${v.residue}</span>
+      </div>
+      <div class="vc-text">${v.text}</div>`;
+    list.appendChild(card);
+  });
+}
+renderVariants();
+
+// -- References --
+const refList = document.getElementById('ref-list');
+REFS.forEach(([pre, j, post, doi]) => {
+  const a = document.createElement('a');
+  a.className = 'ref-item';
+  a.href = 'https://doi.org/' + doi;
+  a.target = '_blank';
+  a.innerHTML = `<span>${pre}<em>${j}</em>${post}</span><span class="doi-link">DOI \u2197</span>`;
+  refList.appendChild(a);
+});
+
+// -- Keyboard shortcuts --
+const shortcutGrid = document.getElementById('shortcut-grid');
+SHORTCUTS.forEach(([k, d]) => {
+  shortcutGrid.insertAdjacentHTML('beforeend',
+    `<div class="shortcut"><kbd>${k}</kbd><span>${d}</span></div>`);
+});
+
+// -- Proof steps --
+const proofStepsEl = document.getElementById('proof-steps');
+PROOF.forEach((p, i) => {
+  const btn = document.createElement('button');
+  btn.className = 'proof-step-btn' + (i === 0 ? ' active' : '');
+  btn.dataset.step = String(i);
+  btn.innerHTML = `<span class="step-num">${i + 1}</span><span class="step-pdb">${p.pdb}</span>`;
+  proofStepsEl.appendChild(btn);
+});
+
+function updateProofUI(step) {
+  currentProofStep = step;
+  const p = PROOF[step];
+  document.getElementById('proof-title-text').textContent = p.title;
+  document.getElementById('proof-pdb').textContent = p.pdb;
+  document.getElementById('proof-note').textContent = p.note;
+  proofStepsEl.querySelectorAll('.proof-step-btn').forEach((b, i) => {
+    b.classList.toggle('active', i === step);
+  });
+  if (viewer) viewer.setProofStep(step);
+}
+updateProofUI(0);
+
+// =========================================================================
+// Viewer init
+// =========================================================================
+
+const setProgress = initProgress();
+setProgress(20, 'Initializing WebGL renderer\u2026');
+
+const container = document.getElementById('canvas-container');
+const tooltip = document.getElementById('tooltip');
+
+setProgress(30, 'Building protein backbone\u2026');
+viewer = new POLEViewer(container, tooltip);
+
+setProgress(70, 'Computing ribbon geometry\u2026');
+
+// FPS counter
+const fpsEl = document.getElementById('fps-counter');
+viewer.setFPSCallback(fps => { fpsEl.textContent = fps + ' FPS'; });
+
+// Apply initial toggle state
+Object.entries(toggleState).forEach(([k, on]) => viewer.setToggle(k, on));
+viewer.setToggle('rotate', viewer.autoRotate);
+viewer.setLabelDensity('standard');
+
+// Callbacks from viewer
+viewer.onDomainSelect = (key) => selectDomain(key);
+viewer.onMutationSelect = (id) => focusVariantCard(id);
+viewer.onMutationHover = (id) => {
+  if (viewer.setEmphasisMutation) viewer.setEmphasisMutation(id);
+};
+
+// =========================================================================
+// Domain selection
+// =========================================================================
+
+const domainKeys = DOMS.map(d => d.key);
+
+function selectDomain(key) {
+  selectedDomain = key;
+  // Sync domain list
+  domListEl.querySelectorAll('.domain-row').forEach(r => {
+    r.classList.toggle('active', r.dataset.domain === key);
+  });
+  // Sync sequence segments
+  seqEl.querySelectorAll('.seq-segment').forEach(s => {
+    s.style.opacity = !key || s.dataset.domain === key ? '1' : '0.35';
+  });
+  // Domain chip
+  const chip = document.getElementById('domain-chip');
+  const selPanel = document.getElementById('selected-domain');
+  if (key) {
+    const d = DOMS.find(x => x.key === key);
+    chip.hidden = false;
+    chip.querySelector('.chip-swatch').style.background = d.color;
+    chip.querySelector('.chip-name').textContent = `${d.abbrev} \u00B7 res. ${d.range[0]}\u2013${d.range[1]}`;
+    // Update right panel selection
+    selPanel.hidden = false;
+    selPanel.style.background = hexAlpha(d.color, 0.06);
+    document.getElementById('sel-swatch').style.background = d.color;
+    document.getElementById('sel-swatch').style.boxShadow = `0 0 8px ${d.color}`;
+    document.getElementById('sel-name').textContent = d.name;
+    document.getElementById('sel-meta').textContent = `${d.abbrev} \u00B7 res. ${d.range[0]}\u2013${d.range[1]} \u00B7 ${d.tag}`;
+    document.getElementById('sel-desc').textContent = d.desc;
+    document.getElementById('sel-note').textContent = 'Boundaries schematic';
+    // Show domain tag on hotspots
+    document.getElementById('hotspot-domain-tag').innerHTML = `in <span style="color:${d.color}">${d.abbrev}</span>`;
+  } else {
+    chip.hidden = true;
+    selPanel.hidden = true;
+    document.getElementById('hotspot-domain-tag').textContent = '';
+  }
+  // Highlight in viewer
+  if (viewer) {
+    viewer.highlightDomain(key, !!key);
+  }
+}
+
+function hexAlpha(hex, alpha) {
+  const n = parseInt(hex.slice(1), 16);
+  return `rgba(${n >> 16},${(n >> 8) & 255},${n & 255},${alpha})`;
+}
+
+// Domain list click
+domListEl.addEventListener('click', e => {
+  const row = e.target.closest('.domain-row');
+  if (!row) return;
+  const key = row.dataset.domain;
+  if (key === selectedDomain) {
+    selectDomain(null);
+    viewer.resetView();
+  } else {
+    selectDomain(key);
+    viewer.focusDomain(key);
+  }
+});
+
+// Sequence segment click
+seqEl.addEventListener('click', e => {
+  const seg = e.target.closest('.seq-segment');
+  if (!seg) return;
+  const key = seg.dataset.domain;
+  selectDomain(key);
+  viewer.focusDomain(key);
+});
+
+// P-domain fill click
+document.querySelector('.pdom-fill').addEventListener('click', () => {
+  selectDomain('pdomain');
+  viewer.focusDomain('pdomain');
+});
+
+// Domain chip click → scroll right panel to selected domain
+document.getElementById('domain-chip').addEventListener('click', () => {
+  const rightPanel = document.getElementById('sidebar-right');
+  if (window.innerWidth > 1100) {
+    if (rightPanel.hidden) { rightPanel.hidden = false; adjustGrid(); }
+    document.getElementById('selected-domain').scrollIntoView({ behavior: 'smooth' });
+  } else if (rightPanel.classList.contains('open')) {
+    document.getElementById('selected-domain').scrollIntoView({ behavior: 'smooth' });
+  }
+});
+
+// Clear selection
+document.getElementById('clear-selection').addEventListener('click', () => {
+  selectDomain(null);
+  viewer.highlightDomain(null, false);
+  viewer.resetView();
+});
+
+// =========================================================================
+// Layer toggles
+// =========================================================================
+
+function setLayer(key, on) {
+  toggleState[key] = on;
+  viewer.setToggle(key, on);
+  // Update toggle UI
+  const toggle = document.querySelector(`.layer-toggle[data-toggle="${key}"]`);
+  if (toggle) toggle.classList.toggle('on', on);
+  // Update group counts
+  updateLayerCounts();
+  // Special: proofreading panel
+  if (key === 'exoPolPath') {
+    document.getElementById('proof-panel').hidden = !on;
+    if (on) updateProofUI(currentProofStep);
+    if (!on && proofPlaying) stopProofPlay();
+  }
+}
+
+function updateLayerCounts() {
+  let total = 0;
+  layersEl.querySelectorAll('.layer-group').forEach(grp => {
+    const toggles = grp.querySelectorAll('.layer-toggle');
+    let count = 0;
+    toggles.forEach(t => { if (t.classList.contains('on')) count++; });
+    total += count;
+    grp.querySelector('.group-count').textContent = `[${count}]`;
+  });
+  document.getElementById('layers-count').textContent = `[${total}]`;
+}
+
+layersEl.addEventListener('click', e => {
+  // Group header toggle
+  const header = e.target.closest('.layer-group-header');
+  if (header) {
+    const group = header.closest('.layer-group');
+    group.classList.toggle('collapsed');
+    header.querySelector('.chevron').textContent = group.classList.contains('collapsed') ? '\u25B8' : '\u25BE';
+    return;
+  }
+  // Toggle switch
+  const toggle = e.target.closest('.layer-toggle');
+  if (toggle) {
+    const key = toggle.dataset.toggle;
+    const on = !toggle.classList.contains('on');
+    setLayer(key, on);
+  }
+});
+
+// =========================================================================
+// Bottom toolbar
+// =========================================================================
+
+// Rotate
+const tbRotate = document.getElementById('tb-rotate');
+function syncRotateUI() {
+  tbRotate.classList.toggle('active', viewer.autoRotate);
+}
+syncRotateUI();
+tbRotate.addEventListener('click', () => {
+  viewer.autoRotate = !viewer.autoRotate;
+  viewer.setToggle('rotate', viewer.autoRotate);
+  syncRotateUI();
+});
+
+// Reset
+document.getElementById('tb-reset').addEventListener('click', () => {
+  viewer.resetView();
+  viewer.clearMeasurements();
+  if (measureMode) toggleMeasureMode();
+  selectDomain(null);
+});
+
+// Screenshot
+document.getElementById('tb-screenshot').addEventListener('click', () => viewer.takeScreenshot());
+
+// Figure mode
+const tbFigure = document.getElementById('tb-figure');
+tbFigure.addEventListener('click', () => {
+  figureMode = !figureMode;
+  document.querySelector('main').classList.toggle('figure-mode', figureMode);
+  tbFigure.classList.toggle('active', figureMode);
+});
+
+// Share
+document.getElementById('tb-share').addEventListener('click', () => {
+  const url = window.location.href.split('#')[0];
+  navigator.clipboard.writeText(url).then(() => showToast('Link copied to clipboard'));
+});
+
+// Display popup
+const tbDisplay = document.getElementById('tb-display');
+const displayPopup = document.getElementById('display-popup');
+function toggleDisplayPopup() {
+  displayOpen = !displayOpen;
+  displayPopup.hidden = !displayOpen;
+  tbDisplay.classList.toggle('active', displayOpen);
+}
+tbDisplay.addEventListener('click', toggleDisplayPopup);
+document.getElementById('display-close').addEventListener('click', toggleDisplayPopup);
+
+// =========================================================================
+// Display popup controls
+// =========================================================================
+
+// Label density
+document.getElementById('density-selector').addEventListener('click', e => {
+  const btn = e.target.closest('.seg-btn');
+  if (!btn) return;
+  document.querySelectorAll('#density-selector .seg-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const density = btn.dataset.density;
+  if (density === 'off') {
+    viewer.setToggle('labels', false);
+  } else {
+    viewer.setToggle('labels', true);
+    viewer.setLabelDensity(density);
+  }
+});
+
+// Color scheme
+document.getElementById('scheme-selector').addEventListener('click', e => {
+  const btn = e.target.closest('.seg-btn');
+  if (!btn) return;
+  document.querySelectorAll('#scheme-selector .seg-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  viewer.setColorScheme(btn.dataset.scheme);
+});
+
+// Label size slider
+const labelScaleSlider = document.getElementById('label-scale');
+const labelScaleVal = document.getElementById('label-scale-val');
+labelScaleSlider.addEventListener('input', () => {
+  const v = parseFloat(labelScaleSlider.value);
+  labelScaleVal.textContent = v.toFixed(1) + '\u00D7';
+  if (viewer._labelGroup) {
+    viewer._labelGroup.children.forEach(c => {
+      if (c.scale) c.scale.setScalar(v);
+    });
+  }
+});
+
+// Spin speed slider
+const spinSlider = document.getElementById('spin-speed');
+const spinVal = document.getElementById('spin-speed-val');
+spinSlider.addEventListener('input', () => {
+  const v = parseFloat(spinSlider.value);
+  spinVal.textContent = v.toFixed(1) + '\u00D7';
+  viewer.rotateSpeed = v;
+});
+
+// Measure toggle (in display popup)
+const measureToggle = document.getElementById('measure-toggle');
+function toggleMeasureMode() {
+  measureMode = viewer.toggleMeasure();
+  measureToggle.classList.toggle('on', measureMode);
+  document.getElementById('measure-hint').hidden = !measureMode;
+}
+measureToggle.addEventListener('click', toggleMeasureMode);
+
+// =========================================================================
+// Proofreading panel
+// =========================================================================
+
+proofStepsEl.addEventListener('click', e => {
+  const btn = e.target.closest('.proof-step-btn');
+  if (!btn) return;
+  updateProofUI(parseInt(btn.dataset.step));
+});
+
+document.getElementById('proof-prev').addEventListener('click', () => {
+  updateProofUI((currentProofStep + PROOF.length - 1) % PROOF.length);
+});
+document.getElementById('proof-next').addEventListener('click', () => {
+  updateProofUI((currentProofStep + 1) % PROOF.length);
+});
+
+const proofPlayBtn = document.getElementById('proof-play');
+function stopProofPlay() {
+  proofPlaying = false;
+  clearInterval(proofInterval);
+  proofPlayBtn.classList.remove('active');
+  proofPlayBtn.innerHTML = '&#x25B6; Play';
+}
+proofPlayBtn.addEventListener('click', () => {
+  if (proofPlaying) {
+    stopProofPlay();
+  } else {
+    proofPlaying = true;
+    proofPlayBtn.classList.add('active');
+    proofPlayBtn.innerHTML = '&#x25A0; Stop';
+    proofInterval = setInterval(() => {
+      updateProofUI((currentProofStep + 1) % PROOF.length);
+    }, 2500);
+  }
+});
+
+// "Animate in 3D" button
+document.getElementById('btn-play3d').addEventListener('click', () => {
+  if (!toggleState.exoPolPath) setLayer('exoPolPath', true);
+  proofPlayBtn.click();
+});
+
+// =========================================================================
+// Model tabs (Function section)
+// =========================================================================
+
+document.getElementById('model-tabs').addEventListener('click', e => {
+  const btn = e.target.closest('.model-tab-btn');
+  if (!btn) return;
+  const model = btn.dataset.model;
+  document.querySelectorAll('#model-tabs .model-tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('model1-content').hidden = model !== '1';
+  document.getElementById('model2-content').hidden = model !== '2';
+});
+
+// =========================================================================
+// Variant filters
+// =========================================================================
+
+document.getElementById('variant-filters').addEventListener('click', e => {
+  const btn = e.target.closest('.variant-filter-btn');
+  if (!btn) return;
+  variantFilter = btn.dataset.filter;
+  document.querySelectorAll('#variant-filters .variant-filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderVariants();
+  wireVariantCards();
+});
+
+function focusVariantCard(id) {
+  const card = document.querySelector(`.variant-card[data-variant="${id}"]`);
+  if (card) card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+function wireVariantCards() {
+  document.querySelectorAll('.variant-card').forEach(card => {
+    card.addEventListener('click', () => {
+      viewer.focusMutation(card.dataset.variant);
+    });
+    card.addEventListener('mouseenter', () => {
+      if (viewer.setEmphasisMutation) viewer.setEmphasisMutation(card.dataset.variant);
+    });
+    card.addEventListener('mouseleave', () => {
+      if (viewer.setEmphasisMutation) viewer.setEmphasisMutation(null);
+    });
+  });
+}
+wireVariantCards();
+
+// Mutation ticks click
+ticksEl.addEventListener('click', e => {
+  const tick = e.target.closest('.mut-tick');
+  if (tick) viewer.focusMutation(tick.dataset.variant);
+});
+
+// EXO variant pips click
+exoTrack.addEventListener('click', e => {
+  const pip = e.target.closest('.exo-variant-pip');
+  if (pip) viewer.focusMutation(pip.dataset.variant);
+});
+
+// EXO variant pips hover readout
+const exoReadout = document.getElementById('exo-readout');
+exoTrack.addEventListener('mouseover', e => {
+  const pip = e.target.closest('.exo-variant-pip');
+  if (pip) {
+    const v = VARIANTS.find(x => x.id === pip.dataset.variant);
+    if (v) {
+      exoReadout.textContent = `${v.id} \u00B7 ${v.label}`;
+      exoReadout.style.color = v.origins.includes('Somatic') ? SOM_COLOR : GERM_COLOR;
+    }
+  }
+});
+exoTrack.addEventListener('mouseout', e => {
+  const pip = e.target.closest('.exo-variant-pip');
+  if (pip) {
+    exoReadout.textContent = '';
+    exoReadout.style.color = '';
+  }
+});
+
+// =========================================================================
+// Search
+// =========================================================================
+
+const searchInput = document.getElementById('search-input');
+const suggestionsEl = document.getElementById('search-suggestions');
+const lookupEl = document.getElementById('search-lookup');
+
+function suggest(q) {
+  q = (q || '').trim().toLowerCase();
+  if (!q) return [];
+  const out = [];
+  // Residue number
+  if (/^\d{1,4}$/.test(q) && +q >= 1 && +q <= MAX_RES) {
+    const doms = DOMS.filter(d => +q >= d.range[0] && +q <= d.range[1]).map(d => d.abbrev).join(' / ');
+    out.push({ label: 'Residue ' + q + (doms ? ' \u00B7 ' + doms : ''), kind: 'Residue', token: q });
+  }
+  // Variants
+  VARIANTS.forEach(v => {
+    const hay = (v.id + ' ' + v.label + ' res ' + v.residue).toLowerCase();
+    if (hay.includes(q)) out.push({ label: v.id + ' \u00B7 ' + v.label, kind: 'Hotspot', token: v.id });
+  });
+  // Domains
+  DOMS.forEach(d => {
+    const hay = (d.name + ' ' + d.abbrev + ' ' + d.key + ' ' + d.tag).toLowerCase();
+    if (q.length >= 2 && hay.includes(q)) out.push({ label: d.name + ' \u00B7 ' + d.range[0] + '\u2013' + d.range[1], kind: 'Domain', token: 'dom:' + d.key });
+  });
+  return out.slice(0, 6);
+}
+
+searchInput.addEventListener('input', () => {
+  const results = suggest(searchInput.value);
+  if (results.length === 0) {
+    suggestionsEl.hidden = true;
+    return;
+  }
+  suggestionsEl.hidden = false;
+  suggestionsEl.innerHTML = results.map(r =>
+    `<div class="search-suggestion" data-token="${r.token}"><span>${r.label}</span><span class="kind">${r.kind}</span></div>`
+  ).join('');
+});
+
+suggestionsEl.addEventListener('mousedown', e => {
+  const item = e.target.closest('.search-suggestion');
+  if (!item) return;
+  e.preventDefault();
+  pickSuggestion(item.dataset.token);
+});
+
+searchInput.addEventListener('keydown', e => {
+  if (e.key === 'Enter') {
+    const results = suggest(searchInput.value);
+    if (results.length > 0) pickSuggestion(results[0].token);
+  }
+  if (e.key === 'Escape') {
+    searchInput.blur();
+    suggestionsEl.hidden = true;
+  }
+});
+
+searchInput.addEventListener('blur', () => {
+  setTimeout(() => { suggestionsEl.hidden = true; }, 150);
+});
+
+function pickSuggestion(token) {
+  suggestionsEl.hidden = true;
+  searchInput.value = '';
+  if (token.startsWith('dom:')) {
+    const key = token.slice(4);
+    selectDomain(key);
+    viewer.focusDomain(key);
+  } else if (/^\d+$/.test(token)) {
+    viewer.focusResidue(parseInt(token));
+  } else {
+    // Variant
+    viewer.focusMutation(token);
+    focusVariantCard(token);
+  }
+}
+
+// =========================================================================
+// Panel toggles (viewport buttons)
+// =========================================================================
+
+const leftPanel = document.getElementById('sidebar-left');
+const rightPanel = document.getElementById('sidebar-right');
+
+document.getElementById('toggle-left-btn').addEventListener('click', () => {
+  if (window.innerWidth <= 1100) {
+    leftPanel.classList.toggle('open');
+    document.getElementById('sidebar-backdrop').classList.toggle('open', leftPanel.classList.contains('open') || rightPanel.classList.contains('open'));
+  } else {
+    leftPanel.hidden = !leftPanel.hidden;
+    adjustGrid();
+  }
+});
+
+document.getElementById('toggle-right-btn').addEventListener('click', () => {
+  if (window.innerWidth <= 1100) {
+    rightPanel.classList.toggle('open');
+    document.getElementById('sidebar-backdrop').classList.toggle('open', leftPanel.classList.contains('open') || rightPanel.classList.contains('open'));
+  } else {
+    rightPanel.hidden = !rightPanel.hidden;
+    adjustGrid();
+  }
+});
+
+function adjustGrid() {
+  const l = !leftPanel.hidden;
+  const r = !rightPanel.hidden;
+  const app = document.getElementById('app');
+  if (l && r) app.style.gridTemplateColumns = '320px 1fr 300px';
+  else if (l) app.style.gridTemplateColumns = '320px 1fr';
+  else if (r) app.style.gridTemplateColumns = '1fr 300px';
+  else app.style.gridTemplateColumns = '1fr';
+}
+adjustGrid();
+
+// =========================================================================
+// Toast
+// =========================================================================
+
+let toastTimeout;
+function showToast(msg) {
+  const toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.classList.add('show');
+  clearTimeout(toastTimeout);
+  toastTimeout = setTimeout(() => toast.classList.remove('show'), 2500);
+}
+
+// =========================================================================
+// Keyboard shortcuts
+// =========================================================================
+
+const helpOverlay = document.getElementById('keyboard-help');
+
+function toggleHelp() {
+  helpOverlay.style.display = helpOverlay.style.display === 'none' ? 'flex' : 'none';
+}
+
+document.getElementById('toggle-help-btn').addEventListener('click', toggleHelp);
+document.getElementById('close-help').addEventListener('click', toggleHelp);
+
+// Sidebar toggle (mobile)
+initSidebarToggle();
+
+const KEYMAP = { h:'hbonds', b:'sheetHbonds', z:'zincMotifs', p:'pcna', e:'exoPolPath', d:'dna' };
+
+initKeyboardShortcuts({
+  'r': { action: () => tbRotate.click() },
+  '1': { action: () => { if (0 < domainKeys.length) { selectDomain(domainKeys[0]); viewer.focusDomain(domainKeys[0]); } } },
+  '2': { action: () => { if (1 < domainKeys.length) { selectDomain(domainKeys[1]); viewer.focusDomain(domainKeys[1]); } } },
+  '3': { action: () => { if (2 < domainKeys.length) { selectDomain(domainKeys[2]); viewer.focusDomain(domainKeys[2]); } } },
+  '4': { action: () => { if (3 < domainKeys.length) { selectDomain(domainKeys[3]); viewer.focusDomain(domainKeys[3]); } } },
+  '5': { action: () => { if (4 < domainKeys.length) { selectDomain(domainKeys[4]); viewer.focusDomain(domainKeys[4]); } } },
+  '6': { action: () => { if (5 < domainKeys.length) { selectDomain(domainKeys[5]); viewer.focusDomain(domainKeys[5]); } } },
+  '7': { action: () => { if (6 < domainKeys.length) { selectDomain(domainKeys[6]); viewer.focusDomain(domainKeys[6]); } } },
+  '8': { action: () => { if (7 < domainKeys.length) { selectDomain(domainKeys[7]); viewer.focusDomain(domainKeys[7]); } } },
+  's': { noModifier: true, action: () => viewer.takeScreenshot() },
+  'm': { action: () => toggleMeasureMode() },
+  'l': { action: () => viewer.setToggle('labels', true) },
+  'f': { noModifier: true, action: () => tbFigure.click() },
+  '/': { action: () => searchInput.focus() },
+  '[': { action: () => document.getElementById('toggle-left-btn').click() },
+  ']': { action: () => document.getElementById('toggle-right-btn').click() },
+  'escape': { action: () => {
+    if (helpOverlay.style.display !== 'none') { toggleHelp(); }
+    else if (displayOpen) { toggleDisplayPopup(); }
+    else { viewer.resetView(); viewer.clearMeasurements(); if (measureMode) toggleMeasureMode(); selectDomain(null); }
+  }},
+  '?': { action: () => toggleHelp() },
+  'h': { action: () => setLayer('hbonds', !toggleState['hbonds']) },
+  'b': { action: () => setLayer('sheetHbonds', !toggleState['sheetHbonds']) },
+  'z': { action: () => setLayer('zincMotifs', !toggleState['zincMotifs']) },
+  'p': { action: () => setLayer('pcna', !toggleState['pcna']) },
+  'e': { action: () => setLayer('exoPolPath', !toggleState['exoPolPath']) },
+  'd': { action: () => setLayer('dna', !toggleState['dna']) },
+});
+
+// =========================================================================
+// Finish loading
+// =========================================================================
+
+setProgress(100, 'Ready');
+setTimeout(() => {
+  document.getElementById('loading').classList.add('hide');
+}, 500);
+</script>
+<script type="module">
+  import { initProvenanceFooter } from './js/shared-ui.js';
+  initProvenanceFooter();
+</script>
+</body>
+</html>
