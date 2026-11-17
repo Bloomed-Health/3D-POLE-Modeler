@@ -7,7 +7,7 @@
 <title>POLE c.138del · p.Leu46Phefs*8 · Mutation Structural Analysis</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600&family=JetBrains+Mono:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&family=Newsreader:opsz,wght@6..72,300;6..72,400;6..72,500;6..72,600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -21,21 +21,27 @@
 <div id="app" style="grid-template-rows:auto auto 1fr auto">
   <header>
     <div class="brand">
-      <a href="index.html" class="glyph" style="text-decoration:none;color:inherit">POL<em>E</em></a>
+      <a href="index.html" class="glyph" style="text-decoration:none;color:inherit">POL<em>&epsilon;</em></a>
       <div class="sub">c.138del · <b style="color:var(--warn)">p.Leu46Phefs*8</b> · Germline Frameshift</div>
     </div>
     <div class="header-meta">
       <div class="pill"><b style="color:var(--warn)">TRUNCATING</b></div>
       <div class="pill">Stop @ <b>pos 53</b></div>
       <div class="pill"><b>52 aa</b> · 2.3% translated</div>
-      <div class="pill"><b style="color:#c0392b">PATHOGENIC</b></div>
+      <div class="pill"><b style="color:var(--warn)">PATHOGENIC</b></div>
     </div>
     <button class="sidebar-toggle" id="sidebar-toggle" aria-label="Toggle sidebars">&#9776;</button>
   </header>
 
-  <div style="grid-column:1/-1;background:#1a2a3a;color:#5ab8d8;padding:8px 16px;font-size:0.78rem;text-align:center;border-bottom:1px solid #3a6a8a;">
-    <b>Mechanistic anomaly under investigation:</b> c.138del carrier presents with PPAP phenotype and multiple cancers. First-order prediction (null/LOF) does not predict PPAP. See hypothesis panel below.
-  </div>
+  <details class="notice-bar">
+    <summary>2 notices</summary>
+    <div class="notice-item notice-info">
+      <b>Mechanistic anomaly under investigation:</b> c.138del carrier presents with PPAP phenotype and multiple cancers. First-order prediction (null/LOF) does not predict PPAP. See hypothesis panel below.
+    </div>
+    <div class="notice-item notice-warn">
+      <b>&#9888; Placeholder data:</b> Codon data shown below are placeholders, NOT derived from NM_006231.4. They are illustrative only and must not be cited.
+    </div>
+  </details>
 
   <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
 
@@ -69,7 +75,7 @@
       </div>
       <div class="info-card">
         <div class="k">Clinical classification</div>
-        <div class="v" style="color:#c0392b;font-weight:500">Pathogenic</div>
+        <div class="v" style="color:var(--warn);font-weight:500">Pathogenic</div>
       </div>
       <div class="info-card">
         <div class="k">Clinical phenotype</div>
@@ -130,7 +136,7 @@
 
     <!-- Sequence view overlay -->
     <div id="sequence-panel" style="display:none;position:absolute;inset:20px;background:rgba(8,11,17,0.95);border:1px solid var(--line);border-radius:3px;padding:24px;overflow-y:auto;z-index:5;pointer-events:auto">
-      <h3 style="font-family:'JetBrains Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:.22em;color:var(--ink-dim);margin-bottom:16px;font-weight:500">
+      <h3 style="font-family:'IBM Plex Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:.22em;color:var(--ink-dim);margin-bottom:16px;font-weight:500">
         Frameshift reading frame analysis · c.138del
       </h3>
 
@@ -147,13 +153,13 @@
 
       <div style="margin-top:16px">
         <div style="font-size:9px;text-transform:uppercase;letter-spacing:.2em;color:var(--ink-faint);margin-bottom:8px">Interpretation</div>
-        <p style="font-family:'Fraunces',serif;font-size:12.5px;line-height:1.6;color:var(--ink);font-weight:300">
+        <p style="font-family:'Newsreader',serif;font-size:12.5px;line-height:1.6;color:var(--ink);font-weight:300">
           Deletion of a single nucleotide at c.138 (within codon 46, CTG&rarr;Leu) shifts the reading frame. The new frame encodes 7 aberrant amino acids (Phe-Gly-Val-Glu-Gly-Ser-Phe) before encountering a premature termination codon (TAG) at position 53. The translated peptide is 52 residues (the stop codon at position 53 is not translated).
         </p>
-        <p style="font-family:'Fraunces',serif;font-size:12px;line-height:1.6;color:var(--ink-dim);margin-top:10px;font-weight:300">
+        <p style="font-family:'Newsreader',serif;font-size:12px;line-height:1.6;color:var(--ink-dim);margin-top:10px;font-weight:300">
           The resulting 52-residue peptide (stop codon at position 53; 52 / 2,286 = 2.3% of the full-length protein) lacks all functional domains: no exonuclease activity, no polymerase activity, no C-terminal zinc-finger platform for holoenzyme assembly. The PTC is in <b>exon 2</b>; NMD prediction is uncertain. While the canonical EJC model predicts NMD, PTCs this close to the start codon may escape NMD via the AUG-proximity effect (Zhang &amp; Maquat 1997), which is the basis of Hypothesis H1. Despite this first-order prediction, the carrier presents with a PPAP-consistent phenotype, creating an open mechanistic question.
         </p>
-        <p style="font-family:'Fraunces',serif;font-size:12px;line-height:1.6;color:var(--ink-dim);margin-top:10px;font-weight:300">
+        <p style="font-family:'Newsreader',serif;font-size:12px;line-height:1.6;color:var(--ink-dim);margin-top:10px;font-weight:300">
           In the heterozygous state, the remaining wild-type allele must support all leading-strand synthesis. Complete loss of both alleles would be lethal given Pol &epsilon;&rsquo;s essential role in S-phase DNA replication.
         </p>
       </div>
@@ -190,18 +196,21 @@
       <button data-sidebar="left">Controls</button>
       <button class="active" data-sidebar="right">Info</button>
     </div>
-    <div class="panel">
-      <h3>Molecular consequence</h3>
-      <p style="font-family:'Fraunces',serif;font-size:12.5px;line-height:1.6;color:var(--ink);font-weight:300">
-        This <em style="color:var(--warn)">germline frameshift</em> truncates the POLE catalytic subunit after 52 residues (stop codon at position 53) of 2,286 &mdash; within the N-terminal domain, long before any catalytic residues are encoded.
-      </p>
-      <p style="font-family:'Fraunces',serif;font-size:12px;line-height:1.6;color:var(--ink-dim);margin-top:10px;font-weight:300">
-        The 3D comparison (left: ghost wild-type, right: translated fragment) illustrates the catastrophic structural loss. The small peptide retains none of the protein&rsquo;s enzymatic or structural capabilities. Despite this first-order prediction, the carrier presents with a PPAP-consistent phenotype, creating an open mechanistic question.
-      </p>
-    </div>
+    <details class="panel-section" open>
+      <summary>Molecular consequence</summary>
+      <div class="panel">
+        <p style="font-family:'Newsreader',serif;font-size:12.5px;line-height:1.6;color:var(--ink);font-weight:300">
+          This <em style="color:var(--warn)">germline frameshift</em> truncates the POLE catalytic subunit after 52 residues (stop codon at position 53) of 2,286 &mdash; within the N-terminal domain, long before any catalytic residues are encoded.
+        </p>
+        <p style="font-family:'Newsreader',serif;font-size:12px;line-height:1.6;color:var(--ink-dim);margin-top:10px;font-weight:300">
+          The 3D comparison (left: ghost wild-type, right: translated fragment) illustrates the catastrophic structural loss. The small peptide retains none of the protein&rsquo;s enzymatic or structural capabilities. Despite this first-order prediction, the carrier presents with a PPAP-consistent phenotype, creating an open mechanistic question.
+        </p>
+      </div>
+    </details>
 
-    <div class="panel">
-      <h3>Lost functional capacity</h3>
+    <details class="panel-section">
+      <summary>Lost functional capacity</summary>
+      <div class="panel">
       <div class="info-card">
         <div class="k">Polymerase activity</div>
         <div class="v" style="color:var(--warn)">Completely absent</div>
@@ -222,10 +231,12 @@
         <div class="k">NMD prediction</div>
         <div class="v" style="color:var(--ink)">Uncertain (PTC in exon 2; AUG-proximity may allow escape)</div>
       </div>
-    </div>
+      </div>
+    </details>
 
-    <div class="panel">
-      <h3>NMD pathway</h3>
+    <details class="panel-section">
+      <summary>NMD pathway</summary>
+      <div class="panel">
       <div class="nmd-diagram">
         <div class="nmd-step">
           <div class="nmd-icon">mRNA</div>
@@ -247,148 +258,159 @@
           <div class="nmd-desc">Transcript may be degraded &mdash; or escape via AUG-proximity effect</div>
         </div>
       </div>
-      <p style="font-family:'Fraunces',serif;font-size:11px;line-height:1.5;color:var(--ink-faint);margin-top:8px;font-weight:300">
+      <p style="font-family:'Newsreader',serif;font-size:11px;line-height:1.5;color:var(--ink-faint);margin-top:8px;font-weight:300">
         <b>Note:</b> PTCs this close to the start codon may escape NMD via the AUG-proximity effect (Zhang &amp; Maquat 1997). If translation re-initiates at a downstream AUG within the exonuclease domain, the resulting N-terminally truncated protein could lack proofreading but retain polymerase activity &mdash; the basis of Hypothesis H1.
       </p>
-    </div>
+      </div>
+    </details>
 
-    <div class="panel" style="background:rgba(90,184,216,0.06);border:1px solid rgba(90,184,216,0.2)">
-      <h3 style="color:#5ab8d8">Candidate mechanisms (H1&ndash;H5)</h3>
-      <p style="font-family:'Fraunces',serif;font-size:11px;line-height:1.5;color:var(--ink-dim);margin-bottom:12px;font-weight:300">
+    <details class="panel-section">
+      <summary>Candidate mechanisms (H1–H5)</summary>
+      <div class="panel" style="background:rgba(90,184,216,0.06);border:1px solid rgba(74,122,120,0.2)">
+      <p style="font-family:'Newsreader',serif;font-size:11px;line-height:1.5;color:var(--ink-dim);margin-bottom:12px;font-weight:300">
         The carrier presents with a PPAP phenotype (polyposis, multiple primaries), but truncating POLE variants are not canonical PPAP drivers. Five hypotheses are under investigation:
       </p>
 
       <details style="margin-bottom:8px;border-left:2px solid #e67e22;padding-left:10px">
-        <summary style="font-family:'JetBrains Mono',monospace;font-size:10.5px;font-weight:500;color:var(--ink);cursor:pointer">
+        <summary style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;font-weight:500;color:var(--ink);cursor:pointer">
           H1: NMD escape + downstream re-initiation
           <span style="font-size:9px;color:#e67e22;margin-left:6px">low-moderate likelihood · very high impact</span>
         </summary>
-        <p style="font-family:'Fraunces',serif;font-size:11px;line-height:1.5;color:var(--ink-dim);margin-top:6px;font-weight:300">
+        <p style="font-family:'Newsreader',serif;font-size:11px;line-height:1.5;color:var(--ink-dim);margin-top:6px;font-weight:300">
           If the PTC escapes NMD via AUG-proximity and translation re-initiates at a downstream methionine within or beyond the exonuclease domain, the resulting protein could lack proofreading but retain polymerase activity &mdash; producing a PPAP-like ultra-mutator.
           <br><b>Decisive experiment:</b> RT-PCR / ribosome profiling for re-initiation products; TMB + SBS10a/SBS10b signature in tumor tissue.
         </p>
       </details>
 
       <details style="margin-bottom:8px;border-left:2px solid #3498db;padding-left:10px">
-        <summary style="font-family:'JetBrains Mono',monospace;font-size:10.5px;font-weight:500;color:var(--ink);cursor:pointer">
+        <summary style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;font-weight:500;color:var(--ink);cursor:pointer">
           H2: Second exonuclease-domain lesion is the real driver
           <span style="font-size:9px;color:#3498db;margin-left:6px">high likelihood · moderate impact</span>
         </summary>
-        <p style="font-family:'Fraunces',serif;font-size:11px;line-height:1.5;color:var(--ink-dim);margin-top:6px;font-weight:300">
+        <p style="font-family:'Newsreader',serif;font-size:11px;line-height:1.5;color:var(--ink-dim);margin-top:6px;font-weight:300">
           An undetected somatic or germline exonuclease-domain missense variant on the other allele may be the actual PPAP driver; c.138del is a bystander.
           <br><b>Decisive experiment:</b> Deep sequencing of POLE exonuclease domain (both alleles); panel testing for POLD1/APC/MUTYH.
         </p>
       </details>
 
       <details style="margin-bottom:8px;border-left:2px solid #9b59b6;padding-left:10px">
-        <summary style="font-family:'JetBrains Mono',monospace;font-size:10.5px;font-weight:500;color:var(--ink);cursor:pointer">
+        <summary style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;font-weight:500;color:var(--ink);cursor:pointer">
           H3: LOH unmasks second-hit EDM (c.138del as permissive modifier)
           <span style="font-size:9px;color:#9b59b6;margin-left:6px">moderate-high likelihood · high impact</span>
         </summary>
-        <p style="font-family:'Fraunces',serif;font-size:11px;line-height:1.5;color:var(--ink-dim);margin-top:6px;font-weight:300">
+        <p style="font-family:'Newsreader',serif;font-size:11px;line-height:1.5;color:var(--ink-dim);margin-top:6px;font-weight:300">
           LOH at 12q24.33 removes the functional allele; if a somatic EDM arises on the remaining allele, c.138del acts as a permissive modifier by eliminating the wild-type backup.
           <br><b>Decisive experiment:</b> Tumor LOH analysis at the POLE locus; allele-specific sequencing.
         </p>
       </details>
 
       <details style="margin-bottom:8px;border-left:2px solid var(--ink-faint);padding-left:10px">
-        <summary style="font-family:'JetBrains Mono',monospace;font-size:10.5px;font-weight:500;color:var(--ink);cursor:pointer">
+        <summary style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;font-weight:500;color:var(--ink);cursor:pointer">
           H4: Annotation/splicing artifact
           <span style="font-size:9px;color:var(--ink-faint);margin-left:6px">low-moderate likelihood · moderate impact</span>
         </summary>
-        <p style="font-family:'Fraunces',serif;font-size:11px;line-height:1.5;color:var(--ink-dim);margin-top:6px;font-weight:300">
+        <p style="font-family:'Newsreader',serif;font-size:11px;line-height:1.5;color:var(--ink-dim);margin-top:6px;font-weight:300">
           The molecular consequence may differ from in-silico prediction if the deletion affects a splice site or if an alternative transcript is used.
           <br><b>Decisive experiment:</b> RNA-seq from patient tissue; verify transcript structure.
         </p>
       </details>
 
       <details style="margin-bottom:8px;border-left:2px solid #2ecc71;padding-left:10px">
-        <summary style="font-family:'JetBrains Mono',monospace;font-size:10.5px;font-weight:500;color:var(--ink);cursor:pointer">
+        <summary style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;font-weight:500;color:var(--ink);cursor:pointer">
           H5: Phenocopy from another locus
           <span style="font-size:9px;color:#2ecc71;margin-left:6px">moderate likelihood · moderate impact</span>
         </summary>
-        <p style="font-family:'Fraunces',serif;font-size:11px;line-height:1.5;color:var(--ink-dim);margin-top:6px;font-weight:300">
+        <p style="font-family:'Newsreader',serif;font-size:11px;line-height:1.5;color:var(--ink-dim);margin-top:6px;font-weight:300">
           The PPAP phenotype may be caused by a variant in another gene (Lynch/MMR, POLD1, MUTYH, APC), and c.138del is incidental.
           <br><b>Decisive experiment:</b> Comprehensive panel testing; MSI/MMR IHC; TMB signature analysis.
         </p>
       </details>
 
-      <div style="background:rgba(230,126,34,0.06);border:1px solid rgba(230,126,34,0.2);border-radius:2px;padding:10px 12px;margin-top:12px;margin-bottom:12px">
-        <p style="font-family:'JetBrains Mono',monospace;font-size:9.5px;line-height:1.5;color:#e67e22;font-weight:500;margin-bottom:6px">Recessive POLE phenotypes (LOF consequences)</p>
-        <p style="font-family:'Fraunces',serif;font-size:11px;line-height:1.5;color:var(--ink-dim);font-weight:300;margin-bottom:6px">
+      <div style="background:rgba(230,126,34,0.06);border:1px solid rgba(158,90,26,0.2);border-radius:2px;padding:10px 12px;margin-top:12px;margin-bottom:12px">
+        <p style="font-family:'IBM Plex Mono',monospace;font-size:9.5px;line-height:1.5;color:#e67e22;font-weight:500;margin-bottom:6px">Recessive POLE phenotypes (LOF consequences)</p>
+        <p style="font-family:'Newsreader',serif;font-size:11px;line-height:1.5;color:var(--ink-dim);font-weight:300;margin-bottom:6px">
           Biallelic loss-of-function or hypomorphic POLE variants cause recessive syndromes distinct from PPAP. These are the established consequences of POLE LOF and belong on the differential for any truncating variant:
         </p>
-        <ul style="font-family:'Fraunces',serif;font-size:11px;line-height:1.6;color:var(--ink-dim);font-weight:300;margin:0;padding-left:18px">
+        <ul style="font-family:'Newsreader',serif;font-size:11px;line-height:1.6;color:var(--ink-dim);font-weight:300;margin:0;padding-left:18px">
           <li><b style="color:var(--ink)">FILS syndrome</b> (MIM 615139) &mdash; facial dysmorphism, immunodeficiency, livedo, short stature. Biallelic, from variants outside the exonuclease domain and/or protein-disrupting alleles.</li>
           <li><b style="color:var(--ink)">IMAGe-I syndrome</b> (MIM 618336) &mdash; IUGR, metaphyseal dysplasia, adrenal hypoplasia congenita, genital anomalies, immunodeficiency, DLBCL (Logan et al., <em>AJHG</em> 2018). Biallelic POLE deficiency.</li>
         </ul>
-        <p style="font-family:'Fraunces',serif;font-size:11px;line-height:1.5;color:var(--ink-faint);margin-top:6px;font-weight:300">
+        <p style="font-family:'Newsreader',serif;font-size:11px;line-height:1.5;color:var(--ink-faint);margin-top:6px;font-weight:300">
           Notably, no reported patient with either syndrome shows complete absence of POLE expression &mdash; consistent with POLE being essential for S-phase DNA replication, and directly relevant to evaluating what a 52-residue product could mean.
         </p>
       </div>
 
-      <div style="background:rgba(90,184,216,0.08);border:1px solid rgba(90,184,216,0.15);border-radius:2px;padding:8px 10px;margin-top:10px">
-        <p style="font-family:'JetBrains Mono',monospace;font-size:9.5px;line-height:1.5;color:#5ab8d8;font-weight:500;margin-bottom:4px">Cross-cutting discriminator</p>
-        <p style="font-family:'Fraunces',serif;font-size:11px;line-height:1.5;color:var(--ink-dim);font-weight:300">
+      <div style="background:rgba(90,184,216,0.06);border:1px solid rgba(74,122,120,0.15);border-radius:2px;padding:8px 10px;margin-top:10px">
+        <p style="font-family:'IBM Plex Mono',monospace;font-size:9.5px;line-height:1.5;color:#5ab8d8;font-weight:500;margin-bottom:4px">Cross-cutting discriminator</p>
+        <p style="font-family:'Newsreader',serif;font-size:11px;line-height:1.5;color:var(--ink-dim);font-weight:300">
           Tumor mutational burden (TMB) + SBS10a/SBS10b signature analysis would distinguish H1/H3 (POLE-driven, SBS10+) from H2/H5 (non-POLE-driven). Currently awaiting tumor tissue.
         </p>
       </div>
-    </div>
+      </div>
+    </details>
 
-    <div class="panel">
-      <h3>Clinical context</h3>
-      <p style="font-family:'Fraunces',serif;font-size:12px;line-height:1.6;color:var(--ink-dim);font-weight:300">
-        Unlike exonuclease-domain missense mutations (P286R, V411L) that produce a <em>hypermutator phenotype</em> through loss of proofreading with retained polymerase activity, this truncating variant is predicted to abolish the protein (first-order).
-      </p>
-      <p style="font-family:'Fraunces',serif;font-size:12px;line-height:1.6;color:var(--ink-dim);margin-top:10px;font-weight:300">
-        However, the carrier presents with a PPAP-consistent phenotype (polyposis, multiple primary cancers), creating a genotype-phenotype anomaly. The five candidate mechanisms (H1&ndash;H5) above are under investigation. The discriminating measurement is tumor mutational signature analysis (SBS10a/SBS10b), currently awaiting tissue.
-      </p>
-    </div>
-
-    <div class="panel" style="background:rgba(192,57,43,0.06);border-bottom:1px solid rgba(192,57,43,0.18)">
-      <h3 style="color:#c0392b">Clinical interpretation</h3>
-      <div style="background:rgba(8,11,17,0.55);border:1px solid rgba(192,57,43,0.2);border-left:2px solid #c0392b;border-radius:2px;padding:12px 13px">
-        <p style="font-family:'Fraunces',serif;font-size:12px;line-height:1.6;color:var(--ink);font-weight:300">
-          Clinical lab classification: <b style="color:#c0392b;font-weight:500">Pathogenic</b>. The carrier presents with a PPAP phenotype (polyposis, multiple primaries). The mechanistic basis is under investigation: a truncating POLE variant is not a canonical PPAP driver (which requires an active but proofreading-deficient polymerase), yet the clinical phenotype is observed. Five candidate mechanisms (H1&ndash;H5) are being evaluated. The discriminating measurement is tumor mutational signature analysis (SBS10a/SBS10b), currently awaiting tissue.
+    <details class="panel-section">
+      <summary>Clinical context</summary>
+      <div class="panel">
+        <p style="font-family:'Newsreader',serif;font-size:12px;line-height:1.6;color:var(--ink-dim);font-weight:300">
+          Unlike exonuclease-domain missense mutations (P286R, V411L) that produce a <em>hypermutator phenotype</em> through loss of proofreading with retained polymerase activity, this truncating variant is predicted to abolish the protein (first-order).
         </p>
-        <p style="font-family:'JetBrains Mono',monospace;font-size:9.5px;line-height:1.5;color:var(--ink-faint);margin-top:10px;letter-spacing:0.02em">
+        <p style="font-family:'Newsreader',serif;font-size:12px;line-height:1.6;color:var(--ink-dim);margin-top:10px;font-weight:300">
+          However, the carrier presents with a PPAP-consistent phenotype (polyposis, multiple primary cancers), creating a genotype-phenotype anomaly. The five candidate mechanisms (H1&ndash;H5) above are under investigation. The discriminating measurement is tumor mutational signature analysis (SBS10a/SBS10b), currently awaiting tissue.
+        </p>
+      </div>
+    </details>
+
+    <details class="panel-section" open>
+      <summary>Clinical interpretation</summary>
+      <div class="panel" style="background:rgba(192,57,43,0.06);border-bottom:1px solid rgba(153,51,51,0.15)">
+      <div style="background:rgba(8,11,17,0.55);border:1px solid rgba(192,57,43,0.15);border-left:2px solid #c0392b;border-radius:2px;padding:12px 13px">
+        <p style="font-family:'Newsreader',serif;font-size:12px;line-height:1.6;color:var(--ink);font-weight:300">
+          Clinical lab classification: <b style="color:var(--warn);font-weight:500">Pathogenic</b>. The carrier presents with a PPAP phenotype (polyposis, multiple primaries). The mechanistic basis is under investigation: a truncating POLE variant is not a canonical PPAP driver (which requires an active but proofreading-deficient polymerase), yet the clinical phenotype is observed. Five candidate mechanisms (H1&ndash;H5) are being evaluated. The discriminating measurement is tumor mutational signature analysis (SBS10a/SBS10b), currently awaiting tissue.
+        </p>
+        <p style="font-family:'IBM Plex Mono',monospace;font-size:9.5px;line-height:1.5;color:var(--ink-faint);margin-top:10px;letter-spacing:0.02em">
           Classification per clinical lab report.
         </p>
-        <p style="font-family:'JetBrains Mono',monospace;font-size:9.5px;line-height:1.5;color:#e67e22;margin-top:8px;letter-spacing:0.02em">
+        <p style="font-family:'IBM Plex Mono',monospace;font-size:9.5px;line-height:1.5;color:#e67e22;margin-top:8px;letter-spacing:0.02em">
           <b>Framework scope note:</b> The Mur et al. 2023 gene-specific ACMG/AMP framework covers <em>germline variants in the exonuclease domain</em> of POLE/POLD1. c.138del is both (a) a loss-of-function variant and (b) located outside the exonuclease domain (codon 46, NTD). It falls outside the Mur framework by both criteria. In particular, PVS1 (null variant &rArr; pathogenic) is explicitly excluded from the framework because LOF is not the PPAP mechanism. No ClinGen VCEP for POLE/POLD1 exists as of this review; the Mur framework is the appropriate gene-specific standard but is not an FDA-recognised 3-star specification.
         </p>
       </div>
-    </div>
+      </div>
+    </details>
 
-    <div class="panel">
-      <h3>Comparison with known variants</h3>
-      <div class="mutation" style="cursor:default">
-        <div class="head">
-          <div class="name">c.138del</div>
-          <div class="loc">NTD · truncating</div>
+    <details class="panel-section">
+      <summary>Comparison with known variants</summary>
+      <div class="panel">
+        <div class="mutation" style="cursor:default">
+          <div class="head">
+            <div class="name">c.138del</div>
+            <div class="loc">NTD · truncating</div>
+          </div>
+          <div class="text">Frameshift &rarr; 52 aa translated (stop at pos 53). <b style="color:var(--warn)">Pathogenic</b>. PPAP phenotype observed despite LOF prediction. Mechanism under investigation (H1&ndash;H5).</div>
         </div>
-        <div class="text">Frameshift &rarr; 52 aa translated (stop at pos 53). <b style="color:#c0392b">Pathogenic</b>. PPAP phenotype observed despite LOF prediction. Mechanism under investigation (H1&ndash;H5).</div>
+        <div style="font-size:10px;color:var(--ink-faint);padding:6px 0;border-bottom:1px dashed var(--line);margin-bottom:6px">vs. characterized driver mutations &darr;</div>
+        <div style="font-size:10.5px;color:var(--ink-dim);line-height:1.5;padding:4px 0">
+          <b style="color:var(--ink)">P286R / V411L:</b> Missense in EXO domain &rarr; <em>gain</em> of ultra-mutator phenotype (retained pol activity + lost proofreading)<br><br>
+          <b style="color:var(--ink)">c.138del:</b> Truncating &rarr; <em>loss</em> of all activity (no protein produced due to NMD)
+        </div>
       </div>
-      <div style="font-size:10px;color:var(--ink-faint);padding:6px 0;border-bottom:1px dashed var(--line);margin-bottom:6px">vs. characterized driver mutations &darr;</div>
-      <div style="font-size:10.5px;color:var(--ink-dim);line-height:1.5;padding:4px 0">
-        <b style="color:var(--ink)">P286R / V411L:</b> Missense in EXO domain &rarr; <em>gain</em> of ultra-mutator phenotype (retained pol activity + lost proofreading)<br><br>
-        <b style="color:var(--ink)">c.138del:</b> Truncating &rarr; <em>loss</em> of all activity (no protein produced due to NMD)
-      </div>
-    </div>
+    </details>
 
-    <div class="panel" style="border-top:1px solid var(--line)">
-      <h3 style="font-size:10px;color:var(--ink-faint);letter-spacing:0.08em">References</h3>
-      <div style="font-family:'JetBrains Mono',monospace;font-size:9px;line-height:1.65;color:var(--ink-faint)">
-        Mur et al., <em>Genome Med</em> 15:85 (2023)<br>
-        Roske &amp; Yeeles, <em>NSMB</em> 31:1921&ndash;1931 (2024)<br>
-        Zhang &amp; Maquat, <em>EMBO J</em> 16:826 (1997)<br>
-        Logan et al., <em>AJHG</em> 103:1038 (2018) [IMAGe-I]<br>
-        FILS syndrome (MIM 615139)<br>
-        Baranovskiy et al., <em>Sci Rep</em> 12:17436 (2022)<br>
-        Fischbach &amp; Walsh (2024)<br>
-        Coorens et al., <em>Nat Genet</em> 53:1434 (2021)
+    <details class="panel-section">
+      <summary>References</summary>
+      <div class="panel" style="border-top:1px solid var(--line)">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;line-height:1.65;color:var(--ink-faint)">
+          Mur et al., <em>Genome Med</em> 15:85 (2023)<br>
+          Roske &amp; Yeeles, <em>NSMB</em> 31:1921&ndash;1931 (2024)<br>
+          Zhang &amp; Maquat, <em>EMBO J</em> 16:826 (1997)<br>
+          Logan et al., <em>AJHG</em> 103:1038 (2018) [IMAGe-I]<br>
+          FILS syndrome (MIM 615139)<br>
+          Baranovskiy et al., <em>Sci Rep</em> 12:17436 (2022)<br>
+          Fischbach &amp; Walsh (2024)<br>
+          Coorens et al., <em>Nat Genet</em> 53:1434 (2021)
+        </div>
       </div>
-    </div>
+    </details>
   </aside>
 
   <footer>
@@ -442,7 +464,9 @@ if (!pipelineResult.loaded) {
   const notice = document.createElement('div');
   notice.className = 'fallback-notice';
   notice.textContent = 'Pipeline data unavailable. Displaying hardcoded default values.';
-  document.body.appendChild(notice);
+  const app = document.getElementById('app');
+  const firstBanner = app.querySelector('.notice-bar');
+  app.insertBefore(notice, firstBanner);
 }
 
 setProgress(20, 'Building molecular models\u2026');

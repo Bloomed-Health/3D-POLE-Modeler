@@ -7,7 +7,7 @@
 <title>POLE · DNA Polymerase ε Catalytic Subunit · 3D Structural Viewer</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600&family=JetBrains+Mono:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&family=Newsreader:opsz,wght@6..72,300;6..72,400;6..72,500;6..72,600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -21,7 +21,7 @@
 <div id="app">
   <header>
     <div class="brand">
-      <div class="glyph">POL<em>E</em></div>
+      <div class="glyph">POL<em>&epsilon;</em></div>
       <div class="sub">DNA Polymerase <b>&epsilon;</b> · Catalytic Subunit · <b>p261</b></div>
     </div>
     <div class="header-meta">
@@ -145,8 +145,8 @@
       <div class="section-header" style="margin-bottom:12px">
         <span class="dot-header" style="color:var(--ink-faint);font-size:10px">Model note</span>
       </div>
-      <p style="margin:0;font-family:'Fraunces',serif;font-weight:300;font-size:13.5px;line-height:1.6;color:var(--ink-faint)">
-        This is a <b style="font-weight:500;color:var(--ink-dim)">procedural schematic</b>, not an atomic-coordinate rendering. Ribbon geometry is algorithmically generated to illustrate domain topology. Domain boundaries are approximate and have not been derived from DSSP analysis of deposited coordinates. Quantitative color modes (B-factor, conservation, pLDDT) have been removed from this view; they are available in the <a href="molstar.html" style="color:var(--accent);font-weight:500;text-decoration:none">Mol* Coordinate Viewer</a> and <a href="alphafold.html" style="color:#65CBF3;font-weight:500;text-decoration:none">AlphaFold Viewer</a> where they use real data.
+      <p style="margin:0;font-family:'Newsreader',serif;font-weight:300;font-size:13.5px;line-height:1.6;color:var(--ink-faint)">
+        This is a <b style="font-weight:500;color:var(--ink-dim)">procedural schematic</b>, not an atomic-coordinate rendering. Ribbon geometry is algorithmically generated to illustrate domain topology. Domain boundaries are approximate and have not been derived from DSSP analysis of deposited coordinates. Quantitative color modes (B-factor, conservation, pLDDT) have been removed from this view; they are available in the <a href="molstar.html" style="color:var(--accent);font-weight:500;text-decoration:none">Mol* Coordinate Viewer</a> and <a href="alphafold.html" style="color:var(--accent);font-weight:500;text-decoration:none">AlphaFold Viewer</a> where they use real data.
       </p>
     </section>
   </aside>
@@ -200,7 +200,7 @@
     <div id="display-popup" hidden>
       <div style="display:flex;justify-content:space-between;align-items:center">
         <span class="dot-header">Display</span>
-        <button id="display-close" style="border:0;background:none;color:var(--ink-dim);font:400 11.5px 'JetBrains Mono',monospace;cursor:pointer;padding:0">Close &#x2715;</button>
+        <button id="display-close" style="border:0;background:none;color:var(--ink-dim);font:400 11.5px 'IBM Plex Mono',monospace;cursor:pointer;padding:0">Close &#x2715;</button>
       </div>
 
       <div>
@@ -281,7 +281,7 @@
     <span id="fps-counter" class="fps-counter" style="display:none;position:absolute;bottom:12px;right:12px;z-index:3"></span>
   </main>
 
-  <aside class="right" id="sidebar-right">
+  <aside class="right" id="sidebar-right" hidden>
     <button class="sidebar-close" id="sidebar-close-right" aria-label="Close menu">&times;</button>
     <div class="mobile-sidebar-tabs">
       <button data-sidebar="left">Controls</button>
@@ -292,7 +292,7 @@
     <section id="selected-domain" hidden>
       <div class="sel-header">
         <span class="dot-header">Selected domain</span>
-        <button id="clear-selection" style="border:0;background:none;color:var(--ink-dim);font:400 11.5px 'JetBrains Mono',monospace;cursor:pointer;padding:0">Clear &#x2715;</button>
+        <button id="clear-selection" style="border:0;background:none;color:var(--ink-dim);font:400 11.5px 'IBM Plex Mono',monospace;cursor:pointer;padding:0">Clear &#x2715;</button>
       </div>
       <div class="sel-identity">
         <span class="sel-swatch" id="sel-swatch"></span>
@@ -304,27 +304,26 @@
     </section>
 
     <!-- Locus & identity -->
-    <div class="panel">
-      <div class="section-header" style="margin-bottom:8px">
-        <span class="dot-header">Locus &amp; identity</span>
+    <details class="panel-section" open>
+      <summary>Locus &amp; identity</summary>
+      <div class="panel">
+        <div class="locus-grid">
+          <div class="locus-k">Gene</div><div class="locus-v">POLE &middot; ENSG00000177084</div>
+          <div class="locus-k">Location</div><div class="locus-v" style="font-family:'IBM Plex Mono',monospace;font-size:11.5px">12q24.33</div>
+          <div class="locus-k">Span</div><div class="locus-v">~64 kb &middot; 49 exons</div>
+          <div class="locus-k">Family</div><div class="locus-v" style="font-family:'Newsreader',serif;font-size:14px">B-family &middot; Pol &epsilon;</div>
+          <div class="locus-k">Partners</div><div class="locus-v" style="font-family:'IBM Plex Mono',monospace;font-size:11.5px">POLE2 &middot; POLE3 &middot; POLE4</div>
+          <div class="locus-k">PDB</div><div class="locus-v" style="font-family:'IBM Plex Mono',monospace;font-size:11.5px"><a href="https://www.rcsb.org/structure/9F6D" target="_blank">9F6D</a> &middot; <a href="https://www.rcsb.org/structure/9F6E" target="_blank">9F6E</a> &middot; <a href="https://www.rcsb.org/structure/9F6F" target="_blank">9F6F</a> &middot; <a href="https://www.rcsb.org/structure/9B8S" target="_blank">9B8S</a> &middot; <a href="https://www.rcsb.org/structure/4M8O" target="_blank">4M8O</a></div>
+        </div>
       </div>
-      <div class="locus-grid">
-        <div class="locus-k">Gene</div><div class="locus-v">POLE &middot; ENSG00000177084</div>
-        <div class="locus-k">Location</div><div class="locus-v" style="font-family:'JetBrains Mono',monospace;font-size:11.5px">12q24.33</div>
-        <div class="locus-k">Span</div><div class="locus-v">~64 kb &middot; 49 exons</div>
-        <div class="locus-k">Family</div><div class="locus-v" style="font-family:'Fraunces',serif;font-size:14px">B-family &middot; Pol &epsilon;</div>
-        <div class="locus-k">Partners</div><div class="locus-v" style="font-family:'JetBrains Mono',monospace;font-size:11.5px">POLE2 &middot; POLE3 &middot; POLE4</div>
-        <div class="locus-k">PDB</div><div class="locus-v" style="font-family:'JetBrains Mono',monospace;font-size:11.5px"><a href="https://www.rcsb.org/structure/9F6D" target="_blank">9F6D</a> &middot; <a href="https://www.rcsb.org/structure/9F6E" target="_blank">9F6E</a> &middot; <a href="https://www.rcsb.org/structure/9F6F" target="_blank">9F6F</a> &middot; <a href="https://www.rcsb.org/structure/9B8S" target="_blank">9B8S</a> &middot; <a href="https://www.rcsb.org/structure/4M8O" target="_blank">4M8O</a></div>
-      </div>
-    </div>
+    </details>
 
     <!-- Function -->
-    <div class="panel">
-      <div class="section-header" style="margin-bottom:14px">
-        <span class="dot-header">Function &middot; in vivo</span>
-      </div>
-      <p style="margin:0;font-family:'Fraunces',serif;font-weight:300;font-size:16px;line-height:1.55;color:var(--ink)">
-        Pol &epsilon; performs <em style="color:var(--accent)">leading-strand synthesis</em> at the eukaryotic replisome, copying the template 3&prime;&rarr;5&prime; while extending the nascent strand 5&prime;&rarr;3&prime; at &gt;50 nt/s. Base-substitution error rate approaches <span style="font-family:'JetBrains Mono',monospace;font-size:13px">10&minus;7</span> per nucleotide incorporated.
+    <details class="panel-section">
+      <summary>Function &middot; in vivo</summary>
+      <div class="panel">
+      <p style="margin:0;font-family:'Newsreader',serif;font-weight:300;font-size:16px;line-height:1.55;color:var(--ink)">
+        Pol &epsilon; performs <em style="color:var(--accent)">leading-strand synthesis</em> at the eukaryotic replisome, copying the template 3&prime;&rarr;5&prime; while extending the nascent strand 5&prime;&rarr;3&prime; at &gt;50 nt/s. Base-substitution error rate approaches <span style="font-family:'IBM Plex Mono',monospace;font-size:13px">10&minus;7</span> per nucleotide incorporated.
       </p>
 
       <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-top:20px">
@@ -365,14 +364,13 @@
       <div style="margin-top:10px;font-size:11px;line-height:1.6;color:var(--ink-faint)">
         Exchange: <a href="https://doi.org/10.1073/pnas.2533320123" target="_blank" style="color:var(--accent);text-decoration:none;border-bottom:1px dotted var(--accent-40)">Roske &amp; Yeeles letter, PNAS 2026</a> &middot; <a href="https://doi.org/10.1073/pnas.2535727123" target="_blank" style="color:var(--accent);text-decoration:none;border-bottom:1px dotted var(--accent-40)">Wang et al. reply, PNAS 2026</a>
       </div>
-    </div>
+      </div>
+    </details>
 
     <!-- Pathogenic hotspots -->
-    <div class="panel">
-      <div class="section-header" style="margin-bottom:12px">
-        <span class="dot-header">Pathogenic hotspots</span>
-        <span id="hotspot-domain-tag" class="section-count"></span>
-      </div>
+    <details class="panel-section" open>
+      <summary>Pathogenic hotspots</summary>
+      <div class="panel">
 
       <div class="variant-filters" id="variant-filters">
         <button class="variant-filter-btn active" data-filter="all">All <span class="filter-count">[10]</span></button>
@@ -385,38 +383,39 @@
       <a href="variant.html" style="display:block;margin-top:10px;padding:10px;border:1px dashed var(--line-2);border-radius:2px;text-align:center;font-size:11px;color:var(--accent);text-decoration:none;transition:border-color .2s">
         View all variants with ACMG classification &rarr;
       </a>
-    </div>
+      </div>
+    </details>
 
     <!-- Catalytic mechanism -->
-    <div class="panel">
-      <div class="section-header" style="margin-bottom:14px">
-        <span class="dot-header">Catalytic mechanism</span>
-      </div>
-      <p style="margin:0;font-family:'Fraunces',serif;font-weight:300;font-size:15px;line-height:1.6;color:var(--ink-dim)">
-        <b style="font-weight:500;color:var(--ink)">Two-metal-ion catalysis:</b> Metal A (Mg&sup2;&#x207A;) lowers the p<em>K</em>a of the primer 3&prime;-OH, generating the nucleophile. Metal B (Mg&sup2;&#x207A;) coordinates the &beta;,&gamma;-phosphates of the incoming dNTP and stabilizes the pentacoordinate transition state. Both metals are chelated by conserved aspartate carboxylates (D640, D642, D860).
+    <details class="panel-section">
+      <summary>Catalytic mechanism</summary>
+      <div class="panel">
+      <p style="margin:0;font-family:'Newsreader',serif;font-weight:300;font-size:15px;line-height:1.6;color:var(--ink-dim)">
+        <b style="font-weight:500;color:var(--ink)">Two-metal-ion catalysis:</b> Metal A (Mg&sup2;&#x207A;) lowers the p<em>K</em>a of the primer 3&prime;-OH, generating the nucleophile. Metal B (Mg&sup2;&#x207A;) coordinates the &beta;,&gamma;-phosphates of the incoming dNTP and stabilizes the pentacoordinate transition state. Both metals are chelated by conserved aspartate carboxylates D626 (motif A) and D860/D862 (motif C) (He et al. 2024, PDB 9B8S).
       </p>
 
       <div class="residue-status-header" style="margin-top:20px">Polymerase site &middot; Palm</div>
-      <div class="residue-row"><span class="res-id">D640</span><span class="res-role">Motif A &middot; metal ligand</span><span class="res-status provisional">Provisional</span></div>
-      <div class="residue-row"><span class="res-id">D642</span><span class="res-role">Motif A &middot; metal ligand</span><span class="res-status provisional">Provisional</span></div>
-      <div class="residue-row"><span class="res-id">D860</span><span class="res-role">Motif C &middot; metal ligand</span><span class="res-status provisional">Provisional</span></div>
+      <div class="residue-row"><span class="res-id">D626</span><span class="res-role">Motif A &middot; metal ligand</span><span class="res-status verified">Verified</span></div>
+      <div class="residue-row"><span class="res-id">D860</span><span class="res-role">Motif C &middot; metal ligand</span><span class="res-status verified">Verified</span></div>
+      <div class="residue-row"><span class="res-id">D862</span><span class="res-role">Motif C &middot; metal ligand</span><span class="res-status verified">Verified</span></div>
 
-      <div class="residue-status-header">Exonuclease site &middot; EXO</div>
+      <div class="residue-status-header">Exonuclease site &middot; EXO (DEDDy)</div>
       <div class="residue-row"><span class="res-id">D275</span><span class="res-role">ExoI &middot; metal-coordinating</span><span class="res-status verified">Verified</span></div>
       <div class="residue-row"><span class="res-id">E277</span><span class="res-role">ExoI &middot; metal-coordinating</span><span class="res-status verified">Verified</span></div>
-      <div class="residue-row"><span class="res-id">D368</span><span class="res-role">ExoII &middot; structural / DNA-binding</span><span class="res-status not-catalytic">Not catalytic</span></div>
+      <div class="residue-row"><span class="res-id">D368</span><span class="res-role">ExoII &middot; DEDDy catalytic set</span><span class="res-status verified">Verified</span></div>
       <div class="residue-row"><span class="res-id">D462</span><span class="res-role">ExoIII &middot; metal-coordinating (9F6L)</span><span class="res-status verified">Verified</span></div>
 
-      <p style="margin:12px 0 0;font-size:11px;line-height:1.55;color:#a8977a">Polymerase numbering is provisional (UniProt Q07864, not yet verified against 9F6D). <a href="https://doi.org/10.1038/s41467-024-52257-x" target="_blank" style="color:var(--accent);text-decoration:none;border-bottom:1px dotted var(--accent-40)">He et al. 2024</a> (9B8S) report D626, V627 (Motif A) and D862 (Motif C).</p>
-    </div>
+      <p style="margin:12px 0 0;font-size:11px;line-height:1.55;color:#a8977a">Polymerase active-site residues verified from <a href="https://doi.org/10.1038/s41467-024-52257-x" target="_blank" style="color:var(--accent);text-decoration:none;border-bottom:1px dotted var(--accent-40)">He et al. 2024</a> (PDB 9B8S): D626 (Motif A), D860/D862 (Motif C).</p>
+      </div>
+    </details>
 
     <!-- References -->
-    <div class="panel" style="border-top:1px solid var(--line)">
-      <div class="section-header" style="margin-bottom:12px">
-        <span class="dot-header" style="font-size:10px;color:var(--ink-faint)">References</span>
+    <details class="panel-section">
+      <summary>References</summary>
+      <div class="panel" style="border-top:1px solid var(--line)">
+        <div class="ref-list" id="ref-list"></div>
       </div>
-      <div class="ref-list" id="ref-list"></div>
-    </div>
+    </details>
   </aside>
 
   <footer class="v2">
@@ -821,7 +820,10 @@ document.querySelector('.pdom-fill').addEventListener('click', () => {
 // Domain chip click → scroll right panel to selected domain
 document.getElementById('domain-chip').addEventListener('click', () => {
   const rightPanel = document.getElementById('sidebar-right');
-  if (rightPanel.classList.contains('open') || window.innerWidth > 1100) {
+  if (window.innerWidth > 1100) {
+    if (rightPanel.hidden) { rightPanel.hidden = false; adjustGrid(); }
+    document.getElementById('selected-domain').scrollIntoView({ behavior: 'smooth' });
+  } else if (rightPanel.classList.contains('open')) {
     document.getElementById('selected-domain').scrollIntoView({ behavior: 'smooth' });
   }
 });
@@ -1233,6 +1235,7 @@ function adjustGrid() {
   else if (r) app.style.gridTemplateColumns = '1fr 300px';
   else app.style.gridTemplateColumns = '1fr';
 }
+adjustGrid();
 
 // =========================================================================
 // Toast

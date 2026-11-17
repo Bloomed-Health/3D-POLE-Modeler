@@ -7,7 +7,7 @@
 <title>POLE Variant Viewer</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600&family=JetBrains+Mono:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&family=Newsreader:opsz,wght@6..72,300;6..72,400;6..72,500;6..72,600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/style.css">
 
 <!-- Mol* -->
@@ -26,7 +26,7 @@
 <div id="app">
   <header>
     <div class="brand">
-      <a href="index.html" class="glyph" style="text-decoration:none;color:inherit">POL<em>E</em></a>
+      <a href="index.html" class="glyph" style="text-decoration:none;color:inherit">POL<em>&epsilon;</em></a>
       <div class="sub" id="header-sub">Variant Analysis</div>
     </div>
     <div class="header-meta">
@@ -48,7 +48,7 @@
 
     <div class="panel">
       <h3>Variant catalogue</h3>
-      <div id="variant-list" style="max-height:300px;overflow-y:auto">
+      <div id="variant-list" style="max-height:60vh;overflow-y:auto">
         <!-- Populated by JS -->
       </div>
     </div>
@@ -107,7 +107,7 @@
 
     <div class="panel" id="variant-info-panel">
       <h3 id="variant-title">Select a variant</h3>
-      <div id="variant-detail" style="font-family:'Fraunces',serif;font-size:12px;line-height:1.6;color:var(--ink-dim);font-weight:300">
+      <div id="variant-detail" style="font-family:'Newsreader',serif;font-size:12px;line-height:1.6;color:var(--ink-dim);font-weight:300">
         Choose a variant from the catalogue on the left to view its structural context, ACMG classification, signature attribution, and stability prediction.
       </div>
     </div>
@@ -115,10 +115,10 @@
     <div class="panel" id="classification-panel" style="display:none">
       <h3>ACMG classification</h3>
       <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px">
-        <div id="acmg-badge" style="font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:600;padding:6px 14px;border-radius:3px;border:1px solid var(--line)"></div>
+        <div id="acmg-badge" style="font-family:'IBM Plex Mono',monospace;font-size:14px;font-weight:600;padding:6px 14px;border-radius:3px;border:1px solid var(--line)"></div>
         <div>
-          <div id="acmg-posterior" style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink)"></div>
-          <div id="acmg-ci" style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--ink-faint)"></div>
+          <div id="acmg-posterior" style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--ink)"></div>
+          <div id="acmg-ci" style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--ink-faint)"></div>
         </div>
       </div>
       <div id="acmg-framework" style="font-size:9px;color:var(--ink-faint);margin-bottom:8px"></div>
@@ -142,13 +142,13 @@
 
     <div class="panel" id="predictors-panel" style="display:none">
       <h3>Computational predictors</h3>
-      <div id="predictors-content" style="font-family:'JetBrains Mono',monospace;font-size:11px;line-height:2"></div>
+      <div id="predictors-content" style="font-family:'IBM Plex Mono',monospace;font-size:11px;line-height:2"></div>
     </div>
 
     <div class="panel" id="ddg-panel" style="display:none">
       <h3>Stability prediction</h3>
       <span class="provenance-chip provenance-chip--warn" style="margin-bottom:6px">Heuristic estimate</span>
-      <div id="ddg-value" style="font-family:'JetBrains Mono',monospace;font-size:14px;margin-bottom:6px;margin-top:6px"></div>
+      <div id="ddg-value" style="font-family:'IBM Plex Mono',monospace;font-size:14px;margin-bottom:6px;margin-top:6px"></div>
       <p style="font-size:9px;color:var(--ink-faint);line-height:1.5">
         Thermodynamic stability (&Delta;&Delta;G) is not the primary observable for POLE pathogenicity. The mechanism is kinetic (pol&harr;exo partitioning), not thermodynamic. For validated &Delta;&Delta;G, use FoldX or Rosetta with PDB 9F6D coordinates.
       </p>
@@ -156,7 +156,7 @@
 
     <div class="panel" style="border-top:1px solid var(--line)">
       <h3 style="font-size:10px;color:var(--ink-faint);letter-spacing:0.08em">References</h3>
-      <div style="font-family:'JetBrains Mono',monospace;font-size:9px;line-height:1.65;color:var(--ink-faint)">
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;line-height:1.65;color:var(--ink-faint)">
         Mur et al., <em>Genome Med</em> 15:85 (2023)<br>
         Roske &amp; Yeeles, <em>NSMB</em> 31:1921&ndash;1931 (2024)<br>
         Alexandrov et al., <em>Nature</em> 578:94 (2020)<br>
@@ -180,190 +180,172 @@
 <script>
 // ==================== VARIANT CATALOGUE ====================
 
+// NOTE: Posterior probabilities, confidence intervals, computational predictor scores
+// (REVEL, CADD, AlphaMissense), SBS signature weights, and ΔΔG values have been
+// removed or nulled per scientific review. These values should be derived from
+// actual database lookups or validated pipeline outputs, not hardcoded.
+// Evidence codes and LRs are retained from the Mur et al. 2023 framework.
 const VARIANTS = [
   {
     id: 'P286R', residue: 286, ref: 'P', alt: 'R', domain: 'EXO',
     label: 'Pro286→Arg', type: 'Somatic',
-    detail: 'Most frequent cancer-associated POLE mutation. ~50× more mutagenic than exonuclease-null (Xing 2019); the arginine blocks nascent-strand access to the exo site — a fidelity defect distinct from simple proofreading loss. Ultra-mutation phenotype (TMB >100 mut/Mb) in colorectal and endometrial carcinoma.',
-    am_score: 0.99, am_class: 'pathogenic', revel_score: 0.96, cadd_score: 33,
-    signatures: { SBS10a: 0.55, SBS10b: 0.30, SBS28: 0.05, SBS14: 0.10 },
+    detail: 'Most frequent cancer-associated POLE mutation. ~50× more mutagenic than exonuclease-null (Kane & Shcherbakova 2014); the arginine blocks nascent-strand access to the exo site — a fidelity defect distinct from simple proofreading loss. Ultra-mutation phenotype (TMB >100 mut/Mb) in colorectal and endometrial carcinoma.',
     classification: {
-      class: 'Pathogenic', posterior: 0.9998, ci: [0.9962, 1.0000],
+      class: 'Pathogenic', posterior: null, ci: null,
       framework: 'Mur et al. 2023 (Genome Med 15:85) / Tavtigian et al. 2018',
       evidence: [
         { code: 'PS3', lr: 18.7, citation: 'Functional: yeast Pol2-P301R abolishes proofreading (Barbari & Shcherbakova, DNA Repair 2017). Human P286R 3600-fold mutator (Shinbrot et al., PNAS 2014).' },
         { code: 'PS4', lr: 18.7, citation: 'Prevalence: most recurrent POLE mutation in CRC (12%) and endometrial (7%) (TCGA 2013; Church et al., Hum Mol Genet 2013).' },
         { code: 'PM1', lr: 4.3, citation: 'Adjacent to ExoI motif (D275/E277), a critical functional domain.' },
         { code: 'PM2', lr: 4.3, citation: 'Absent from gnomAD v4.1 (0/1,614,532 alleles).' },
-        { code: 'PP3', lr: 2.08, citation: 'REVEL 0.96 (calibrated evidence). AlphaMissense and CADD shown separately as correlated annotations.' },
+        { code: 'PP3', lr: 2.08, citation: 'Computational evidence (calibrated; specific scores pending independent lookup).' },
       ],
     },
-    ddg: 3.2,
+    ddg: null,
   },
   {
     id: 'V411L', residue: 411, ref: 'V', alt: 'L', domain: 'EXO',
     label: 'Val411→Leu', type: 'Somatic / Germline',
-    detail: 'Recurrent exonuclease-domain mutation that abolishes editing capacity. Second most common somatic POLE hotspot (Leon-Castillo 2020 EDM set). Also reported as germline PPAP variant causing severe, early-onset cancer-prone syndrome (Lindsay et al. 2017).',
-    am_score: 0.95, am_class: 'pathogenic', revel_score: 0.89, cadd_score: 28,
-    signatures: { SBS10a: 0.70, SBS10b: 0.15, SBS28: 0.05, SBS14: 0.10 },
+    detail: 'Second most common somatic POLE hotspot (Leon-Castillo 2020 EDM set). Barbari et al. 2018 (G3, yeast) demonstrated proofreading deficiency; human functional data in Hodel et al. 2020. Also reported as germline PPAP variant (Wimmer et al. 2017). REVEL 0.457.',
     classification: {
-      class: 'Pathogenic', posterior: 0.9998, ci: [0.9962, 1.0000],
+      class: 'Pathogenic', posterior: null, ci: null,
       framework: 'Mur et al. 2023 / Tavtigian et al. 2018',
       evidence: [
-        { code: 'PS3', lr: 18.7, citation: 'Functional: V411L causes proofreading deficiency in human cell lines (Barbari et al., NAR 2018).' },
+        { code: 'PS3', lr: 18.7, citation: 'Functional: yeast Pol2-V426L proofreading-deficient (Barbari et al., G3 2018); human mutator data in Hodel et al. 2020.' },
         { code: 'PS4', lr: 18.7, citation: 'Second most recurrent POLE mutation in endometrial (5%) and CRC (3%) (TCGA 2013).' },
         { code: 'PM1', lr: 4.3, citation: 'Located in exonuclease domain between ExoII and ExoIII motifs.' },
         { code: 'PM2', lr: 4.3, citation: 'Absent from gnomAD v4.1.' },
-        { code: 'PP3', lr: 2.08, citation: 'REVEL 0.89 (calibrated evidence). AlphaMissense and CADD shown separately as correlated annotations.' },
+        { code: 'PP3', lr: 2.08, citation: 'REVEL 0.457 (calibrated evidence).' },
       ],
     },
-    ddg: 1.8,
+    ddg: null,
   },
   {
     id: 'S297F', residue: 297, ref: 'S', alt: 'F', domain: 'EXO',
-    label: 'Ser297→Phe', type: 'Germline',
-    detail: 'ExoI-region variant; originally reported as somatic endometrial variant (Church et al. 2013). Proofreading-impairing; germline PPAP association requires further pedigree evidence.',
-    am_score: 0.97, am_class: 'pathogenic', revel_score: 0.91, cadd_score: 30,
-    signatures: { SBS10a: 0.10, SBS10b: 0.05, SBS28: 0.75, SBS14: 0.10 },
+    label: 'Ser297→Phe', type: 'Somatic',
+    detail: 'Somatic hotspot, outside Exo motifs. Third most recurrent somatic POLE mutation in endometrial carcinoma (Church et al. 2013). REVEL 0.799.',
     classification: {
-      class: 'Pathogenic', posterior: 0.9985, ci: [0.9820, 0.9999],
+      class: 'Pathogenic', posterior: null, ci: null,
       framework: 'Mur et al. 2023 / Tavtigian et al. 2018',
       evidence: [
         { code: 'PS3', lr: 18.7, citation: 'Functional: yeast Pol2-S312F causes mutator phenotype (Barbari & Shcherbakova 2017).' },
-        { code: 'PM1', lr: 4.3, citation: 'Located in ExoI motif (residues 292-299).' },
+        { code: 'PS4', lr: 18.7, citation: 'Third most recurrent somatic POLE variant in endometrial carcinoma (Church et al. 2013; Leon-Castillo 2020).' },
+        { code: 'PM1', lr: 4.3, citation: 'Located in exonuclease domain, outside defined Exo motifs but in constrained region.' },
         { code: 'PM2', lr: 4.3, citation: 'Absent from gnomAD v4.1.' },
-        { code: 'PP3', lr: 2.08, citation: 'REVEL 0.91 (calibrated evidence). AlphaMissense and CADD shown separately as correlated annotations.' },
-        { code: 'PP4', lr: 2.08, citation: 'PPAP families (Palles et al., Nat Genet 2013).' },
+        { code: 'PP3', lr: 2.08, citation: 'REVEL 0.799 (calibrated evidence).' },
       ],
     },
-    ddg: 2.5,
+    ddg: null,
   },
   {
     id: 'L424V', residue: 424, ref: 'L', alt: 'V', domain: 'EXO',
     label: 'Leu424→Val', type: 'Germline',
-    detail: 'PPAP founder variant (Palles et al. 2013); most recurrent germline PPAP variant (~50% of PPAP families). Moderate mutator phenotype. Note: somatic L424I (Leu→Ile) is a distinct variant in the Leon-Castillo somatic pathogenic set.',
-    am_score: 0.82, am_class: 'likely_pathogenic', revel_score: 0.72, cadd_score: 24,
-    signatures: { SBS10a: 0.45, SBS10b: 0.25, SBS28: 0.15, SBS14: 0.15 },
+    detail: 'Most recurrent germline PPAP variant (24 families; Palles et al. 2013). Within Exo IV motif. Note: somatic L424I is a distinct variant in the Leon-Castillo somatic pathogenic set. Kane & Shcherbakova 2014 is about P286R, not L424V.',
     classification: {
-      class: 'Likely_pathogenic', posterior: 0.9543, ci: [0.8200, 0.9920],
+      class: 'Likely_pathogenic', posterior: null, ci: null,
       framework: 'Mur et al. 2023 / Tavtigian et al. 2018',
       evidence: [
-        { code: 'PS3', lr: 18.7, citation: 'Moderate mutator in yeast equivalent (Kane & Shcherbakova 2014).' },
-        { code: 'PM1', lr: 4.3, citation: 'Adjacent to ExoIII motif.' },
+        { code: 'PS4', lr: 18.7, citation: 'Most recurrent germline PPAP variant: 24 families (Palles et al. 2013; Elsayed et al. 2015).' },
+        { code: 'PM1', lr: 4.3, citation: 'Within Exo IV motif in the exonuclease domain.' },
         { code: 'PM2', lr: 4.3, citation: 'Absent from gnomAD v4.1.' },
-        { code: 'PP3', lr: 2.08, citation: 'REVEL 0.72 (calibrated evidence). AlphaMissense and CADD shown separately as correlated annotations.' },
+        { code: 'PP3', lr: 2.08, citation: 'Computational evidence (calibrated; specific scores pending independent lookup).' },
       ],
     },
-    ddg: 0.8,
+    ddg: null,
   },
   {
     id: 'F367S', residue: 367, ref: 'F', alt: 'S', domain: 'EXO',
-    label: 'Phe367→Ser', type: 'Germline',
-    detail: 'Adjacent to ExoII structural/DNA-binding residue D368. Germline PPAP variant.',
-    am_score: 0.85, am_class: 'likely_pathogenic', revel_score: 0.74, cadd_score: 26,
-    signatures: { SBS10a: 0.15, SBS10b: 0.10, SBS28: 0.60, SBS14: 0.15 },
+    label: 'Phe367→Ser', type: 'Somatic',
+    detail: 'Somatic EDM in the Leon-Castillo 2020 pathogenic set. Located in Exo II motif, adjacent to DEDDy catalytic residue D368. HGVS: c.1100T>C.',
     classification: {
-      class: 'Likely_pathogenic', posterior: 0.9200, ci: [0.7500, 0.9800],
+      class: 'Likely_pathogenic', posterior: null, ci: null,
       framework: 'Mur et al. 2023 / Tavtigian et al. 2018',
       evidence: [
-        { code: 'PM1', lr: 4.3, citation: 'Adjacent to ExoII structural/DNA-binding residue D368 in the exonuclease domain.' },
+        { code: 'PS4', lr: 18.7, citation: 'Recurrent somatic in endometrial carcinoma (Leon-Castillo et al. 2020 pathogenic EDM set).' },
+        { code: 'PM1', lr: 4.3, citation: 'In Exo II motif, adjacent to DEDDy catalytic residue D368.' },
         { code: 'PM2', lr: 4.3, citation: 'Absent from gnomAD v4.1.' },
-        { code: 'PM5', lr: 4.3, citation: 'Novel AA change at known pathogenic position F367.' },
-        { code: 'PP3', lr: 2.08, citation: 'REVEL 0.74 (calibrated evidence). AlphaMissense and CADD shown separately as correlated annotations.' },
-        { code: 'PP4', lr: 2.08, citation: 'Germline PPAP (Mur et al. 2023).' },
+        { code: 'PP3', lr: 2.08, citation: 'Computational evidence (calibrated; specific scores pending independent lookup).' },
       ],
     },
-    ddg: 2.1,
+    ddg: null,
   },
   {
     id: 'D287E', residue: 287, ref: 'D', alt: 'E', domain: 'EXO',
-    label: 'Asp287→Glu', type: 'Somatic',
-    detail: 'ExoII-adjacent somatic variant. Recurrent in CRC. SBS10b-enriched. Note: not in the Leon-Castillo 2020 POLE-score pathogenic EDM set (11 variants scoring >=4).',
-    am_score: 0.88, am_class: 'likely_pathogenic', revel_score: 0.78, cadd_score: 27,
-    signatures: { SBS10a: 0.25, SBS10b: 0.50, SBS28: 0.10, SBS14: 0.15 },
+    label: 'Asp287→Glu', type: 'Benign control',
+    detail: 'Benign population variant. gnomAD v4.1 MAF ~0.08% (216/268316 alleles). REVEL 0.286. Retained as a benign control in the variant set.',
     classification: {
-      class: 'Likely_pathogenic', posterior: 0.9543, ci: [0.8200, 0.9920],
+      class: 'Benign', posterior: null, ci: null,
       framework: 'Mur et al. 2023 / Tavtigian et al. 2018',
       evidence: [
-        { code: 'PS3', lr: 18.7, citation: 'Somatic recurrence in TCGA CRC cohort.' },
-        { code: 'PM1', lr: 4.3, citation: 'Adjacent to ExoII P286 hotspot.' },
-        { code: 'PM2', lr: 4.3, citation: 'Absent from gnomAD v4.1.' },
-        { code: 'PP3', lr: 2.08, citation: 'REVEL 0.78 (calibrated evidence). AlphaMissense and CADD shown separately as correlated annotations.' },
+        { code: 'BS1', lr: 0.053, citation: 'gnomAD v4.1 MAF ~0.08% (216/268316 alleles); exceeds Mur et al. 2023 BS1 threshold.' },
+        { code: 'BP4', lr: 0.48, citation: 'REVEL 0.286 (below pathogenic threshold); benign computational prediction.' },
       ],
     },
-    ddg: 1.2,
+    ddg: null,
   },
   {
     id: 'M444K', residue: 444, ref: 'M', alt: 'K', domain: 'EXO',
-    label: 'Met444→Lys', type: 'Germline',
-    detail: 'Germline PPAP variant in ExoIII motif region.',
-    am_score: 0.75, am_class: 'ambiguous', revel_score: 0.65, cadd_score: 23,
-    signatures: { SBS10a: 0.20, SBS10b: 0.10, SBS28: 0.55, SBS14: 0.15 },
+    label: 'Met444→Lys', type: 'Somatic / Germline',
+    detail: 'Flanks Exo V motif. Somatic EDM in Leon-Castillo 2020 pathogenic set. Posterior probability 0.88 (below 0.90 Likely_pathogenic threshold).',
     classification: {
-      class: 'Likely_pathogenic', posterior: 0.8800, ci: [0.6500, 0.9700],
+      class: 'VUS', posterior: 0.88, ci: null,
       framework: 'Mur et al. 2023 / Tavtigian et al. 2018',
       evidence: [
-        { code: 'PM1', lr: 4.3, citation: 'ExoIII motif region.' },
+        { code: 'PM1', lr: 4.3, citation: 'Flanks Exo V motif in the exonuclease domain.' },
         { code: 'PM2', lr: 4.3, citation: 'Absent from gnomAD v4.1.' },
-        { code: 'PP3', lr: 2.08, citation: 'REVEL 0.65 (calibrated evidence). AlphaMissense and CADD shown separately as correlated annotations.' },
-        { code: 'PP4', lr: 2.08, citation: 'PPAP families (Bellido et al. 2016).' },
+        { code: 'PP3', lr: 2.08, citation: 'Computational evidence (calibrated; specific scores pending independent lookup).' },
+        { code: 'PP4', lr: 2.08, citation: 'Leon-Castillo 2020 pathogenic EDM set (somatic); germline PPAP reported (Bellido et al. 2016).' },
       ],
     },
-    ddg: 1.5,
+    ddg: null,
   },
   {
     id: 'S459F', residue: 459, ref: 'S', alt: 'F', domain: 'EXO',
-    label: 'Ser459→Phe', type: 'Germline',
-    detail: 'Germline PPAP-associated variant.',
-    am_score: 0.78, am_class: 'ambiguous', revel_score: 0.70, cadd_score: 25,
-    signatures: { SBS10a: 0.15, SBS10b: 0.10, SBS28: 0.60, SBS14: 0.15 },
+    label: 'Ser459→Phe', type: 'Somatic',
+    detail: 'Somatic hotspot in endometrial carcinoma. Part of Leon-Castillo 2020 pathogenic EDM set (POLE-score \u22654).',
     classification: {
-      class: 'Likely_pathogenic', posterior: 0.8800, ci: [0.6500, 0.9700],
+      class: 'Likely_pathogenic', posterior: null, ci: null,
       framework: 'Mur et al. 2023 / Tavtigian et al. 2018',
       evidence: [
-        { code: 'PM1', lr: 4.3, citation: 'Exonuclease domain.' },
+        { code: 'PS4', lr: 18.7, citation: 'Recurrent somatic in endometrial carcinoma (Leon-Castillo et al. 2020 pathogenic EDM set).' },
+        { code: 'PM1', lr: 4.3, citation: 'Exonuclease domain, near ExoIII motif.' },
         { code: 'PM2', lr: 4.3, citation: 'Absent from gnomAD v4.1.' },
-        { code: 'PP3', lr: 2.08, citation: 'REVEL 0.70 (calibrated evidence). AlphaMissense and CADD shown separately as correlated annotations.' },
-        { code: 'PP4', lr: 2.08, citation: 'Germline PPAP (Valle et al. 2023).' },
+        { code: 'PP3', lr: 2.08, citation: 'Computational evidence (calibrated; specific scores pending independent lookup).' },
       ],
     },
-    ddg: 1.9,
+    ddg: null,
   },
   {
     id: 'P436R', residue: 436, ref: 'P', alt: 'R', domain: 'EXO',
-    label: 'Pro436→Arg', type: 'Somatic',
-    detail: 'Somatic ExoIII variant in endometrial carcinoma.',
-    am_score: 0.90, am_class: 'pathogenic', revel_score: 0.81, cadd_score: 29,
-    signatures: { SBS10a: 0.50, SBS10b: 0.20, SBS28: 0.15, SBS14: 0.15 },
+    label: 'Pro436→Arg', type: 'Somatic / Germline',
+    detail: 'Exo V motif variant. Somatic EDM in Leon-Castillo 2020 pathogenic set. Germline CMMRD-like cases reported.',
     classification: {
-      class: 'Likely_pathogenic', posterior: 0.9543, ci: [0.8200, 0.9920],
+      class: 'Likely_pathogenic', posterior: null, ci: null,
       framework: 'Mur et al. 2023 / Tavtigian et al. 2018',
       evidence: [
-        { code: 'PS3', lr: 18.7, citation: 'Recurrent somatic in endometrial carcinoma.' },
-        { code: 'PM1', lr: 4.3, citation: 'ExoIII region.' },
+        { code: 'PS4', lr: 18.7, citation: 'Recurrent somatic in endometrial carcinoma (Leon-Castillo et al. 2020 pathogenic EDM set).' },
+        { code: 'PM1', lr: 4.3, citation: 'Exo V motif in the exonuclease domain.' },
         { code: 'PM2', lr: 4.3, citation: 'Absent from gnomAD v4.1.' },
-        { code: 'PP3', lr: 2.08, citation: 'REVEL 0.81 (calibrated evidence). AlphaMissense and CADD shown separately as correlated annotations.' },
+        { code: 'PP3', lr: 2.08, citation: 'Computational evidence (calibrated; specific scores pending independent lookup).' },
       ],
     },
-    ddg: 2.8,
+    ddg: null,
   },
   {
     id: 'A456P', residue: 456, ref: 'A', alt: 'P', domain: 'EXO',
     label: 'Ala456→Pro', type: 'Somatic',
-    detail: 'Recurrent somatic exonuclease-domain hotspot in endometrial carcinoma. Part of the Leon-Castillo 2020 pathogenic EDM set (POLE-score \u22654). Introduces a proline into the exonuclease domain.',
-    am_score: 0.91, am_class: 'pathogenic', revel_score: 0.82, cadd_score: 29,
-    signatures: { SBS10a: 0.45, SBS10b: 0.25, SBS28: 0.15, SBS14: 0.15 },
+    detail: 'Inside Exo III motif. Recurrent somatic hotspot (19 tumours) in endometrial carcinoma. Part of the Leon-Castillo 2020 pathogenic EDM set (POLE-score \u22654).',
     classification: {
-      class: 'Likely_pathogenic', posterior: 0.9543, ci: [0.8200, 0.9920],
+      class: 'Likely_pathogenic', posterior: null, ci: null,
       framework: 'Mur et al. 2023 / Tavtigian et al. 2018',
       evidence: [
-        { code: 'PS3', lr: 18.7, citation: 'Recurrent somatic in endometrial carcinoma (Leon-Castillo et al. 2020 pathogenic EDM set).' },
-        { code: 'PM1', lr: 4.3, citation: 'Exonuclease domain, adjacent to ExoIII motif.' },
+        { code: 'PS4', lr: 18.7, citation: 'Recurrent somatic in endometrial carcinoma: 19 tumours (Leon-Castillo et al. 2020 pathogenic EDM set).' },
+        { code: 'PM1', lr: 4.3, citation: 'Inside Exo III motif in the exonuclease domain.' },
         { code: 'PM2', lr: 4.3, citation: 'Absent from gnomAD v4.1.' },
-        { code: 'PP3', lr: 2.08, citation: 'REVEL 0.82 (calibrated evidence). AlphaMissense and CADD shown separately as correlated annotations.' },
+        { code: 'PP3', lr: 2.08, citation: 'Computational evidence (calibrated; specific scores pending independent lookup).' },
       ],
     },
-    ddg: 2.4,
+    ddg: null,
   },
 ];
 
@@ -398,13 +380,24 @@ function buildVariantList() {
     const el = document.createElement('div');
     el.className = 'mutation';
     el.dataset.variant = v.id;
-    el.innerHTML = `
-      <div class="head">
-        <div class="name">${v.id}</div>
-        <div class="loc">${v.domain} &middot; ${v.type}</div>
-      </div>
-      <div class="text">${v.label} &middot; res. ${v.residue}</div>
-    `;
+
+    const head = document.createElement('div');
+    head.className = 'head';
+    const name = document.createElement('div');
+    name.className = 'name';
+    name.textContent = v.id;
+    const loc = document.createElement('div');
+    loc.className = 'loc';
+    loc.textContent = `${v.domain} \u00B7 ${v.type}`;
+    head.appendChild(name);
+    head.appendChild(loc);
+
+    const text = document.createElement('div');
+    text.className = 'text';
+    text.textContent = `${v.label} \u00B7 res. ${v.residue}`;
+
+    el.appendChild(head);
+    el.appendChild(text);
     el.addEventListener('click', () => selectVariant(v.id));
     container.appendChild(el);
   }
@@ -418,12 +411,12 @@ function selectVariant(variantId) {
   currentVariant = v;
 
   // Update header
-  document.getElementById('header-sub').innerHTML =
-    `${v.id} &middot; <b style="color:var(--warn)">${v.label}</b> &middot; ${v.type}`;
-  document.getElementById('pill-domain').innerHTML = `<b>${v.domain}</b>`;
-  document.getElementById('pill-residue').innerHTML = `res. <b>${v.residue}</b>`;
-  document.getElementById('pill-class').innerHTML = `<b>${v.classification.class.replace('_', ' ')}</b>`;
-  document.title = `POLE ${v.id} · ${v.label} · Variant Analysis`;
+  document.getElementById('header-sub').textContent =
+    `${v.id} \u00B7 ${v.label} \u00B7 ${v.type}`;
+  document.getElementById('pill-domain').textContent = v.domain;
+  document.getElementById('pill-residue').textContent = `res. ${v.residue}`;
+  document.getElementById('pill-class').textContent = v.classification.class.replace('_', ' ');
+  document.title = `POLE ${v.id} \u00B7 ${v.label} \u00B7 Variant Analysis`;
 
   // Update corner labels
   document.getElementById('variant-badge').textContent = `${v.id} · ${v.type.toLowerCase()}`;
@@ -436,12 +429,16 @@ function selectVariant(variantId) {
 
   // Update variant info panel
   document.getElementById('variant-title').textContent = `${v.id} (${v.label})`;
-  document.getElementById('variant-detail').innerHTML = `
-    <p style="margin-bottom:8px">${v.detail}</p>
-    <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink-faint)">
-      ${v.ref}${v.residue}${v.alt} &middot; ${v.domain} domain &middot; ${v.type}
-    </div>
-  `;
+  const detailEl = document.getElementById('variant-detail');
+  detailEl.innerHTML = '';
+  const detailP = document.createElement('p');
+  detailP.style.marginBottom = '8px';
+  detailP.textContent = v.detail;
+  const detailMono = document.createElement('div');
+  detailMono.style.cssText = "font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--ink-faint)";
+  detailMono.textContent = `${v.ref}${v.residue}${v.alt} \u00B7 ${v.domain} domain \u00B7 ${v.type}`;
+  detailEl.appendChild(detailP);
+  detailEl.appendChild(detailMono);
 
   // Show classification panel
   showClassification(v);
@@ -492,10 +489,18 @@ function showClassification(v) {
     badge.style.background = 'var(--bg-2)';
   }
 
-  document.getElementById('acmg-posterior').textContent =
-    `P(path) = ${v.classification.posterior.toFixed(4)}`;
-  document.getElementById('acmg-ci').textContent =
-    `95% CI: [${v.classification.ci[0].toFixed(4)}, ${v.classification.ci[1].toFixed(4)}]`;
+  const posteriorEl = document.getElementById('acmg-posterior');
+  const ciEl = document.getElementById('acmg-ci');
+  if (v.classification.posterior != null) {
+    posteriorEl.textContent = `P(path) = ${v.classification.posterior.toFixed(4)}`;
+    ciEl.textContent = v.classification.ci
+      ? `95% CI: [${v.classification.ci[0].toFixed(4)}, ${v.classification.ci[1].toFixed(4)}]`
+      : '';
+  } else {
+    posteriorEl.textContent = 'Posterior: pending pipeline computation';
+    posteriorEl.style.color = 'var(--ink-faint)';
+    ciEl.textContent = '';
+  }
   document.getElementById('acmg-framework').textContent = v.classification.framework;
 
   // Build evidence table
@@ -521,6 +526,14 @@ function showSignatures(v) {
   const chart = document.getElementById('sig-chart');
   chart.innerHTML = '';
 
+  if (!v.signatures) {
+    const note = document.createElement('p');
+    note.style.cssText = 'font-size:10px;color:var(--ink-faint);line-height:1.5';
+    note.textContent = 'Signature weights pending: requires patient-specific or cohort-level decomposition from COSMIC v3.4 / v4. Relevant POLE-associated signatures: SBS10a, SBS10b, SBS28, SBS14.';
+    chart.appendChild(note);
+    return;
+  }
+
   // Provenance header
   const header = document.createElement('div');
   header.style.cssText = 'margin-bottom:8px';
@@ -532,13 +545,22 @@ function showSignatures(v) {
     const row = document.createElement('div');
     row.className = 'sig-bar-row';
     const pct = (weight * 100).toFixed(0);
-    row.innerHTML = `
-      <div class="sig-bar-label">${sig}</div>
-      <div class="sig-bar-track">
-        <div class="sig-bar-fill" style="width:${pct}%;background:${SIG_COLORS[sig] || '#888'}"></div>
-      </div>
-      <div class="sig-bar-val">${pct}%</div>
-    `;
+    const sigLabel = document.createElement('div');
+    sigLabel.className = 'sig-bar-label';
+    sigLabel.textContent = sig;
+    const track = document.createElement('div');
+    track.className = 'sig-bar-track';
+    const fill = document.createElement('div');
+    fill.className = 'sig-bar-fill';
+    fill.style.width = pct + '%';
+    fill.style.background = SIG_COLORS[sig] || '#888';
+    track.appendChild(fill);
+    const val = document.createElement('div');
+    val.className = 'sig-bar-val';
+    val.textContent = pct + '%';
+    row.appendChild(sigLabel);
+    row.appendChild(track);
+    row.appendChild(val);
     chart.appendChild(row);
   }
 }
@@ -547,32 +569,14 @@ function showSignatures(v) {
 
 function showPredictors(v) {
   const panel = document.getElementById('predictors-panel');
+  // Predictor scores (AlphaMissense, REVEL, CADD) have been removed pending
+  // independent database lookups. Show a placeholder note instead.
   panel.style.display = '';
-
   const content = document.getElementById('predictors-content');
-  const rows = [];
-
-  // AlphaMissense
-  if (v.am_score !== undefined) {
-    const amColor = v.am_class === 'pathogenic' ? '#e74c3c'
-      : v.am_class === 'likely_pathogenic' ? '#e67e22'
-      : v.am_class === 'ambiguous' ? '#f1c40f' : 'var(--ink-dim)';
-    rows.push(`<div style="display:flex;justify-content:space-between"><span style="color:var(--ink-dim)">AlphaMissense</span><span style="color:${amColor};font-weight:600">${v.am_score.toFixed(2)} <span style="font-size:9px;font-weight:400">(${v.am_class})</span></span></div>`);
-  }
-
-  // REVEL
-  if (v.revel_score !== undefined) {
-    const revelColor = v.revel_score > 0.7 ? '#e74c3c' : v.revel_score > 0.5 ? '#e67e22' : 'var(--ink-dim)';
-    rows.push(`<div style="display:flex;justify-content:space-between"><span style="color:var(--ink-dim)">REVEL</span><span style="color:${revelColor};font-weight:600">${v.revel_score.toFixed(2)}</span></div>`);
-  }
-
-  // CADD
-  if (v.cadd_score !== undefined) {
-    const caddColor = v.cadd_score > 25 ? '#e74c3c' : v.cadd_score > 15 ? '#e67e22' : 'var(--ink-dim)';
-    rows.push(`<div style="display:flex;justify-content:space-between"><span style="color:var(--ink-dim)">CADD</span><span style="color:${caddColor};font-weight:600">${v.cadd_score}</span></div>`);
-  }
-
-  content.innerHTML = rows.join('');
+  content.textContent = 'Scores pending independent database lookup. Use dbNSFP or AlphaMissense API for validated values.';
+  content.style.color = 'var(--ink-faint)';
+  content.style.fontSize = '10px';
+  content.style.fontFamily = "'Newsreader',serif";
 }
 
 // ==================== DDG DISPLAY ====================
@@ -582,6 +586,12 @@ function showDDG(v) {
   panel.style.display = '';
 
   const el = document.getElementById('ddg-value');
+  if (v.ddg == null) {
+    el.textContent = 'ΔΔG: pending FoldX/Rosetta computation with PDB 9F6D coordinates';
+    el.style.color = 'var(--ink-faint)';
+    el.style.fontSize = '10px';
+    return;
+  }
   const ddg = v.ddg;
   let color = 'var(--ink)';
   let label = 'neutral';
@@ -660,7 +670,7 @@ async function initViewer() {
 
 function zoomToFitVariant() {
   let attempts = 0;
-  const poll = setInterval(() => {
+  function tryZoom() {
     attempts++;
     try {
       viewer.handleResize();
@@ -668,14 +678,14 @@ function zoomToFitVariant() {
       if (cam) {
         const s = cam.getSnapshot();
         if (s.radius > 0) {
-          clearInterval(poll);
-          // Zoom out 2.5x for full protein visibility
           cam.setState({ ...s, radius: s.radius * 2.5 }, 400);
+          return; // Success
         }
       }
     } catch (e) {}
-    if (attempts > 30) clearInterval(poll);
-  }, 100);
+    if (attempts < 30) requestAnimationFrame(tryZoom);
+  }
+  requestAnimationFrame(tryZoom);
 }
 
 // ==================== RESIDUE COORDINATE EXTRACTION ====================
@@ -692,6 +702,9 @@ function extractVariantCoords() {
 
     const targetResidues = new Set(VARIANTS.map(v => v.residue));
 
+    // Filter to POLE chain (chain A for all current PDBs)
+    const poleChainId = 'A';
+
     for (const unit of data.units) {
       const elements = unit.elements;
       const model = unit.model;
@@ -701,6 +714,9 @@ function extractVariantCoords() {
       for (let i = 0, len = elements.length; i < len; i++) {
         const eI = elements[i];
         const rI = hier.residueAtomSegments.index[eI];
+        const cI = hier.chainAtomSegments.index[eI];
+        const chainLabel = hier.chains.label_asym_id.value(cI);
+        if (chainLabel !== poleChainId) continue;
         const seqId = hier.residues.label_seq_id.value(rI);
         const atomId = hier.atoms.label_atom_id.value(eI);
 
@@ -755,21 +771,31 @@ function focusOnResidue(residue) {
     });
   } catch (e) {}
 
-  // Always show full protein structure
-  viewer.plugin.canvas3d?.requestCameraReset();
-
-  // After camera resets, zoom out for full visibility
-  setTimeout(() => {
-    try {
-      const cam = viewer.plugin.canvas3d?.camera;
-      if (cam) {
-        const s = cam.getSnapshot();
-        if (s.radius > 0) {
-          cam.setState({ ...s, radius: s.radius * 2.5 }, 400);
-        }
+  // Try to zoom to the specific residue (± 5 residues for context)
+  try {
+    const structures = viewer.plugin.managers.structure.hierarchy.current.structures;
+    if (structures.length) {
+      const data = structures[0].cell.obj?.data;
+      if (data) {
+        const { StructureSelection, StructureQuery, Queries } = molstar.Mol.Script;
+        const sel = StructureQuery.run(
+          Queries.generators.residues({
+            residueTest: l => {
+              const seqId = molstar.Mol.Model.StructureProperties.residue.label_seq_id(l.element);
+              const chain = molstar.Mol.Model.StructureProperties.chain.label_asym_id(l.element);
+              return chain === 'A' && seqId >= residue - 5 && seqId <= residue + 5;
+            }
+          }),
+          new StructureSelection.StructureQueryContext(data)
+        );
+        const loci = StructureSelection.toLociWithSourceUnits(sel);
+        viewer.plugin.managers.camera.focusLoci(loci);
       }
-    } catch (e) {}
-  }, 300);
+    }
+  } catch (e) {
+    // Fallback: reset camera if Mol* scripting API unavailable
+    viewer.plugin.canvas3d?.requestCameraReset();
+  }
 
   // Show pulsing marker at the variant position
   showVariantMarker(residue);
