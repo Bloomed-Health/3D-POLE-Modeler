@@ -14,6 +14,9 @@ const BASE_OPTIONS = {
   viewportShowExpand: false,
   viewportShowSelectionMode: false,
   viewportShowAnimation: false,
+  canvas3d: {
+    attribs: { preserveDrawingBuffer: true },
+  },
 };
 
 const DARK_BG = 0x0E141E;

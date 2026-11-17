@@ -9,11 +9,13 @@ Interactive 3D structural viewer for the human DNA Polymerase epsilon (Pol e) ca
 
 ## Overview
 
-This tool renders a **procedural cartoon-ribbon schematic** of the POLE holoenzyme directly in the browser using Three.js (WebGL). It is designed for exploring the domain architecture, catalytic mechanism, cancer-associated mutations, and clinical consequences of rare germline variants of Pol e.
+This tool provides interactive 3D structural viewers for exploring the domain architecture, catalytic mechanism, cancer-associated mutations, and clinical consequences of rare germline variants of Pol e. The home page renders **real atomic coordinates** from PDB 9F6D using [Mol\*](https://molstar.org/) in ball-and-stick representation. A separate schematic page (`schematic.html`) renders a **procedural cartoon-ribbon model** using Three.js.
 
-> **Important:** This is a schematic teaching model, not an atomic-coordinate viewer. The ribbon geometry, domain centers, and secondary-structure elements are procedurally generated to illustrate domain topology and functional relationships. Color modes (B-factor, conservation, charge, pathogenicity) display approximate domain-level or synthetic per-residue values, not crystallographic or computed data. For analysis of real atomic coordinates, load PDB [9F6D](https://www.rcsb.org/structure/9F6D) (Roske & Yeeles 2024, human Pol e-PCNA-DNA) into [Mol\*](https://molstar.org/) or PyMOL.
+> **Note:** The schematic viewer is a teaching model, not an atomic-coordinate viewer. Its ribbon geometry, domain centers, and secondary-structure elements are procedurally generated to illustrate domain topology. For analysis of real atomic coordinates, use the home page Mol\* viewer or load PDB [9F6D](https://www.rcsb.org/structure/9F6D) into PyMOL.
 
-## Features
+## Schematic Viewer Features
+
+The schematic viewer (`schematic.html`) includes:
 
 - **Cartoon ribbon representation** - helices, beta-strands (with arrowheads), and loops rendered per secondary structure element across all eight functional domains (NTD, EXO, Palm, P, Fingers, Thumb, Inactive-Pol, CTD)
 - **Two-metal-ion catalysis** - ball-and-stick active site with octahedral Mg2+ coordination, conserved aspartate residues (D626 [Motif A], D860/D862 [Motif C]; human POLE1, UniProt Q07864, verified from He et al. 2024, PDB 9B8S), and distance annotations
@@ -45,9 +47,9 @@ This tool renders a **procedural cartoon-ribbon schematic** of the POLE holoenzy
 - **PyMOL** - classic PyMOL-style bright colors
 - **Accessible** - colorblind-friendly palette
 
-## Mol* Coordinate Viewer
+## Mol* Coordinate Viewer (Home Page)
 
-A separate page (`molstar.html`) provides a **real coordinate viewer** using [Mol*](https://molstar.org/), the same viewer used by RCSB PDB and PDBe. Features:
+The home page (`index.html`) is a **real coordinate viewer** using [Mol*](https://molstar.org/), the same viewer used by RCSB PDB and PDBe. Features:
 
 - Loads PDB 9F6D (Roske & Yeeles 2024) with domain-colored cartoon representation
 - **Finger conformational triad**: switch between open (9F6D), ajar (9F6E), and closed (9F6F) states. Four additional mismatch proofreading intermediates (9F6I-9F6L) are deposited but not yet wired into the selector. **Construct note:** 9F6I and 9F6J use an exonuclease-dead construct (D275A/E277A); active-site labels at the exo site correspond to alanines, not native aspartate/glutamate catalytic residues

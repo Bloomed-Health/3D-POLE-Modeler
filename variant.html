@@ -620,6 +620,9 @@ async function initViewer() {
     viewportShowAnimation: false,
     pdbProvider: 'rcsb',
     volumeStreamingServer: 'https://maps.rcsb.org',
+    canvas3d: {
+      attribs: { preserveDrawingBuffer: true },
+    },
   });
 
   try {
