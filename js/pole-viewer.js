@@ -39,25 +39,25 @@ import { attachCameraControls } from './utils/camera-controller.js';
 // Schematic-specific domain extensions (center, ss, header are viewer-only)
 const SCHEMATIC_EXTENSIONS = {
   ntd: { center:[-18,8,-5], color:'ntd',
-    header:'// NTD (1-280) // Structural scaffold',
+    header:'// NTD (1-222) // Structural scaffold',
     ss:[ {t:'H',n:14},{t:'L',n:6},{t:'E',n:7},{t:'L',n:4},{t:'E',n:6},{t:'L',n:5},{t:'H',n:18},{t:'L',n:5},{t:'E',n:8},{t:'L',n:4},{t:'E',n:7},{t:'L',n:6},{t:'H',n:12},{t:'L',n:8},{t:'H',n:10},{t:'L',n:5},{t:'E',n:6},{t:'L',n:4},{t:'H',n:16},{t:'L',n:7},{t:'H',n:10},{t:'L',n:8},{t:'E',n:5},{t:'L',n:6},{t:'H',n:8},{t:'L',n:9} ] },
   exo: { center:[-10,2,7], color:'exo',
-    header:"// EXO (268-471) // 3'\u21925' proofreading / D275/E277(ExoI) D368(ExoII,structural) D462(ExoIII)",
+    header:"// EXO (223-517) // 3'\u21925' proofreading / D275/E277(ExoI) D368(ExoII,catalytic) D462(ExoIII)",
     ss:[ {t:'E',n:6},{t:'L',n:4},{t:'H',n:14},{t:'L',n:5},{t:'E',n:7},{t:'L',n:3},{t:'E',n:6},{t:'H',n:12},{t:'L',n:6},{t:'H',n:16},{t:'L',n:4},{t:'E',n:8},{t:'L',n:5},{t:'H',n:10},{t:'L',n:6},{t:'E',n:7},{t:'L',n:3},{t:'H',n:14},{t:'L',n:5},{t:'H',n:8},{t:'L',n:6},{t:'E',n:6},{t:'L',n:4},{t:'H',n:10},{t:'L',n:4} ] },
   palm: { center:[0,-1,0], color:'palm',
-    header:'// PALM (600-870) // Catalytic core / motifs A(D640xD642) C(D860)',
+    header:'// PALM (518-870) // Catalytic core / motifs A(D626) C(D860/D862)',
     ss:[ {t:'E',n:8},{t:'L',n:3},{t:'E',n:7},{t:'L',n:5},{t:'H',n:12},{t:'L',n:4},{t:'E',n:9},{t:'L',n:3},{t:'E',n:7},{t:'L',n:6},{t:'H',n:10},{t:'L',n:4},{t:'E',n:8},{t:'L',n:5},{t:'E',n:6},{t:'L',n:3},{t:'H',n:14},{t:'L',n:5},{t:'E',n:7},{t:'L',n:4},{t:'H',n:8},{t:'L',n:6},{t:'E',n:9},{t:'L',n:3},{t:'E',n:7},{t:'L',n:5},{t:'H',n:12},{t:'L',n:4} ] },
   pdomain: { center:[4,1,-3], color:'pdomain',
-    header:'// P-DOM (700-760) // [4Fe-4S] cluster / PCNA contact',
+    header:'// P-DOM (640-760) // [4Fe-4S] cluster / PCNA contact',
     ss:[ {t:'H',n:12},{t:'L',n:4},{t:'H',n:10},{t:'L',n:5},{t:'E',n:6},{t:'L',n:3},{t:'H',n:8},{t:'L',n:4} ] },
   fingers: { center:[7,5,4], color:'fingers',
     header:'// FNG (870-1020) // O-helix / Watson-Crick fidelity gate',
     ss:[ {t:'H',n:20},{t:'L',n:4},{t:'H',n:16},{t:'L',n:6},{t:'H',n:22},{t:'L',n:5},{t:'H',n:14},{t:'L',n:4},{t:'H',n:12},{t:'L',n:5},{t:'H',n:10},{t:'L',n:6},{t:'H',n:8},{t:'L',n:4} ] },
   thumb: { center:[3,-9,7], color:'thumb',
-    header:'// THM (1020-1190) // Helical bundle / grips duplex DNA',
+    header:'// THM (1020-1189) // Helical bundle / grips duplex DNA',
     ss:[ {t:'H',n:18},{t:'L',n:4},{t:'H',n:22},{t:'L',n:5},{t:'H',n:16},{t:'L',n:6},{t:'H',n:20},{t:'L',n:4},{t:'H',n:14},{t:'L',n:5},{t:'H',n:12},{t:'L',n:6},{t:'H',n:10},{t:'L',n:4} ] },
   inactpol: { center:[10,-4,1], color:'inactpol',
-    header:'// INACT (1198-1900) // Non-catalytic Pol fold / subunit scaffold',
+    header:'// INACT (1190-1900) // Non-catalytic Pol fold / subunit scaffold',
     ss:[ {t:'H',n:14},{t:'L',n:6},{t:'E',n:7},{t:'L',n:4},{t:'H',n:10},{t:'L',n:5},{t:'E',n:6},{t:'L',n:4},{t:'H',n:12},{t:'L',n:6},{t:'E',n:8},{t:'L',n:3},{t:'H',n:8},{t:'L',n:5},{t:'E',n:7},{t:'L',n:4},{t:'H',n:10},{t:'L',n:6},{t:'E',n:6},{t:'L',n:4},{t:'H',n:14},{t:'L',n:5},{t:'E',n:5},{t:'L',n:4},{t:'H',n:8},{t:'L',n:6} ] },
   ctd: { center:[16,1,-5], color:'ctd',
     header:'// CTD (1900-2286) // CysA/CysB Zn-finger / POLE2/3/4 anchor',
@@ -363,7 +363,7 @@ export class POLEViewer {
       );
       core.position.copy(pos);
       core.userData = { name:`Mg\u00b2\u207a (Metal ${label})`,
-        detail: label==='A' ? 'Activates 3\u2032-OH \u00b7 D640/D642' : 'Coordinates \u03b2,\u03b3-phosphates \u00b7 D860' };
+        detail: label==='A' ? 'Activates 3\u2032-OH \u00b7 D626' : 'Coordinates \u03b2,\u03b3-phosphates \u00b7 D860/D862' };
       this.groups.metals.add(core);
     }
 
@@ -393,9 +393,9 @@ export class POLEViewer {
     this.groups.metals.add(this._leaderLine(mgMgLabelPos, mgMgMid, PAL.magnesium));
 
     const catRes = [
-      { l:'D640', pos:asp.clone().add(new THREE.Vector3(-1.2,0.8,-0.5)), mg:mgApos },
-      { l:'D642', pos:asp.clone().add(new THREE.Vector3(-0.8,-0.6,-0.8)), mg:mgApos },
-      { l:'D860', pos:asp.clone().add(new THREE.Vector3(1.2,0.6,-0.4)), mg:mgBpos },
+      { l:'D626', pos:asp.clone().add(new THREE.Vector3(-1.2,0.8,-0.5)), mg:mgApos },
+      { l:'D860', pos:asp.clone().add(new THREE.Vector3(-0.8,-0.6,-0.8)), mg:mgBpos },
+      { l:'D862', pos:asp.clone().add(new THREE.Vector3(1.2,0.6,-0.4)), mg:mgBpos },
     ];
     for (const res of catRes) {
       const dir = res.pos.clone().sub(asp).normalize();
@@ -979,8 +979,8 @@ export class POLEViewer {
     this.groups.labels.add(this._leaderLine(proofPos, proofAnchor, PAL.exo));
 
     const annotations = [
-      { text:'D640xD642 (Motif A)', pos:[0,-1,0], offset:[-12,-14,10], color:'#6b8e6b' },
-      { text:'D860 (Motif C)', pos:[0,-1,0], offset:[12,-14,-8], color:'#6b8e6b' },
+      { text:'D626 (Motif A)', pos:[0,-1,0], offset:[-12,-14,10], color:'#6b8e6b' },
+      { text:'D860/D862 (Motif C)', pos:[0,-1,0], offset:[12,-14,-8], color:'#6b8e6b' },
       { text:'O-helix', pos:[7,5,4], offset:[8,16,6], color:'#5b7f99' },
     ];
     for (const a of annotations) {
@@ -1009,8 +1009,8 @@ export class POLEViewer {
   _spriteLabel(text, textColor, accentColor, width, sub) {
     // Fixed screen-size label: text-fitted pill, constant pixel height regardless of zoom.
     const dpr = 3, fs = 12, padX = 9, dot = 6, gap = 7, h = 22;
-    const font = '500 ' + fs + 'px "JetBrains Mono", ui-monospace, monospace';
-    const subFont = '400 ' + fs + 'px "JetBrains Mono", ui-monospace, monospace';
+    const font = '500 ' + fs + 'px "IBM Plex Mono", ui-monospace, monospace';
+    const subFont = '400 ' + fs + 'px "IBM Plex Mono", ui-monospace, monospace';
     const m = document.createElement('canvas').getContext('2d');
     m.font = font; const tw = m.measureText(text).width;
     let sw = 0; if (sub) { m.font = subFont; sw = m.measureText(sub).width + 9; }

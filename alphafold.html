@@ -7,7 +7,7 @@
 <title>POLE · AlphaFold Predicted Structure · UniProt Q07864</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600&family=JetBrains+Mono:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&family=Newsreader:opsz,wght@6..72,300;6..72,400;6..72,500;6..72,600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/style.css">
 
 <!-- Mol* (molstar) CSS and JS from CDN -->
@@ -49,7 +49,7 @@
     flex-wrap: wrap;
   }
   .repr-selector button {
-    font-family: 'JetBrains Mono', monospace;
+    font-family: 'IBM Plex Mono', monospace;
     font-size: 10px;
     padding: 5px 10px;
     background: rgba(14, 20, 30, 0.6);
@@ -85,7 +85,7 @@
     <div class="header-meta">
       <div class="pill">UniProt <b>Q07864</b></div>
       <div class="pill"><b>2,286</b> AA</div>
-      <div class="pill">AlphaFold <b>v4</b></div>
+      <div class="pill">AlphaFold <b>v6</b></div>
       <div class="pill" style="border-color:rgba(101,203,243,0.3);color:#65CBF3"><b>predicted</b></div>
     </div>
     <button class="sidebar-toggle" id="sidebar-toggle" aria-label="Toggle sidebars">&#9776;</button>
@@ -248,7 +248,7 @@
       <div style="margin-top:3px">pick &middot; left-click</div>
     </div>
     <div class="overlay corner-bl">
-      <span>AlphaFold v4 &middot; UniProt Q07864</span>
+      <span>AlphaFold v6 &middot; UniProt Q07864</span>
     </div>
     <div class="overlay corner-br">
       <span id="repr-label">cartoon</span>
@@ -276,7 +276,7 @@
       </div>
       <div class="info-card">
         <div class="k">AlphaFold version</div>
-        <div class="v mono">v4 (AlphaFold2)</div>
+        <div class="v mono">v6 (AlphaFold2)</div>
       </div>
       <div class="info-card">
         <div class="k">Residues</div>
@@ -294,37 +294,37 @@
 
     <div class="panel" id="plddt-legend-panel">
       <h3 style="color:#65CBF3">pLDDT confidence</h3>
-      <div style="font-family:'JetBrains Mono',monospace;font-size:10px;line-height:2">
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;line-height:2">
         <div style="display:flex;align-items:center;gap:8px"><span style="display:inline-block;width:14px;height:14px;border-radius:2px;background:var(--plddt-very-high,#0053D6)"></span> <span style="color:var(--ink)">&gt;90</span> <span style="color:var(--ink-faint)">Very high confidence</span></div>
         <div style="display:flex;align-items:center;gap:8px"><span style="display:inline-block;width:14px;height:14px;border-radius:2px;background:var(--plddt-confident,#65CBF3)"></span> <span style="color:var(--ink)">70&ndash;90</span> <span style="color:var(--ink-faint)">Confident</span></div>
         <div style="display:flex;align-items:center;gap:8px"><span style="display:inline-block;width:14px;height:14px;border-radius:2px;background:var(--plddt-low,#FFDB13)"></span> <span style="color:var(--ink)">50&ndash;70</span> <span style="color:var(--ink-faint)">Low confidence</span></div>
         <div style="display:flex;align-items:center;gap:8px"><span style="display:inline-block;width:14px;height:14px;border-radius:2px;background:var(--plddt-very-low,#FF7D45)"></span> <span style="color:var(--ink)">&lt;50</span> <span style="color:var(--ink-faint)">Very low / disordered</span></div>
       </div>
-      <p style="font-family:'Fraunces',serif;font-size:10.5px;line-height:1.55;color:var(--ink-faint);font-weight:300;margin-top:10px">
+      <p style="font-family:'Newsreader',serif;font-size:10.5px;line-height:1.55;color:var(--ink-faint);font-weight:300;margin-top:10px">
         pLDDT (predicted Local Distance Difference Test) is a per-residue confidence metric ranging from 0&ndash;100. Regions with pLDDT &lt;50 are likely disordered or poorly predicted. Regions &gt;90 are expected to be modeled with high accuracy.
       </p>
     </div>
 
     <div class="panel">
       <h3>Structure details</h3>
-      <p style="font-family:'Fraunces',serif;font-size:12.5px;line-height:1.55;color:var(--ink);font-weight:300">
+      <p style="font-family:'Newsreader',serif;font-size:12.5px;line-height:1.55;color:var(--ink);font-weight:300">
         This viewer displays the <em style="color:#65CBF3">AlphaFold predicted structure</em> for the full-length POLE catalytic subunit (2,286 residues). Unlike experimental PDB structures which capture partial complexes, this model covers the entire polypeptide chain including regions not resolved in cryo-EM.
       </p>
-      <p style="font-family:'Fraunces',serif;font-size:12px;line-height:1.55;color:var(--ink-dim);margin-top:8px;font-weight:300">
+      <p style="font-family:'Newsreader',serif;font-size:12px;line-height:1.55;color:var(--ink-dim);margin-top:8px;font-weight:300">
         The default pLDDT coloring highlights regions of high vs. low prediction confidence. Structured catalytic domains (exonuclease, polymerase) typically show high confidence (&gt;90), while flexible loops and disordered termini may show lower scores.
       </p>
     </div>
 
     <div class="panel" style="background:rgba(101,203,243,0.04);border:1px solid rgba(101,203,243,0.12)">
       <h3 style="color:#65CBF3;font-size:10px;letter-spacing:0.08em">Model note</h3>
-      <p style="font-family:'Fraunces',serif;font-size:10.5px;line-height:1.55;color:var(--ink-faint);font-weight:300;margin:0">
+      <p style="font-family:'Newsreader',serif;font-size:10.5px;line-height:1.55;color:var(--ink-faint);font-weight:300;margin:0">
         This is a <b style="color:var(--ink-dim)">computational prediction</b>, not an experimentally determined structure. AlphaFold predictions should be interpreted alongside experimental data. For atomic-coordinate analysis from cryo-EM, use the <a href="molstar.html" style="color:var(--accent);text-decoration:none;font-weight:500">Mol* Coordinate Viewer</a> (PDB 9F6D).
       </p>
     </div>
 
     <div class="panel" style="border-top:1px solid var(--line)">
       <h3 style="font-size:10px;color:var(--ink-faint);letter-spacing:0.08em">References</h3>
-      <div style="font-family:'JetBrains Mono',monospace;font-size:9px;line-height:1.65;color:var(--ink-faint)">
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;line-height:1.65;color:var(--ink-faint)">
         Jumper et al., <em>Nature</em> 596:583 (2021)<br>
         Varadi et al., <em>NAR</em> 50:D439 (2022)<br>
         Roske &amp; Yeeles, <em>NSMB</em> 31:1921 (2024)
@@ -335,7 +335,7 @@
   <footer>
     <div class="left">
       <span class="ax">viewer &middot; <b>Mol*</b></span>
-      <span class="ax">source &middot; <b>AlphaFold v4</b></span>
+      <span class="ax">source &middot; <b>AlphaFold v6</b></span>
       <span class="ax">entry &middot; <b>AF-Q07864-F1</b></span>
     </div>
     <div>POLE &middot; ALPHAFOLD PREDICTED STRUCTURE</div>
@@ -345,8 +345,9 @@
 
 <script type="module">
 import { DOMAINS, DOMAIN_ORDER } from './js/data/domainConfig.js';
-import { initSidebarToggle, initProvenanceFooter } from './js/shared-ui.js';
+import { initSidebarToggle, initProvenanceFooter, initProgress } from './js/shared-ui.js';
 import { initKeyboardShortcuts } from './js/utils/keyboard.js';
+import { createMolstarViewer } from './js/molstar-init.js';
 
 // ==================== STATE ====================
 
@@ -357,49 +358,24 @@ let autoRotate = true;
 
 // ==================== LOADING ====================
 
-const progressFill = document.getElementById('progress-fill');
-const loadingText = document.getElementById('loading-text');
-function setProgress(pct, text) {
-  progressFill.style.width = pct + '%';
-  if (text) loadingText.textContent = text;
-}
+const setProgress = initProgress();
 
 setProgress(10, 'Initializing Mol* viewer…');
 
 async function initViewer() {
   setProgress(20, 'Creating Mol* plugin…');
 
-  viewer = await molstar.Viewer.create('canvas-container', {
+  viewer = await createMolstarViewer('canvas-container', {
     layoutIsExpanded: true,
-    layoutShowControls: false,
-    layoutShowRemoteState: false,
-    layoutShowSequence: false,
-    layoutShowLog: false,
-    layoutShowLeftPanel: false,
-    viewportShowExpand: false,
-    viewportShowSelectionMode: false,
-    viewportShowAnimation: false,
   });
-
-  // Set dark background
-  try {
-    viewer.plugin.canvas3d?.setProps({
-      renderer: {
-        backgroundColor: 0x0E141E,
-      },
-    });
-  } catch (e) { /* ignore if props differ between versions */ }
-
-  // Force the plugin to detect its container size
-  try { viewer.handleResize(); } catch (e) { /* ignore */ }
 
   setProgress(40, 'Downloading AlphaFold structure…');
 
   // Load AlphaFold mmCIF from EBI
-  const afUrl = 'https://alphafold.ebi.ac.uk/files/AF-Q07864-F1-model_v4.cif';
+  const afUrl = 'https://alphafold.ebi.ac.uk/files/AF-Q07864-F1-model_v6.cif';
   await viewer.loadStructureFromUrl(afUrl, 'mmcif', false);
 
-  // Re-apply dark background
+  // Re-apply background
   try {
     viewer.plugin.canvas3d?.setProps({ renderer: { backgroundColor: 0x0E141E } });
   } catch (e) { /* ignore */ }
@@ -426,10 +402,10 @@ async function reloadStructure() {
 
   try { await viewer.plugin.clear(); } catch (e) { /* ignore */ }
 
-  const afUrl = 'https://alphafold.ebi.ac.uk/files/AF-Q07864-F1-model_v4.cif';
+  const afUrl = 'https://alphafold.ebi.ac.uk/files/AF-Q07864-F1-model_v6.cif';
   await viewer.loadStructureFromUrl(afUrl, 'mmcif', false);
 
-  // Re-apply dark background
+  // Re-apply background
   try {
     viewer.plugin.canvas3d?.setProps({ renderer: { backgroundColor: 0x0E141E } });
   } catch (e) { /* ignore */ }

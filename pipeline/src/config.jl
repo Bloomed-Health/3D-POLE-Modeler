@@ -50,31 +50,40 @@ const POLE_MUTATIONS = [
      detail="Somatic ultra-mutator / adjacent to ExoI / CRC & endometrial / SBS10a/b"),
     (id="V411L",  residue=411,  ref_aa='V', alt_aa='L', domain=:exo,
      label="Val411→Leu",
-     detail="Somatic proofreading-deficient / TMB >100 mut/Mb / SBS10a"),
+     detail="Somatic/germline proofreading-deficient / TMB >100 mut/Mb / SBS10a; Barbari 2018 (G3 yeast); human data Hodel 2020; REVEL 0.457"),
     (id="S297F",  residue=297,  ref_aa='S', alt_aa='F', domain=:exo,
      label="Ser297→Phe",
-     detail="Germline ExoI / PPAP predisposition / SBS28"),
+     detail="Somatic hotspot / outside Exo motifs / endometrial & CRC / REVEL 0.799"),
     (id="L424V",  residue=424,  ref_aa='L', alt_aa='V', domain=:exo,
      label="Leu424→Val",
-     detail="Germline PPAP founder variant (Palles 2013) / ~50% PPAP families / Note: somatic L424I is a distinct variant"),
+     detail="Most recurrent germline PPAP (24 families; Palles 2013) / within Exo IV / Note: somatic L424I is distinct"),
     (id="D287E",  residue=287,  ref_aa='D', alt_aa='E', domain=:exo,
      label="Asp287→Glu",
-     detail="Somatic ExoII adjacent / CRC / SBS10b"),
+     detail="Benign population variant (gnomAD MAF ~0.08%, 216/268316 alleles; REVEL 0.286)"),
     (id="P436R",  residue=436,  ref_aa='P', alt_aa='R', domain=:exo,
      label="Pro436→Arg",
-     detail="Somatic ExoIII / endometrial / SBS10a"),
+     detail="Somatic/germline Exo V / endometrial / SBS10a; germline CMMRD-like cases reported"),
     (id="M444K",  residue=444,  ref_aa='M', alt_aa='K', domain=:exo,
      label="Met444→Lys",
-     detail="Germline PPAP / exonuclease domain"),
+     detail="Germline PPAP / flanks Exo V / posterior 0.88 < 0.90 threshold"),
     (id="S459F",  residue=459,  ref_aa='S', alt_aa='F', domain=:exo,
      label="Ser459→Phe",
-     detail="Germline / PPAP-associated / Valle 2023"),
+     detail="Somatic hotspot / endometrial / Leon-Castillo 2020 EDM set"),
     (id="F367S",  residue=367,  ref_aa='F', alt_aa='S', domain=:exo,
      label="Phe367→Ser",
-     detail="Germline PPAP / adjacent to ExoII structural residue D368"),
+     detail="Somatic (Leon-Castillo 2020) / in Exo II / c.1100T>C"),
     (id="A456P",  residue=456,  ref_aa='A', alt_aa='P', domain=:exo,
      label="Ala456→Pro",
-     detail="Somatic EDM / Leon-Castillo 2020 pathogenic set / endometrial"),
+     detail="Somatic EDM / inside Exo III / 19 tumours / Leon-Castillo 2020"),
+    (id="M295R",  residue=295,  ref_aa='M', alt_aa='R', domain=:exo,
+     label="Met295→Arg",
+     detail="Somatic EDM / Leon-Castillo 2020 / endometrial"),
+    (id="L424I",  residue=424,  ref_aa='L', alt_aa='I', domain=:exo,
+     label="Leu424→Ile",
+     detail="Somatic EDM / Leon-Castillo 2020 / distinct from germline L424V"),
+    (id="D368Y",  residue=368,  ref_aa='D', alt_aa='Y', domain=:exo,
+     label="Asp368→Tyr",
+     detail="Somatic EDM / ExoII catalytic D368 / Leon-Castillo 2020"),
 ]
 
 # Frameshift variant data (c.138del)
@@ -112,9 +121,9 @@ const FRAMESHIFT_VARIANT = (
 
 # Catalytic residues
 const CATALYTIC_RESIDUES = Dict(
-    :exo_site => [275, 277, 368, 462],      # D275, E277 (ExoI, verified), D368 (ExoII structural, not metal-coordinating), D462 (ExoIII, verified from PDB 9F6L; previously estimated from yeast D477 homology)
-    :pol_motif_a => [640, 642],              # D640, D642
-    :pol_motif_c => [860],                   # D860
+    :exo_site => [275, 277, 368, 462],      # D275, E277 (ExoI), D368 (ExoII, DEDDy catalytic set), D462 (ExoIII, verified from PDB 9F6L)
+    :pol_motif_a => [626],                   # D626 (He et al. 2024, 9B8S)
+    :pol_motif_c => [860, 862],              # D860, D862 (He et al. 2024, 9B8S)
 )
 
 # Metal sites
@@ -123,7 +132,7 @@ const METAL_COORDINATION_CUTOFF = 2.5  # Angstroms
 
 # AlphaFold
 const ALPHAFOLD_UNIPROT = "Q07864"
-const ALPHAFOLD_MODEL_VERSION = 4
+const ALPHAFOLD_MODEL_VERSION = 6
 
 """
     PipelineConfig

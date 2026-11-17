@@ -7,7 +7,7 @@
 <title>POLE · Mol* Coordinate Viewer · PDB 9F6D</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600&family=JetBrains+Mono:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&family=Newsreader:opsz,wght@6..72,300;6..72,400;6..72,500;6..72,600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/style.css">
 
 <!-- Mol* (molstar) CSS and JS from CDN -->
@@ -53,18 +53,19 @@
         <button class="control-btn active" data-pdb="9F6D" title="Roske & Yeeles 2024 — open Finger conformation">9F6D <span style="color:var(--ink-faint)">(open)</span></button>
         <button class="control-btn" data-pdb="9F6E" title="Roske & Yeeles 2024 — ajar Finger conformation">9F6E <span style="color:var(--ink-faint)">(ajar)</span></button>
         <button class="control-btn" data-pdb="9F6F" title="Roske & Yeeles 2024 — closed Finger conformation">9F6F <span style="color:var(--ink-faint)">(closed)</span></button>
-        <button class="control-btn" data-pdb="9B8S" title="He et al. 2024 — Pol ε–PCNA cryo-EM">9B8S</button>
+        <button class="control-btn" data-pdb="9B8S" title="He et al. 2024 — Pol ε–PCNA–DNA complex (5.01 Å)">9B8S</button>
+        <button class="control-btn" data-pdb="9B8T" title="He et al. 2024 — Pol ε catalytic core (2.95 Å)">9B8T</button>
       </div>
-      <p style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--ink-faint);margin-top:8px;line-height:1.5">
+      <p style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--ink-faint);margin-top:8px;line-height:1.5">
         Finger triad: open (9F6D) &rarr; ajar (9F6E) &rarr; closed (9F6F)<br>
         28&deg; / 19 &Aring; O-helix rotation upon dNTP binding
       </p>
       <div id="exo-dead-warning" style="display:none;margin-top:8px;padding:8px 10px;background:rgba(231,76,60,0.1);border:1px solid rgba(231,76,60,0.3);border-radius:2px">
-        <p style="font-family:'JetBrains Mono',monospace;font-size:9px;color:#e74c3c;font-weight:600;margin-bottom:4px">&#9888; EXO-DEAD CONSTRUCT</p>
+        <p style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:#e74c3c;font-weight:600;margin-bottom:4px">&#9888; EXO-DEAD CONSTRUCT</p>
         <p style="font-size:9px;color:var(--ink-dim);line-height:1.4">This structure uses the exonuclease-dead D275A/E277A construct. Active-site labels correspond to alanines, not native D/E catalytic residues. For native exo geometry, use 9F6K or 9F6L.</p>
       </div>
-      <p style="font-family:'Fraunces',serif;font-size:9px;color:var(--ink-faint);margin-top:6px;line-height:1.4;font-weight:300">
-        <b>Note:</b> PDB 9F6I (post-insertion) and 9F6J (arrest) use the exonuclease-dead D275A/E277A construct. For native exonuclease active-site geometry, use 9F6K or 9F6L.
+      <p style="font-family:'Newsreader',serif;font-size:9px;color:var(--ink-faint);margin-top:6px;line-height:1.4;font-weight:300">
+        <b>Note:</b> PDB 9F6D/E/F (Finger triad) and 9F6I/9F6J (post-insertion/arrest) all use the exonuclease-dead D275A/E277A construct. For native exonuclease active-site geometry, use 9F6K or 9F6L.
       </p>
     </div>
 
@@ -213,6 +214,7 @@
       background:rgba(14,20,30,0.75); padding:10px 14px; border-radius:4px;
       border:1px solid var(--line); font-size:11px; letter-spacing:0.04em;
       text-transform:none; color:var(--ink-dim); line-height:1.7;
+      backdrop-filter:blur(8px);
     ">
       <div><span style="color:var(--ink);font-weight:500">Rotate</span> &middot; left-drag</div>
       <div><span style="color:var(--ink);font-weight:500">Pan</span> &middot; right-drag</div>
@@ -245,7 +247,7 @@
       <button id="zoom-in-btn" title="Zoom in" aria-label="Zoom in" style="
         width:28px; height:28px; border-radius:4px; border:1px solid var(--line);
         background:rgba(14,20,30,0.80); color:var(--ink); font-size:16px;
-        font-family:'JetBrains Mono',monospace; cursor:pointer; line-height:1;
+        font-family:'IBM Plex Mono',monospace; cursor:pointer; line-height:1;
         display:flex; align-items:center; justify-content:center;
       ">+</button>
       <input id="zoom-slider" type="range" min="0" max="100" value="50"
@@ -257,7 +259,7 @@
       <button id="zoom-out-btn" title="Zoom out" aria-label="Zoom out" style="
         width:28px; height:28px; border-radius:4px; border:1px solid var(--line);
         background:rgba(14,20,30,0.80); color:var(--ink); font-size:16px;
-        font-family:'JetBrains Mono',monospace; cursor:pointer; line-height:1;
+        font-family:'IBM Plex Mono',monospace; cursor:pointer; line-height:1;
         display:flex; align-items:center; justify-content:center;
       ">&minus;</button>
     </div>
@@ -305,18 +307,18 @@
 
     <div class="panel">
       <h3>Structure details</h3>
-      <p style="font-family:'Fraunces',serif;font-size:12.5px;line-height:1.55;color:var(--ink);font-weight:300">
+      <p style="font-family:'Newsreader',serif;font-size:12.5px;line-height:1.55;color:var(--ink);font-weight:300">
         This viewer displays <em style="color:var(--accent)">real atomic coordinates</em> from the Protein Data Bank using Mol*, the same viewer used by RCSB PDB and PDBe. Secondary structure assignments, metal coordination geometries, and ligand interactions are derived directly from the deposited experimental data.
       </p>
-      <p style="font-family:'Fraunces',serif;font-size:11px;line-height:1.5;color:var(--ink-faint);margin-top:6px;font-weight:300">
+      <p style="font-family:'Newsreader',serif;font-size:11px;line-height:1.5;color:var(--ink-faint);margin-top:6px;font-weight:300">
         <b style="color:var(--ink-dim)">B-factor note:</b> 9F6D is a cryo-EM structure. The temperature-factor column represents a per-residue ADP or smoothed local-resolution proxy, not the crystallographic B-factor from X-ray refinement. Interpret accordingly.
       </p>
     </div>
 
     <div class="panel" id="plddt-legend-panel" style="display:none">
       <h3>pLDDT confidence</h3>
-      <p style="font-family:'Fraunces',serif;font-size:11px;line-height:1.5;color:var(--ink-faint);font-weight:300">
-        pLDDT is an AlphaFold per-residue confidence metric. It has no meaning for experimental structures. See the <a href="alphafold.html" style="color:#65CBF3">AlphaFold viewer</a> for pLDDT coloring.
+      <p style="font-family:'Newsreader',serif;font-size:11px;line-height:1.5;color:var(--ink-faint);font-weight:300">
+        pLDDT is an AlphaFold per-residue confidence metric. It has no meaning for experimental structures. See the <a href="alphafold.html" style="color:var(--accent)">AlphaFold viewer</a> for pLDDT coloring.
       </p>
     </div>
 
@@ -336,7 +338,7 @@
           <div class="name">V411L</div>
           <div class="loc">EXO &middot; res. 411</div>
         </div>
-        <div class="text">Proofreading-deficient. TMB &gt;100 mut/Mb. SBS10a.</div>
+        <div class="text">Somatic/germline. Proofreading-deficient (Barbari G3 2018; Hodel 2020). SBS10a.</div>
       </div>
 
       <div class="mutation" data-mut="S297F">
@@ -344,7 +346,7 @@
           <div class="name">S297F</div>
           <div class="loc">EXO &middot; res. 297</div>
         </div>
-        <div class="text">Germline ExoI. PPAP predisposition. SBS28.</div>
+        <div class="text">Somatic hotspot. Outside Exo motifs. REVEL 0.799.</div>
       </div>
 
       <div class="mutation" data-mut="L424V">
@@ -352,7 +354,7 @@
           <div class="name">L424V</div>
           <div class="loc">EXO &middot; res. 424</div>
         </div>
-        <div class="text">Somatic. Moderate mutator phenotype.</div>
+        <div class="text">Germline PPAP founder (24 families). Within Exo IV.</div>
       </div>
 
       <div class="mutation" data-mut="F367S">
@@ -360,20 +362,20 @@
           <div class="name">F367S</div>
           <div class="loc">EXO &middot; res. 367</div>
         </div>
-        <div class="text">Germline PPAP. Adjacent to ExoIII catalytic triad.</div>
+        <div class="text">Somatic EDM (Leon-Castillo 2020). In Exo II, adjacent to D368.</div>
       </div>
     </div>
 
     <div class="panel">
       <h3>Catalytic mechanism</h3>
-      <p style="font-family:'Fraunces',serif;font-size:12px;line-height:1.6;color:var(--ink-dim);font-weight:300">
-        <b style="color:var(--ink);font-weight:500">Two-metal-ion catalysis:</b> Metal A (Mg&sup2;+) lowers the p<em>K</em>a of the primer 3&prime;-OH. Metal B coordinates the &beta;,&gamma;-phosphates of the incoming dNTP. Both metals are chelated by conserved aspartates D640, D642, D860.
+      <p style="font-family:'Newsreader',serif;font-size:12px;line-height:1.6;color:var(--ink-dim);font-weight:300">
+        <b style="color:var(--ink);font-weight:500">Two-metal-ion catalysis:</b> Metal A (Mg&sup2;+) lowers the p<em>K</em>a of the primer 3&prime;-OH. Metal B coordinates the &beta;,&gamma;-phosphates of the incoming dNTP. Both metals are chelated by conserved aspartates D626 (motif A) and D860/D862 (motif C) (He et al. 2024, PDB 9B8S).
       </p>
     </div>
 
     <div class="panel" style="border-top:1px solid var(--line)">
       <h3 style="font-size:10px;color:var(--ink-faint);letter-spacing:0.08em">References</h3>
-      <div style="font-family:'JetBrains Mono',monospace;font-size:9px;line-height:1.65;color:var(--ink-faint)">
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;line-height:1.65;color:var(--ink-faint)">
         Roske &amp; Yeeles, <em>NSMB</em> 31:1921 (2024)<br>
         He et al., <em>Nat Commun</em> 15:7847 (2024)<br>
         Mur et al., <em>Genome Med</em> 15:85 (2023)<br>
@@ -398,12 +400,14 @@
 import { DOMAINS, DOMAIN_ORDER, MUTATIONS } from './js/data/domainConfig.js';
 import { initProgress, initSidebarToggle } from './js/shared-ui.js';
 import { initKeyboardShortcuts } from './js/utils/keyboard.js';
+import { createMolstarViewer } from './js/molstar-init.js';
 
 const PDB_INFO = {
-  '9F6D': { citation: 'Roske & Yeeles 2024', detail: 'Open Finger conformation', resolution: '3.0 Å cryo-EM' },
-  '9F6E': { citation: 'Roske & Yeeles 2024', detail: 'Ajar Finger conformation', resolution: '3.2 Å cryo-EM' },
-  '9F6F': { citation: 'Roske & Yeeles 2024', detail: 'Closed Finger conformation', resolution: '3.1 Å cryo-EM' },
-  '9B8S': { citation: 'He et al. 2024',      detail: 'Pol ε–PCNA–DNA complex',    resolution: '3.3 Å cryo-EM' },
+  '9F6D': { citation: 'Roske & Yeeles 2024', detail: 'Open Finger conformation (exo-dead D275A/E277A)', resolution: '3.60 Å cryo-EM' },
+  '9F6E': { citation: 'Roske & Yeeles 2024', detail: 'Ajar Finger conformation (exo-dead D275A/E277A)', resolution: '3.70 Å cryo-EM' },
+  '9F6F': { citation: 'Roske & Yeeles 2024', detail: 'Closed Finger conformation (exo-dead D275A/E277A)', resolution: '3.50 Å cryo-EM' },
+  '9B8S': { citation: 'He et al. 2024',      detail: 'Pol ε–PCNA–DNA complex',    resolution: '5.01 Å cryo-EM' },
+  '9B8T': { citation: 'He et al. 2024',      detail: 'Pol ε catalytic core',       resolution: '2.95 Å cryo-EM' },
 };
 
 // ==================== STATE ====================
@@ -415,6 +419,13 @@ let viewer = null;
 let autoRotate = true;
 let showLabels = true;
 
+// POLE catalytic subunit chain ID per PDB (all Roske & Yeeles use chain A; He et al. use chain A)
+const POLE_CHAIN = {
+  '9F6D': 'A', '9F6E': 'A', '9F6F': 'A',
+  '9B8S': 'A', '9B8T': 'A',
+  '9F6I': 'A', '9F6J': 'A', '9F6K': 'A', '9F6L': 'A',
+};
+
 // ==================== LOADING ====================
 
 const setProgress = initProgress();
@@ -424,37 +435,22 @@ setProgress(10, 'Initializing Mol* viewer…');
 async function initViewer() {
   setProgress(20, 'Creating Mol* plugin…');
 
-  viewer = await molstar.Viewer.create('canvas-container', {
+  viewer = await createMolstarViewer('canvas-container', {
     layoutIsExpanded: false,
-    layoutShowControls: false,
-    layoutShowRemoteState: false,
-    layoutShowSequence: false,
-    layoutShowLog: false,
-    layoutShowLeftPanel: false,
-    viewportShowExpand: false,
-    viewportShowSelectionMode: false,
-    viewportShowAnimation: false,
     pdbProvider: 'rcsb',
     volumeStreamingServer: 'https://maps.rcsb.org',
   });
 
-  // Set dark background
-  try {
-    viewer.plugin.canvas3d?.setProps({
-      renderer: {
-        backgroundColor: 0x0E141E,
-      },
-    });
-  } catch (e) { /* ignore if props differ between versions */ }
-
-  // Force the plugin to detect its container size (run twice —
-  // once now and once after a frame, to catch any late CSS layout).
-  try { viewer.handleResize(); } catch (e) { /* ignore */ }
+  // Second resize after a frame to catch late CSS layout
   await new Promise(r => requestAnimationFrame(r));
   try { viewer.handleResize(); } catch (e) { /* ignore */ }
 
   setProgress(40, 'Downloading PDB 9F6D…');
   await loadStructure('9F6D');
+
+  // Show exo-dead warning for initial structure (9F6D uses D275A/E277A construct)
+  const warnEl = document.getElementById('exo-dead-warning');
+  if (warnEl) warnEl.style.display = '';
 
   setProgress(90, 'Finalizing…');
 
@@ -497,8 +493,10 @@ async function loadStructure(pdbId, repr, colorMode) {
     .parse({ format: 'bcif' })
     .modelStructure({});
 
+  const chainId = POLE_CHAIN[pdbId] || 'A';
+
   if (colorMode === 'domain') {
-    // Per-domain coloring: build non-overlapping ranges with explicit colors
+    // Per-domain coloring: build non-overlapping ranges scoped to the POLE chain
     const assigned = new Set();
     for (const key of DOMAIN_ORDER) {
       const dom = DOMAINS[key];
@@ -508,16 +506,18 @@ async function loadStructure(pdbId, repr, colorMode) {
           if (rs === null) rs = r;
           assigned.add(r);
         } else if (rs !== null) {
-          struct.component({ selector: { beg_label_seq_id: rs, end_label_seq_id: r - 1 } })
+          struct.component({ selector: { label_asym_id: chainId, beg_label_seq_id: rs, end_label_seq_id: r - 1 } })
             .representation({ type: repr }).color({ color: dom.color });
           rs = null;
         }
       }
       if (rs !== null) {
-        struct.component({ selector: { beg_label_seq_id: rs, end_label_seq_id: dom.range[1] } })
+        struct.component({ selector: { label_asym_id: chainId, beg_label_seq_id: rs, end_label_seq_id: dom.range[1] } })
           .representation({ type: repr }).color({ color: dom.color });
       }
     }
+    // Other protein chains: show in gray
+    struct.component({ selector: 'polymer' }).representation({ type: repr }).color({ color: '#666666' });
   } else {
     // Non-domain mode: whole polymer, no explicit color (Mol* default)
     struct.component({ selector: 'polymer' }).representation({ type: repr });
@@ -528,9 +528,20 @@ async function loadStructure(pdbId, repr, colorMode) {
     .representation({ type: repr === 'surface' ? 'surface' : 'cartoon' })
     .color({ color: '#888888' });
 
-  // Ligands and ions always ball-and-stick
-  struct.component({ selector: 'ligand' }).representation({ type: 'ball_and_stick' });
-  struct.component({ selector: 'ion' }).representation({ type: 'ball_and_stick' });
+  // Conditional components based on toggle state
+  const isToggleOn = (name) => {
+    const el = document.querySelector(`.toggle[data-toggle="${name}"]`);
+    return el ? el.classList.contains('on') : true;
+  };
+
+  if (isToggleOn('ligands')) {
+    struct.component({ selector: 'ligand' }).representation({ type: 'ball_and_stick' });
+    struct.component({ selector: 'ion' }).representation({ type: 'ball_and_stick' });
+  }
+
+  if (isToggleOn('water')) {
+    struct.component({ selector: 'water' }).representation({ type: 'ball_and_stick' }).color({ color: '#4488cc' });
+  }
 
   const mvsData = builder.getState();
   await loadMVS(viewer.plugin, mvsData, {
@@ -542,7 +553,7 @@ async function loadStructure(pdbId, repr, colorMode) {
     await tryApplyColorTheme(colorMode);
   }
 
-  // Re-apply dark background (replaceExisting resets it)
+  // Re-apply background (replaceExisting resets it)
   try {
     viewer.plugin.canvas3d?.setProps({ renderer: { backgroundColor: 0x0E141E } });
   } catch (e) { /* ignore */ }
@@ -647,19 +658,60 @@ function focusDomain(key) {
   const dom = DOMAINS[key];
   if (!dom || !viewer) return;
 
-  // For now, load with only that domain highlighted
-  // Full implementation would use Mol* selection API
+  const chainId = POLE_CHAIN[currentPdb] || 'A';
   try {
+    const { StructureSelection, StructureQuery, Structure, Queries } = molstar.Mol.Script;
+    const plugin = viewer.plugin;
+    const data = plugin.managers.structure.hierarchy.current.structures[0]?.cell?.obj?.data;
+    if (!data) return;
+
+    // Select residues in the domain range on the POLE chain
+    const sel = StructureQuery.run(
+      Queries.generators.residues({
+        residueTest: l => {
+          const seqId = molstar.Mol.Model.StructureProperties.residue.label_seq_id(l.element);
+          const chain = molstar.Mol.Model.StructureProperties.chain.label_asym_id(l.element);
+          return chain === chainId && seqId >= dom.range[0] && seqId <= dom.range[1];
+        }
+      }),
+      new StructureSelection.StructureQueryContext(data)
+    );
+    const loci = StructureSelection.toLociWithSourceUnits(sel);
+    plugin.managers.camera.focusLoci(loci);
+  } catch (e) {
+    // Fallback: reset camera if Mol* scripting API unavailable
     viewer.plugin.canvas3d?.requestCameraReset();
-  } catch (e) { /* ignore */ }
+  }
 }
 
 function focusMutation(mutId) {
   const mut = MUTATIONS.find(m => m.id === mutId);
   if (!mut || !viewer) return;
+
+  const chainId = POLE_CHAIN[currentPdb] || 'A';
   try {
+    const { StructureSelection, StructureQuery, Structure, Queries } = molstar.Mol.Script;
+    const plugin = viewer.plugin;
+    const data = plugin.managers.structure.hierarchy.current.structures[0]?.cell?.obj?.data;
+    if (!data) return;
+
+    // Select the mutated residue on the POLE chain (± 5 residues for context)
+    const sel = StructureQuery.run(
+      Queries.generators.residues({
+        residueTest: l => {
+          const seqId = molstar.Mol.Model.StructureProperties.residue.label_seq_id(l.element);
+          const chain = molstar.Mol.Model.StructureProperties.chain.label_asym_id(l.element);
+          return chain === chainId && seqId >= mut.residue - 5 && seqId <= mut.residue + 5;
+        }
+      }),
+      new StructureSelection.StructureQueryContext(data)
+    );
+    const loci = StructureSelection.toLociWithSourceUnits(sel);
+    plugin.managers.camera.focusLoci(loci);
+  } catch (e) {
+    // Fallback: reset camera
     viewer.plugin.canvas3d?.requestCameraReset();
-  } catch (e) { /* ignore */ }
+  }
 }
 
 // ==================== INITIALIZE ====================
@@ -688,7 +740,7 @@ document.querySelectorAll('#pdb-selector button').forEach(btn => {
     btn.classList.add('active');
 
     // Show/hide exo-dead construct warning
-    const exoDeadPdbs = ['9F6I', '9F6J'];
+    const exoDeadPdbs = ['9F6D', '9F6E', '9F6F', '9F6I', '9F6J'];
     const warnEl = document.getElementById('exo-dead-warning');
     if (warnEl) warnEl.style.display = exoDeadPdbs.includes(pdb) ? '' : 'none';
 
@@ -778,12 +830,17 @@ document.querySelectorAll('.mutation').forEach(el => {
 
 // Toggle switches
 document.querySelectorAll('.toggle').forEach(t => {
-  t.addEventListener('click', () => {
+  t.addEventListener('click', async () => {
     const on = !t.classList.contains('on');
     t.classList.toggle('on', on);
     const toggle = t.dataset.toggle;
     if (toggle === 'rotate') setAutoRotate(on);
     if (toggle === 'labels') showLabels = on;  // positionLabels() handles visibility each frame
+    if (toggle === 'polymer' || toggle === 'ligands' || toggle === 'water') {
+      // Reload structure with current toggles applied
+      await loadStructure(currentPdb, currentRepr, currentColorMode);
+      setAutoRotate(autoRotate);
+    }
   });
 });
 
