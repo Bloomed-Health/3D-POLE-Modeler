@@ -1,6 +1,6 @@
 # 3D POLE Modeler
 
-[![CI](https://github.com/bloomed-health/3D-POLE-Render/actions/workflows/ci.yml/badge.svg)](https://github.com/bloomed-health/3D-POLE-Render/actions/workflows/ci.yml)
+[![CI](https://github.com/Bloomed-Health/3D-POLE-Modeler/actions/workflows/ci.yml/badge.svg)](https://github.com/Bloomed-Health/3D-POLE-Modeler/actions/workflows/ci.yml)
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 [![Node](https://img.shields.io/badge/node-%3E%3D20-brightgreen.svg)](https://nodejs.org/)
 [![Contributing](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
@@ -16,9 +16,9 @@ This tool renders a **procedural cartoon-ribbon schematic** of the POLE holoenzy
 ## Features
 
 - **Cartoon ribbon representation** - helices, beta-strands (with arrowheads), and loops rendered per secondary structure element across all eight functional domains (NTD, EXO, Palm, P, Fingers, Thumb, Inactive-Pol, CTD)
-- **Two-metal-ion catalysis** - ball-and-stick active site with octahedral Mg2+ coordination, conserved aspartate residues (D640, D642 [Motif A], D860 [Motif C]; human POLE1 numbering, UniProt Q07864 — **verify against 9F6D coordinates before use**; see note below), and distance annotations
+- **Two-metal-ion catalysis** - ball-and-stick active site with octahedral Mg2+ coordination, conserved aspartate residues (D626 [Motif A], D860/D862 [Motif C]; human POLE1, UniProt Q07864, verified from He et al. 2024, PDB 9B8S), and distance annotations
 - **Incoming dNTP + Watson-Crick base pairing** - template nucleotide with hydrogen bond visualization
-- **3'-to-5' exonuclease site** - two-metal proofreading active site with catalytic residues D275, E277 (ExoI, metal-coordinating, verified); D368 (ExoII, structural/DNA-binding — not a metal-coordinating catalytic residue); D462 (ExoIII, metal-coordinating, verified from PDB [9F6L](https://www.rcsb.org/structure/9F6L) mismatch excision structure, Roske & Yeeles 2024)
+- **3'-to-5' exonuclease site** - two-metal proofreading active site with the DEDDy catalytic set: D275, E277 (ExoI), D368 (ExoII), D462 (ExoIII, verified from PDB [9F6L](https://www.rcsb.org/structure/9F6L), Roske & Yeeles 2024), Y458 (conserved tyrosine)
 - **Zinc-finger motifs** - CysA/CysB in the CTD. CysA binds Zn2+ (required for PCNA binding). CysB is rendered as Zn2+ per the human p59-p261 crystal structure, though Netz et al. (2012) originally assigned a [4Fe-4S] cluster to CysB in B-family polymerases — the viewer depicts the Zn model; see the [4Fe-4S] entry for the CysX/P-domain cluster
 - **[4Fe-4S] cluster** - iron-sulfur cluster in the P domain via the CysX motif (coordinating cysteines C651, C654, C663, C747 in human POLE1), a feature unique to Pol e among B-family polymerases (ter Beek et al. 2019; Jain et al. 2014)
 - **DNA double helix** - template and primer backbone tubes with base-pair rungs
@@ -124,7 +124,7 @@ This viewer is a **schematic teaching tool**, not a molecular graphics program:
 - **Electrostatic surface is not computed.** The charge mode shows formal amino acid charge averaged per domain, not a Poisson-Boltzmann (APBS/PDB2PQR) electrostatic potential mapped onto a solvent-excluded surface.
 - **The molecular envelope is a geometric approximation**, not a Connolly/MSMS solvent-excluded surface.
 - **H-bonds are schematic.** They are placed along the backbone to illustrate i->i+4 and inter-strand patterns, but donor-acceptor distances and angles are not computed from atomic coordinates via DSSP.
-- **Polymerase active-site numbering is provisional.** D640, D642 (Motif A) and D860 (Motif C) are human POLE1 (UniProt Q07864) numbers that have not been independently verified against the deposited 9F6D coordinates. He et al. 2024 (PDB 9B8S) report D626, V627 (Motif A) and D862 (Motif C) as the catalytic residues; this numbering has not been reconciled with 9F6D coordinates in this tool. The literature commonly reports catalytic aspartates in *S. cerevisiae* Pol2 numbering (D640, D877); the human-yeast offset is ~14 residues in this region but is not constant. Every residue label in this tool carries its organism and numbering source; cross-check against UniProt Q07864 active-site features before citing.
+- **Polymerase active-site residues.** D626 (Motif A) and D860/D862 (Motif C) are the human POLE1 (UniProt Q07864) catalytic aspartates, verified from He et al. 2024 (PDB 9B8S, Nat Commun 15:7847). The earlier D640/D642 annotation was an erroneous carry-over of *S. cerevisiae* Pol2 numbering — human residues at positions 640/642 are Leu/Pro, not Asp.
 
 For coordinate-derived molecular visualization, load PDB **9F6D** (human Pol e-PCNA-DNA, open Finger conformation) into [Mol\*](https://molstar.org/) or [PyMOL](https://pymol.org/).
 

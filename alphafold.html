@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='28' font-size='28'>E</text></svg>">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='28' font-size='28'>&#x03B5;</text></svg>">
 <title>POLE · AlphaFold Predicted Structure · UniProt Q07864</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -371,9 +371,9 @@ async function initViewer() {
 
   setProgress(40, 'Downloading AlphaFold structure…');
 
-  // Load AlphaFold mmCIF from EBI
-  const afUrl = 'https://alphafold.ebi.ac.uk/files/AF-Q07864-F1-model_v6.cif';
-  await viewer.loadStructureFromUrl(afUrl, 'mmcif', false);
+  // Load AlphaFold structure (local bcif, mirrored from RCSB computed models)
+  const afUrl = './data/pdb/AF-Q07864-F1.bcif';
+  await viewer.loadStructureFromUrl(afUrl, 'mmcif', true);
 
   // Re-apply background
   try {
@@ -402,8 +402,8 @@ async function reloadStructure() {
 
   try { await viewer.plugin.clear(); } catch (e) { /* ignore */ }
 
-  const afUrl = 'https://alphafold.ebi.ac.uk/files/AF-Q07864-F1-model_v6.cif';
-  await viewer.loadStructureFromUrl(afUrl, 'mmcif', false);
+  const afUrl = './data/pdb/AF-Q07864-F1.bcif';
+  await viewer.loadStructureFromUrl(afUrl, 'mmcif', true);
 
   // Re-apply background
   try {
