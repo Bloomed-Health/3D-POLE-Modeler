@@ -1,3 +1,4 @@
+/* global molstar */
 // ==========================================================================
 // Shared Mol* viewer initialization factory.
 // Creates a Mol* Viewer instance with common options (dark background,
